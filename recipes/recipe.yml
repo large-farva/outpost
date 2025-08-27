@@ -31,10 +31,6 @@ modules:
       - unzip
       - openssl
       - curl
-  - type: dnf
-    remove:
-      - vim
-      - tmux
 
   - type: default-flatpaks
     configurations:
