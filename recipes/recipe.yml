@@ -1,21 +1,14 @@
----
-# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
-# image will be published to ghcr.io/<user>/<name>
 name: atlas
-# description will be included in the image's metadata
 description: Fedora Silverblue based image with built-in DoD CAC support.
 
-# the base image to build on top of (FROM) and the version tag to use
 base-image: ghcr.io/ublue-os/silverblue-main
 image-version: 42
 
-# module configuration, executed in order
-# you can include multiple instances of the same module
 modules:
   - type: files
     files:
       - source: system
-        destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
+        destination: /
 
   - type: rpm-ostree
     install:
@@ -31,13 +24,21 @@ modules:
       - unzip
       - openssl
       - curl
+  
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.socket
+
+  - type: script
+    scripts:
+      - files/scripts/install-dod-trust.sh
 
   - type: default-flatpaks
     configurations:
-      - notify: true # Send notification after install/uninstall is finished (true/false)
+      - notify: true
         scope: system
-        # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
+        install:
           - org.gnome.Papers
           - org.gnome.Loupe
           - com.github.rafostar.Clapper
@@ -54,7 +55,5 @@ modules:
           - org.gnome.eog
           - org.gnome.Totem
           - org.gnome.Extensions
-      - scope: user # Also add Flathub user repo, but no user packages
 
-  - type: signing # this sets up the proper policy & signing files for signed images to work fully
-
+  - type: signing
