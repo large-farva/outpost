@@ -18,8 +18,6 @@ modules:
         destination: / # copies files/system/* (* means everything inside it) into your image's root folder /
 
   - type: rpm-ostree
-    repos:
-      - https://copr.fedorainfracloud.org/coprs/atim/starship/repo/fedora-%OS_VERSION%/atim-starship-fedora-%OS_VERSION%.repo
     install:
       - firefox
       - pcsc-lite
@@ -33,6 +31,7 @@ modules:
       - unzip
       - openssl
       - curl
+  - type: dnf5
     remove:
       - vim
       - tmux
@@ -54,7 +53,11 @@ modules:
           - it.mijorus.gearlever
           - com.usebottles.bottles
           - org.onlyoffice.desktopeditors
-        
+        remove:
+          - org.gnome.Evince
+          - org.gnome.eog
+          - org.gnome.Totem
+          - org.gnome.Extensions
       - scope: user # Also add Flathub user repo, but no user packages
 
   - type: signing # this sets up the proper policy & signing files for signed images to work fully
