@@ -31,7 +31,7 @@ modules:
       - unzip
       - openssl
       - curl
-  - type: dnf5
+  - type: dnf
     remove:
       - vim
       - tmux
