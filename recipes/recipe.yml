@@ -32,7 +32,7 @@ modules:
 
   - type: script
     scripts:
-      - files/scripts/install-dod-trust.sh
+      - install-dod-trust.sh
 
   - type: default-flatpaks
     configurations:
