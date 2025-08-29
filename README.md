@@ -59,44 +59,71 @@ cosign verify --key cosign.pub ghcr.io/large-farva/atlas:latest
 
 ### CAC Usage
 
-- Plug in you CAC and run:
-``` bash
-pcsc_scan
-```
-You shouold see your reader and card recognized.
-- If you hit issues, check:
-``` bash
-systemctl status pcscd.socket
-```
+Atlas includes all the components needed for **Common Access Card (CAC)** authentication:
 
-- In Firefox:
-  - Navigate to ```about:preferences``` → **Certificates** → **Security Devices**.
-  - If **OpenSC PKCS#11 Module** is not listed, load it manually:
-  ``` bash
-  /usr/lib64/opensc-pkcs11.so
-  ```
-  - You should then be able to authenticate to DoD web apps.
+- **Smart card middleware**
+  - ```pcsc-lite``` and ```pcsc-lite-ccid```: industry-standard service and CCID driver for USB smart card readers.
+  - ```pcscd.socket``` is enabled for on-demand activation when a card is inserted.
+- **PKCS#11 provider**
+  -```opensc```: open-source middleware widely used across Linux distributions for CAC and PIV cards.
+  - Provides the ```/usr/lib64/opensc-pkcs11.so``` module for integration with applications like Firefox.
+- **System trust**
+  - DISA's **DoD PKI bundle** is fetched during the image build, converted, and installed into Fedora's CA trust store.
+  - Applications using ```p11-kit``` and ```ca-certificates``` (including Firefox, curl, and OpenSSL) trust DoD TLS endpoints by default.
+- **Browser support**
+  - The **RPM version of Firefox** is layered into the image for direct NSS/PKCD#11 integration.
+  - Flatpak browsers are not supported due to sandbox restrictions on PKCS#11 modules.
+  - Chrome/Chromium support is planned for the future.
 
-⚠️ **Flatpak Firefox/Chromium will not work** with CAC. Only the layered RPM Firefox is supported.
+⚠️ Atlas does not ship **CACKey** or vendor-specific middleware - OpenSC is the only supported provider for simplicity and maintainability.
 
 ---
 
 ### Troubleshooting
 
-- **Reader not detected:** Run ```pcsc_scan``` while the card is inserted. If nothing shows, check ```systemctl status pcscd.socket```.
-- **Certificates not trusted:** Ensure the DoD trust anchors were installed:
-``` bash
-trust list | grep DoD
-```
-- **Firefox not prompting for certs:** Verify the OpenSC PKCS#11 module is loaded.
+If CAC authentication does not work as expected:
+
+- **Reader not detected**
+  ``` bash
+  pcsc_scan
+  ```
+  If nothing appears, check:
+  ``` bash
+  systemctl status pcscd.socket
+  ```
+- **OpenSC not recognizing the card**
+  ``` bash
+  opensc-tool -l
+  ```
+  Should list your card reader. If not, the reader may not be CCID-compliant.
+- **DoD sites not trusted**
+  ``` bash
+  trust list | grep DoD
+  ```
+  If no results, re-run:
+  ``` bash
+  sudo update-ca-trust
+  ```
+- **Firefox not showing CAC certs**
+  Add the OpenSC PKCS#11 module manually:
+  - Firefox → ```about:preferences``` → **Certificates** → **Security Devices** → Load
+- **General debugging**
+  View logs related to PC/SC:
+  ``` bash
+  journalctl -u pcscd.socket
+  ```
+  Or check kernel-level USB events:
+  ``` bash
+  journalctl -k | grep -i usb
+  ```
 
 ---
 
 ### Roadmap
 
-- Addsupport Chrome/Chromium CAC integration.
-- Optional build flavors (e.g., minimal, developer-oriented).
-- Better documentation on updating DoD CA bundles.
+**Chromium (RPM) CAC Support**
+- Layer ```google-chrome-stable``` or ```chromium``` RPM + document PKCS#11 setup (or auto-load OpenSC via NSS DB).
+- Optionally add a launcher wrapper that ensures the PKCS#11 module is registered.
 
 ---
 
