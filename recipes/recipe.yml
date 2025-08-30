@@ -39,9 +39,6 @@ modules:
     system:
       enabled:
         - pcscd.socket
-    user:
-      enabled:
-        - nss-opensc.service
 
   - type: script
     scripts:
