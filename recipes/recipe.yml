@@ -19,8 +19,6 @@ modules:
     files:
       - source: system
         destination: /
-      - source: etc/atlas/dod.env
-        destination: /etc/atlas/dod.env
 
   - type: rpm-ostree
     install:
@@ -36,7 +34,7 @@ modules:
       - unzip
       - openssl
       - curl
-  
+
   - type: systemd
     system:
       enabled:
