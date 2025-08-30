@@ -2,13 +2,21 @@ name: atlas
 description: Fedora Silverblue based image with built-in DoD CAC support.
 
 base-image: ghcr.io/ublue-os/silverblue-main
-image-version: 42
+image-version: latest
+
+labels:
+  org.opencontainers.image.title: "Atlas"
+  org.opencontainers.image.description: "Fedora Silverblue + CAC baked-in (OpenSC, DoD trust, Firefox RPM)"
+  org.opencontainers.image.source: "https://github.com/large-farva/atlas"
+  org.opencontainers.image.licenses: "Apache-2.0"
 
 modules:
   - type: files
     files:
       - source: system
         destination: /
+      - source: etc/atlas/dod.env
+        destination: /etc/atlas/dod.env
 
   - type: rpm-ostree
     install:
@@ -29,6 +37,9 @@ modules:
     system:
       enabled:
         - pcscd.socket
+    user:
+      enabled:
+        - nss-opensc.service
 
   - type: script
     scripts:
@@ -55,5 +66,6 @@ modules:
           - org.gnome.eog
           - org.gnome.Totem
           - org.gnome.Extensions
+          - org.mozilla.firefox
 
   - type: signing
