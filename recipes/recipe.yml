@@ -1,14 +1,19 @@
-name: atlas
-description: Fedora Silverblue based image with built-in DoD CAC support.
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
+name: atlas
+description: "Fedora Silverblue based image with built-in DoD CAC support."
 base-image: ghcr.io/ublue-os/silverblue-main
 image-version: latest
 
-labels:
-  org.opencontainers.image.title: "Atlas"
-  org.opencontainers.image.description: "Fedora Silverblue + CAC baked-in (OpenSC, DoD trust, Firefox RPM)"
-  org.opencontainers.image.source: "https://github.com/large-farva/atlas"
-  org.opencontainers.image.licenses: "Apache-2.0"
+modules:
+  - type: containerfile
+    snippets:
+      - |
+        LABEL org.opencontainers.image.title="Atlas"
+        LABEL org.opencontainers.image.description="Fedora Silverblue + CAC baked-in (OpenSC, DoD trust, Firefox RPM)"
+        LABEL org.opencontainers.image.source="https://github.com/large-farva/atlas"
+        LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 modules:
   - type: files
