@@ -34,6 +34,7 @@ modules:
       - unzip
       - openssl
       - curl
+      - gnome-shell-extension-dash-to-dock
 
   - type: systemd
     system:
@@ -43,6 +44,8 @@ modules:
   - type: script
     scripts:
       - install-dod-trust.sh
+      - remove-packages.sh
+      - dconf.sh
 
   - type: default-flatpaks
     configurations:
@@ -60,6 +63,7 @@ modules:
           - it.mijorus.gearlever
           - com.usebottles.bottles
           - org.onlyoffice.desktopeditors
+          - com.raggesilver.BlackBox
         remove:
           - org.gnome.Evince
           - org.gnome.eog

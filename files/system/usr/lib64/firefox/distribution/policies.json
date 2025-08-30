@@ -1,0 +1,19 @@
+{
+  "policies": {
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "CaptivePortal": false,
+    "DNSOverHTTPS": { "Enabled": false, "Locked": true },
+    "Certificates": { "ImportEnterpriseRoots": true },
+
+    "Preferences": {
+      "security.default_personal_cert": { "Value": "Ask Every Time", "Status": "locked" }
+    },
+
+    "OfferToSaveLoginsDefault": false,
+    "PasswordManagerEnabled": false,
+    "DisableFeedbackCommands": true,
+    "DontCheckDefaultBrowser": true
+  }
+}
