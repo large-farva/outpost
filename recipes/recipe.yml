@@ -15,7 +15,6 @@ modules:
         LABEL org.opencontainers.image.source="https://github.com/large-farva/atlas"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
-modules:
   - type: files
     files:
       - source: system
