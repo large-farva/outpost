@@ -41,7 +41,8 @@ modules:
         - pcscd.socket
   
   - type: dod-trust
-
+    source: local
+    
   - type: script
     scripts:
       - remove-packages.sh
