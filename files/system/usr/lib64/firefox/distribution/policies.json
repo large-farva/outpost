@@ -5,13 +5,15 @@
     "DisablePocket": true,
     "CaptivePortal": false,
     "DNSOverHTTPS": { "Enabled": false, "Locked": true },
-    "Certificates": { "ImportEnterpriseRoots": true },
+    "UseSystemPrintDialog": true,
+    "PromptForDownloadLocation": true,
+    "StartDownloadsInTempDirectory": true,
 
     "Preferences": {
       "security.default_personal_cert": { "Value": "Ask Every Time", "Status": "locked" }
     },
 
-    "OfferToSaveLoginsDefault": false,
+    "OfferToSaveLogins": false,
     "PasswordManagerEnabled": false,
     "DisableFeedbackCommands": true,
     "DontCheckDefaultBrowser": true
