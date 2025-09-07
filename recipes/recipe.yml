@@ -34,16 +34,16 @@ modules:
       - unzip
       - openssl
       - curl
-      - gnome-shell-extension-dash-to-dock
 
   - type: systemd
     system:
       enabled:
         - pcscd.socket
+  
+  - type: dod-trust
 
   - type: script
     scripts:
-      - install-dod-trust.sh
       - remove-packages.sh
       - dconf.sh
 

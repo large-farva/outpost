@@ -7,4 +7,5 @@ rpm-ostree override remove \
   tmux \
   gnome-shell-extension-background-logo \
   gnome-backgrounds \
+  fedora-bookmarks \
   || true
