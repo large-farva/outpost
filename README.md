@@ -1,11 +1,11 @@
-# Atlas
+# Outpost
 
-[![bluebuild build badge](https://github.com/large-farva/atlas/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/atlas/actions/workflows/build.yml)
+[![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
 
-Atlas is a custom Fedora Silverblue–based image built with **BlueBuild**.  
+Outpost is a custom Fedora Silverblue–based image built with **BlueBuild**.  
 It extends the [`ublue-os/silverblue-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
 
-Atlas is built for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
+Outpost is built for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
 ## Features
 
@@ -30,30 +30,30 @@ Atlas is built for environments where **Common Access Card (CAC)** authenticatio
 1. First rebase to the **unsigned** image to bootstrap the signing policy:
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/atlas:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
 ````
 
 2. After reboot, rebase to the **signed** image:
 
 ```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/atlas:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
 ```
 
 ## Verification
 
-Atlas images are signed using **Sigstore Cosign**.
+Outpost images are signed using **Sigstore Cosign**.
 
 Verify with the included public key:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/large-farva/atlas:latest
+cosign verify --key cosign.pub ghcr.io/large-farva/Outpost:latest
 ```
 
 ## CAC Usage
 
-Atlas includes all middleware and trust components required for CAC authentication.
+Outpost includes all middleware and trust components required for CAC authentication.
 
 ### Smart Card Middleware
 
@@ -81,7 +81,7 @@ Atlas includes all middleware and trust components required for CAC authenticati
 * **Flatpak browsers are not supported**
 * **Chrome / Chromium CAC support** is planned (RPM version only)
 
-⚠️ *Atlas does not ship CACKey or proprietary vendor middleware. OpenSC is the supported and tested provider.*
+⚠️ *Outpost does not ship CACKey or proprietary vendor middleware. OpenSC is the supported and tested provider.*
 
 ## Troubleshooting
 

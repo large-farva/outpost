@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ouex pipefail
 
-mkdir -p "$HOME/.config/atlas" "$HOME/.pki/nssdb"
+mkdir -p "$HOME/.config/outpost" "$HOME/.pki/nssdb"
 
 NSSDB="sql:$HOME/.pki/nssdb"
 
@@ -16,5 +16,5 @@ if ! modutil -list -dbdir "$NSSDB" | grep -q 'OpenSC PKCS#11 Module'; then
           -dbdir "$NSSDB" -force
 fi
 
-touch "$HOME/.config/atlas/.nss-opensc-done"
-echo "[atlas-nss] OpenSC PKCS#11 is ready in $NSSDB"
+touch "$HOME/.config/outpost/.nss-opensc-done"
+echo "[outpost-nss] OpenSC PKCS#11 is ready in $NSSDB"

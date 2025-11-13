@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2025-11-13
+- Changed name to 'Outpost'
 - Created CHANGELOG
 - Updated README
 - Removed unused GNOME packages

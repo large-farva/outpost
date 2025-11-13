@@ -2,9 +2,9 @@
 set -ouex pipefail
 umask 022
 
-if [[ -f /etc/atlas/dod.env ]]; then
+if [[ -f /etc/outpost/dod.env ]]; then
   # shellcheck source=/dev/null
-  . /etc/atlas/dod.env
+  . /etc/outpost/dod.env
 fi
 
 CERTS_URL="${CERTS_URL:-https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-6_dod.zip}"

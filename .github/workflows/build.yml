@@ -1,4 +1,4 @@
-name: Atlas
+name: Outpost
 
 on:
   schedule:
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   bluebuild:
-    name: Build Atlas
+    name: Build Outpost
     runs-on: ubuntu-latest
     permissions:
       contents: read

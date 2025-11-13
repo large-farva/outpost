@@ -1,11 +1,11 @@
 [Unit]
-Description=Atlas: addd OpenSC PKCS#11 to user NSS DB on first login
+Description=Outpost: addd OpenSC PKCS#11 to user NSS DB on first login
 ConditionEnvironment=!container
-ConditionPathExists=!%h/.config/atlas/.nss-opensc-done
+ConditionPathExists=!%h/.config/outpost/.nss-opensc-done
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/bash /usr/libexec/atlas/nss-opensc.sh
+ExecStart=/usr/bin/bash /usr/libexec/outpost/nss-opensc.sh
 TimeoutSec=60
 
 [Install]
