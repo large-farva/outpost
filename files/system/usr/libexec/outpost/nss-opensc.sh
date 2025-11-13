@@ -6,7 +6,7 @@ mkdir -p "$HOME/.config/outpost" "$HOME/.pki/nssdb"
 NSSDB="sql:$HOME/.pki/nssdb"
 
 if ! command -v modutil >/dev/null 2>&1; then
-  echo "[atlas-nss] nss-tools not found; cannot register OpenSC now."
+  echo "[outpost-nss] nss-tools not found; cannot register OpenSC now."
   exit 0
 fi
 

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/outpost-logo.svg" alt="Outpost logo" width="110" />
+</p>
+
 # Outpost
 
 [![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
