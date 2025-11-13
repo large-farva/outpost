@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/outpost-logo.svg" alt="Outpost logo" width="110" />
+  <img src="assets/outpost-logo.svg" alt="Outpost logo" width="200" />
 </p>
 
 # Outpost
