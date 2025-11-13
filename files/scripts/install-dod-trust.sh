@@ -2,8 +2,6 @@
 set -ouex pipefail
 umask 022
 
-# --- DoD Trust Anchors Installer ---
-
 if [[ -f /etc/atlas/dod.env ]]; then
   # shellcheck source=/dev/null
   . /etc/atlas/dod.env

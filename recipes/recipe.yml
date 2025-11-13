@@ -11,7 +11,7 @@ modules:
     snippets:
       - |
         LABEL org.opencontainers.image.title="Atlas"
-        LABEL org.opencontainers.image.description="Fedora Silverblue + CAC baked-in (OpenSC, DoD trust, Firefox RPM)"
+        LABEL org.opencontainers.image.description="Fedora Silverblue + CAC support baked-in."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/atlas"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
@@ -22,19 +22,18 @@ modules:
 
   - type: rpm-ostree
     install:
+      - ca-certificates
+      - curl
       - firefox
+      - nss-tools
+      - opensc
+      - openssl
+      - p11-kit
+      - p11-kit-trust
       - pcsc-lite
       - pcsc-lite-ccid
       - pcsc-tools
-      - opensc
-      - p11-kit
-      - p11-kit-trust
-      - nss-tools
-      - ca-certificates
       - unzip
-      - openssl
-      - curl
-      - gnome-shell-extension-dash-to-dock
 
   - type: systemd
     system:
@@ -43,32 +42,32 @@ modules:
 
   - type: script
     scripts:
+      - dconf.sh
       - install-dod-trust.sh
       - remove-packages.sh
-      - dconf.sh
 
   - type: default-flatpaks
     configurations:
       - notify: true
         scope: system
         install:
-          - org.gnome.Papers
-          - org.gnome.Loupe
           - com.github.rafostar.Clapper
-          - io.github.nokse22.inspector
-          - org.signal.Signal
-          - com.mattjakeman.ExtensionManager
-          - io.github.flattool.Warehouse
           - com.github.tchx84.Flatseal
-          - it.mijorus.gearlever
-          - com.usebottles.bottles
-          - org.onlyoffice.desktopeditors
+          - com.mattjakeman.ExtensionManager
           - com.raggesilver.BlackBox
+          - com.usebottles.bottles
+          - io.github.flattool.Warehouse
+          - io.github.nokse22.inspector
+          - it.mijorus.gearlever
+          - org.gnome.Loupe
+          - org.gnome.Papers
+          - org.onlyoffice.desktopeditors
+          - org.signal.Signal
         remove:
           - org.gnome.Evince
-          - org.gnome.eog
-          - org.gnome.Totem
           - org.gnome.Extensions
+          - org.gnome.Totem
+          - org.gnome.eog
           - org.mozilla.firefox
 
   - type: signing

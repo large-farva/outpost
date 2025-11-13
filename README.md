@@ -1,140 +1,155 @@
 # Atlas
 
-&nbsp; [![bluebuild build badge](https://github.com/large-farva/atlas/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/atlas/actions/workflows/build.yml)
+[![bluebuild build badge](https://github.com/large-farva/atlas/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/atlas/actions/workflows/build.yml)
 
+Atlas is a custom Fedora Silverblue–based image built with **BlueBuild**.  
+It extends the [`ublue-os/silverblue-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
 
-Atlas is a custom Fedora Silverblue-based image built with BlueBuild.
-It extends the [ublue-os/silverblue-main](https://github.com/ublue-os?utm_source=chatgpt.com) base image to provide:
+Atlas is built for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
-- DoD CAC smart card support out of the box
-- Firefox (RPM version) pre-layered for reliable CAC + PKCS#11 integration
-- System-wide DoD root certificates installed automatically
-- Curated Flatpak defaults for productivity and desktop essentials
+## Features
 
-Chrome/Chromium CAC support is a work in progress.
-Flatpak browsers are not supported (Flatpak sandboxing prevents PKCS#11 access).
+- **DoD CAC support out of the box**  
+  - `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `p11-kit`, `pcsc-tools`
+  - `pcscd.socket` enabled for automatic activation
 
----
+- **DoD trust anchors installed at build time**  
+  - DISA’s PKI bundle is fetched, verified, converted, and added to the system CA store
 
-### Features
+- **RPM Firefox for full PKCS#11 + NSS support**  
+  Flatpak browsers do not support PKCS#11 modules due to sandboxing.
 
-- **Smart card middleware preinstalled**: ```pcsc-lite```, ```pcsc-lite-ccid```, ```opensc```, ```p11-kit```, and supporting tools
-- **Automatic socket activation**: ```pcscd.socket``` is enabled so readers/cards work without manual configuration
-- **DoD trust anchors**: DISA's PKI bundle is fetched, converted, and added to system trust at build time
-- **RPM Firefox** layered into the image for **native NSS & PKCS#11 support**.
-- **Flatpak baseline**: Papers, Loupe, Clapper, Inspector, Signal, Extension Manager, Bottles, OnlyOffice, etc.
+- **Curated Flatpak baseline**  
+  Loupe, Papers, Clapper, Inspector, Signal, Extension Manager, Bottles, OnlyOffice, Warehouse, BlackBox, and more
 
----
+- **Streamlined Fedora desktop**  
+  Optional apps, GNOME extras, and non-English font families removed
 
-### Installation
+## Installation
 
-1. First rebase to the unsigned image to bootstrap signing policy:
+1. First rebase to the **unsigned** image to bootstrap the signing policy:
 
-``` bash
+```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/atlas:latest
 sudo systemctl reboot
-```
+````
 
-2. Then rebase to the signed image:
+2. After reboot, rebase to the **signed** image:
 
-``` bash
+```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/atlas:latest
 sudo systemctl reboot
 ```
 
-The ```latest``` tag always points to the newest build, but Atlas stays pinned to the Fedora release defined in ```recipe.yml``` (eg.42). You won't be bumped to the next major Fedora automatically.
+## Verification
 
----
+Atlas images are signed using **Sigstore Cosign**.
 
-### Verification
+Verify with the included public key:
 
-Atlas images are signed with [Sigstore](https://www.sigstore.dev/)'s [Cosign](https://github.com/sigstore/cosign).
-
-Verify an image with the included public key:
-``` bash
+```bash
 cosign verify --key cosign.pub ghcr.io/large-farva/atlas:latest
 ```
 
----
+## CAC Usage
 
-### CAC Usage
+Atlas includes all middleware and trust components required for CAC authentication.
 
-Atlas includes all the components needed for **Common Access Card (CAC)** authentication:
+### Smart Card Middleware
 
-- **Smart card middleware**
-  - ```pcsc-lite``` and ```pcsc-lite-ccid```: industry-standard service and CCID driver for USB smart card readers.
-  - ```pcscd.socket``` is enabled for on-demand activation when a card is inserted.
-- **PKCS#11 provider**
-  -```opensc```: open-source middleware widely used across Linux distributions for CAC and PIV cards.
-  - Provides the ```/usr/lib64/opensc-pkcs11.so``` module for integration with applications like Firefox.
-- **System trust**
-  - DISA's **DoD PKI bundle** is fetched during the image build, converted, and installed into Fedora's CA trust store.
-  - Applications using ```p11-kit``` and ```ca-certificates``` (including Firefox, curl, and OpenSSL) trust DoD TLS endpoints by default.
-- **Browser support**
-  - The **RPM version of Firefox** is layered into the image for direct NSS/PKCD#11 integration.
-  - Flatpak browsers are not supported due to sandbox restrictions on PKCS#11 modules.
-  - Chrome/Chromium support is planned for the future.
+* `pcsc-lite` / `pcsc-lite-ccid` provide the PC/SC service and CCID driver
+* `pcscd.socket` is enabled for automatic activation
+* `pcsc-tools` for inspection and debugging (`pcsc_scan`)
 
-⚠️ Atlas does not ship **CACKey** or vendor-specific middleware - OpenSC is the only supported provider for simplicity and maintainability.
+### PKCS#11 Provider
 
----
+* `opensc` supplies the `opensc-pkcs11.so` module used by Firefox and other NSS apps
 
-### Troubleshooting
+### System Trust Store
 
-If CAC authentication does not work as expected:
+* DISA’s DoD PKCS#7 bundle is downloaded at build time
+* Certificates are extracted, converted to PEM, and installed into:
 
-- **Reader not detected**
-  ``` bash
-  pcsc_scan
   ```
-  If nothing appears, check:
-  ``` bash
-  systemctl status pcscd.socket
+  /etc/pki/ca-trust/source/anchors/
   ```
-- **OpenSC not recognizing the card**
-  ``` bash
-  opensc-tool -l
-  ```
-  Should list your card reader. If not, the reader may not be CCID-compliant.
-- **DoD sites not trusted**
-  ``` bash
-  trust list | grep DoD
-  ```
-  If no results, re-run:
-  ``` bash
-  sudo update-ca-trust
-  ```
-- **Firefox not showing CAC certs**
-  Add the OpenSC PKCS#11 module manually:
-  - Firefox → ```about:preferences``` → **Certificates** → **Security Devices** → Load
-- **General debugging**
-  View logs related to PC/SC:
-  ``` bash
-  journalctl -u pcscd.socket
-  ```
-  Or check kernel-level USB events:
-  ``` bash
-  journalctl -k | grep -i usb
-  ```
+* `update-ca-trust` is executed during build
 
----
+### Browser Support
 
-### Roadmap
+* **Firefox (RPM)** works out of the box with CAC
+* **Flatpak browsers are not supported**
+* **Chrome / Chromium CAC support** is planned (RPM version only)
 
-**Chromium (RPM) CAC Support**
-- Layer ```google-chrome-stable``` or ```chromium``` RPM + document PKCS#11 setup (or auto-load OpenSC via NSS DB).
-- Optionally add a launcher wrapper that ensures the PKCS#11 module is registered.
+⚠️ *Atlas does not ship CACKey or proprietary vendor middleware. OpenSC is the supported and tested provider.*
 
----
+## Troubleshooting
 
-### Issues
+### Reader Not Detected
 
-Please open issues in this repository if you encounter bugs, build failures, or CAC impompaibilities. Include logs from:
-
-``` bash
-journalctl -u pcscd.socket
+```bash
+pcsc_scan
+systemctl status pcscd.socket
 ```
-and
-``` bash
+
+### OpenSC Not Listing the Reader
+
+```bash
 opensc-tool -l
 ```
+
+### DoD Sites Not Trusted
+
+```bash
+trust list | grep DoD
+sudo update-ca-trust
+```
+
+### Firefox Not Showing CAC Certificates
+
+Manually load the OpenSC module:
+
+Firefox → `about:preferences` → **Certificates → Security Devices → Load**
+Module path:
+
+```
+/usr/lib64/opensc-pkcs11.so
+```
+
+### PC/SC Logs
+
+```bash
+journalctl -u pcscd.socket
+```
+
+### USB / Reader Hardware Logs
+
+```bash
+journalctl -k | grep -i usb
+```
+
+---
+
+## Roadmap
+
+### Chromium (RPM) CAC Support
+
+* Add Chromium/Chrome RPM to the image (optional)
+* Auto-register OpenSC PKCS#11 module for NSS-based apps
+
+### Additional Goals
+
+* Automated CAC detection for Firefox
+* Optional hardened/enterprise configuration profile
+* TPM-backed trust store integration (future Fedora feature)
+
+## Issues
+
+If you encounter problems, open an issue and include relevant logs:
+
+```bash
+journalctl -u pcscd.socket
+opensc-tool -l
+```
+
+This helps diagnose reader issues, USB enumeration failures, and middleware problems.
