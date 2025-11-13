@@ -23,7 +23,7 @@ Outpost is built for environments where **Common Access Card (CAC)** authenticat
   Loupe, Papers, Clapper, Inspector, Signal, Extension Manager, Bottles, OnlyOffice, Warehouse, BlackBox, and more
 
 - **Streamlined Fedora desktop**  
-  Optional apps, GNOME extras, and non-English font families removed
+  Some optional packages, GNOME extras, and non-English font families removed
 
 ## Installation
 
@@ -48,7 +48,7 @@ Outpost images are signed using **Sigstore Cosign**.
 Verify with the included public key:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/large-farva/Outpost:latest
+cosign verify --key cosign.pub ghcr.io/large-farva/outpost:latest
 ```
 
 ## CAC Usage
@@ -128,8 +128,6 @@ journalctl -u pcscd.socket
 journalctl -k | grep -i usb
 ```
 
----
-
 ## Roadmap
 
 ### Chromium (RPM) CAC Support
@@ -139,7 +137,6 @@ journalctl -k | grep -i usb
 
 ### Additional Goals
 
-* Automated CAC detection for Firefox
 * Optional hardened/enterprise configuration profile
 * TPM-backed trust store integration (future Fedora feature)
 
