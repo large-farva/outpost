@@ -47,6 +47,7 @@ modules:
       - install-dod-trust.sh
       - plymouth.sh
       - remove-packages.sh
+      - os-release.sh
 
   - type: default-flatpaks
     configurations:
