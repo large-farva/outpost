@@ -7,10 +7,12 @@ dnf5 remove \
   gnome-shell-extension-background-logo \
   gnome-shell-extension-launch-new-instance \
   gnome-shell-extension-window-list \
+  gnome-tour \
   htop \
   nvtop \
   tmux \
   vim* \
+  yelp* \
   || true
 
 # Something is causing the build to delete 400 packages at build time. WTF
@@ -31,4 +33,4 @@ dnf5 remove \
 # rit-rachana-fonts \
 # sil-padauk-fonts \
 
-
+# It's one or more of these fonts packs.
