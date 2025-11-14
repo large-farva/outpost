@@ -2,7 +2,6 @@
 set -ouex pipefail
 
 dnf5 remove \
-  default-fonts* \
   fedora-bookmarks \
   fedora-chromium-config* \
   gdouros-symbola-fonts \
@@ -26,5 +25,7 @@ dnf5 remove \
   vim* \
   || true
 
+# Something is causing the build to delete 400 packages at build time. WTF
 # gnome-tour \
 # yelp* \
+# default-fonts* \
