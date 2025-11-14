@@ -33,6 +33,7 @@ modules:
       - pcsc-lite
       - pcsc-lite-ccid
       - pcsc-tools
+      - plymouth-plugin-script
       - unzip
 
   - type: systemd
