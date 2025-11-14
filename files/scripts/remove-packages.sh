@@ -9,7 +9,6 @@ dnf5 remove \
   gnome-shell-extension-background-logo \
   gnome-shell-extension-launch-new-instance \
   gnome-shell-extension-window-list \
-  gnome-tour \
   google-noto-naskh-arabic-vf-fonts \
   google-noto-sans* \
   google-noto-serif* \
@@ -25,5 +24,7 @@ dnf5 remove \
   tmux \
   vazirmatn-vf-fonts \
   vim* \
-  yelp* \
   || true
+
+# gnome-tour \
+# yelp* \
