@@ -44,6 +44,7 @@ modules:
     scripts:
       - dconf.sh
       - install-dod-trust.sh
+      - plymouth.sh
       - remove-packages.sh
 
   - type: default-flatpaks
