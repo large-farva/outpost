@@ -3,4 +3,4 @@ set -oue pipefail
 
 THEME="outpost"
 
-/usr/bin/plymouth-set-default-theme -R "$THEME"
+/usr/bin/plymouth-set-default-theme "$THEME"
