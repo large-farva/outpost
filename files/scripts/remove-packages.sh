@@ -1,12 +1,11 @@
 #!/bin/bash
 set -ouex pipefail
 
-rpm-ostree override remove \
+dnf5 remove \
   default-fonts* \
   fedora-bookmarks \
   fedora-chromium-config* \
   gdouros-symbola-fonts \
-  gnome-extensions-app \
   gnome-shell-extension-background-logo \
   gnome-shell-extension-launch-new-instance \
   gnome-shell-extension-window-list \
