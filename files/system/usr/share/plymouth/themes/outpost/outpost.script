@@ -1,4 +1,8 @@
-logo = Image("outpost.png")
+Window.SetBackgroundTopColor (0.106, 0.118, 0.137);
+Window.SetBackgroundBottomColor (0.106, 0.118, 0.137);
+
+logo = Image("logo.png")
+logo.Scale(0.40);
 
 screenW = Window.GetWidth();
 screenH = Window.GetHeight();
