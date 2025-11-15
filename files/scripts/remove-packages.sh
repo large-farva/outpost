@@ -15,7 +15,7 @@ dnf5 remove \
   yelp* \
   || true
 
-# Something is causing the build to delete 400 packages at build time. WTF
+# Something is causing the build to delete 400 packages at build time.
 
 # gnome-tour \
 # yelp* \
@@ -33,4 +33,4 @@ dnf5 remove \
 # rit-rachana-fonts \
 # sil-padauk-fonts \
 
-# It's one or more of these fonts packs.
+# It's one or more of these font packs.

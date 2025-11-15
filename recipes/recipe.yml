@@ -36,6 +36,21 @@ modules:
       - plymouth-plugin-script
       - unzip
 
+  - type: dnf5
+    remove:
+      - fedora-bookmarks
+      - fedora-chromium-config*
+      - gnome-shell-extension-background-logo
+      - gnome-shell-extension-launch-new-instance
+      - gnome-shell-extension-window-list
+      - gnome-tour
+      - htop
+      - nvtop
+      - tmux
+      - vim*
+      - yelp*
+      # last attempt to effectively remove packages before switching to uBlue's image-template.
+  
   - type: systemd
     system:
       enabled:
@@ -46,7 +61,7 @@ modules:
       - dconf.sh
       - install-dod-trust.sh
       - plymouth.sh
-      - remove-packages.sh
+      # - remove-packages.sh
       - os-release.sh
 
   - type: default-flatpaks
