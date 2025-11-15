@@ -50,9 +50,6 @@ modules:
         - tmux
         - vim*
         - yelp*
-        # Fonts - One of the font packs causes the removal of 400 plus packages.
-        - google-noto-sans*
-        - google-noto-serif*
 
   - type: systemd
     system:
