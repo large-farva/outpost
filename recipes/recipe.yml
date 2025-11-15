@@ -50,8 +50,10 @@ modules:
         - tmux
         - vim*
         - yelp*
-        # last attempt to effectively remove packages before switching to uBlue's image-template.
-  
+        # Fonts - One of the font packs causes the removal of 400 plus packages.
+        - google-noto-sans*
+        - google-noto-serif*
+
   - type: systemd
     system:
       enabled:

@@ -17,20 +17,18 @@ dnf5 remove \
 
 # Something is causing the build to delete 400 packages at build time.
 
-# gnome-tour \
-# yelp* \
 # default-fonts* \
-# madan-fonts \
 # gdouros-symbola-fonts \
-# vazirmatn-vf-fonts \
 # google-noto-naskh-arabic-vf-fonts \
 # google-noto-sans* \
 # google-noto-serif* \
 # jomolhari-fonts \
 # julietaula-montserrat-fonts \
+# madan-fonts \
 # paktype-naskh-basic-fonts \
 # rit-meera-new-fonts \
 # rit-rachana-fonts \
 # sil-padauk-fonts \
+# vazirmatn-vf-fonts \
 
 # It's one or more of these font packs.
