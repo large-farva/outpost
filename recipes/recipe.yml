@@ -20,36 +20,37 @@ modules:
       - source: system
         destination: /
 
-  - type: rpm-ostree
-    install:
-      - ca-certificates
-      - curl
-      - firefox
-      - nss-tools
-      - opensc
-      - openssl
-      - p11-kit
-      - p11-kit-trust
-      - pcsc-lite
-      - pcsc-lite-ccid
-      - pcsc-tools
-      - plymouth-plugin-script
-      - unzip
-
   - type: dnf
+    install:
+      packages:
+        - ca-certificates
+        - curl
+        - firefox
+        - nss-tools
+        - opensc
+        - openssl
+        - p11-kit
+        - p11-kit-trust
+        - pcsc-lite
+        - pcsc-lite-ccid
+        - pcsc-tools
+        - plymouth-plugin-script
+        - unzip
+
     remove:
-      - fedora-bookmarks
-      - fedora-chromium-config*
-      - gnome-shell-extension-background-logo
-      - gnome-shell-extension-launch-new-instance
-      - gnome-shell-extension-window-list
-      - gnome-tour
-      - htop
-      - nvtop
-      - tmux
-      - vim*
-      - yelp*
-      # last attempt to effectively remove packages before switching to uBlue's image-template.
+      packages:
+        - fedora-bookmarks
+        - fedora-chromium-config*
+        - gnome-shell-extension-background-logo
+        - gnome-shell-extension-launch-new-instance
+        - gnome-shell-extension-window-list
+        - gnome-tour
+        - htop
+        - nvtop
+        - tmux
+        - vim*
+        - yelp*
+        # last attempt to effectively remove packages before switching to uBlue's image-template.
   
   - type: systemd
     system:
