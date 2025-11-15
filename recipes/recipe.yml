@@ -36,7 +36,7 @@ modules:
       - plymouth-plugin-script
       - unzip
 
-  - type: dnf5
+  - type: dnf
     remove:
       - fedora-bookmarks
       - fedora-chromium-config*
