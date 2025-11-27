@@ -47,7 +47,7 @@ jobs:
           echo "Injected CERTS_SHA256 into files/system/etc/atlas/dod.env"
 
       - name: Build Image
-        uses: blue-build/github-action@v1.8
+        uses: blue-build/github-action@v1.10
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
