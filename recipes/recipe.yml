@@ -2,8 +2,8 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
 name: outpost
-description: "Fedora Silverblue based image with built-in DoD CAC support."
-base-image: ghcr.io/ublue-os/silverblue-main
+description: "Fedora Kinoite based image with built-in DoD CAC support."
+base-image: ghcr.io/ublue-os/kinoite-main
 image-version: latest
 
 modules:
@@ -11,7 +11,7 @@ modules:
     snippets:
       - |
         LABEL org.opencontainers.image.title="Outpost"
-        LABEL org.opencontainers.image.description="Fedora Silverblue based image with built-in DoD CAC support."
+        LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
@@ -25,7 +25,6 @@ modules:
       packages:
         - ca-certificates
         - curl
-        - firefox
         - nss-tools
         - opensc
         - openssl
@@ -41,15 +40,8 @@ modules:
       packages:
         - fedora-bookmarks
         - fedora-chromium-config*
-        - gnome-shell-extension-background-logo
-        - gnome-shell-extension-launch-new-instance
-        - gnome-shell-extension-window-list
-        - gnome-tour
-        - htop
-        - nvtop
         - tmux
         - vim*
-        - yelp*
 
   - type: systemd
     system:
@@ -58,10 +50,8 @@ modules:
 
   - type: script
     scripts:
-      - dconf.sh
       - install-dod-trust.sh
       - plymouth.sh
-      # - remove-packages.sh
       - os-release.sh
 
   - type: default-flatpaks
@@ -69,23 +59,9 @@ modules:
       - notify: true
         scope: system
         install:
-          - com.github.rafostar.Clapper
           - com.github.tchx84.Flatseal
-          - com.mattjakeman.ExtensionManager
-          - com.raggesilver.BlackBox
-          - com.usebottles.bottles
           - io.github.flattool.Warehouse
-          - io.github.nokse22.inspector
-          - it.mijorus.gearlever
-          - org.gnome.Loupe
-          - org.gnome.Papers
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
-        remove:
-          - org.gnome.Evince
-          - org.gnome.Extensions
-          - org.gnome.Totem
-          - org.gnome.eog
-          - org.mozilla.firefox
 
   - type: signing
