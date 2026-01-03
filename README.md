@@ -6,8 +6,8 @@
 
 [![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
 
-Outpost is a custom Fedora Silverblue–based image built with **BlueBuild**.  
-It extends the [`ublue-os/silverblue-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
+Outpost is a custom Fedora Kinoite–based image built with **BlueBuild**.  
+It extends the [`ublue-os/kinoite-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
 
 Outpost is built for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
@@ -24,19 +24,18 @@ Outpost is built for environments where **Common Access Card (CAC)** authenticat
   Flatpak browsers do not support PKCS#11 modules due to sandboxing.
 
 - **Curated Flatpak baseline**  
-  Loupe, Papers, Clapper, Inspector, Signal, Extension Manager, Bottles, OnlyOffice, Warehouse, BlackBox, and more
-
-- **Streamlined Fedora desktop**  
-  Some optional packages, GNOME extras, and non-English font families removed
+  Flatseal, Kontainer, Signal, OnlyOffice, Warehouse, and more
 
 ## Installation
 
 1. First rebase to the **unsigned** image to bootstrap the signing policy:
 
+⚠️ You must rebase from a Kinoite or Kinoite-based image!
+
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
-````
+```
 
 2. After reboot, rebase to the **signed** image:
 

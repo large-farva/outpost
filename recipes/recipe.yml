@@ -48,9 +48,13 @@ modules:
       enabled:
         - pcscd.socket
 
+    user:
+      enabled:
+        - p11-kit-server.socket
+
   - type: script
     scripts:
-      - install-dod-trust.sh
+      - dod-trust.sh
       - plymouth.sh
       - os-release.sh
 
@@ -60,7 +64,9 @@ modules:
         scope: system
         install:
           - com.github.tchx84.Flatseal
+          - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
+          - org.chromium.Chromium
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
 
