@@ -1,0 +1,13 @@
+name: DoD zip SHA256
+on:
+  workflow_dispatch: {}
+
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and hash
+        run: |
+          URL="https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-6_dod.zip"
+          curl -fL "$URL" -o dod.zip
+          sha256sum dod.zip

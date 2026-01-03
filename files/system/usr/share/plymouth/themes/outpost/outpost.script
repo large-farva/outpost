@@ -1,0 +1,24 @@
+Window.SetBackgroundTopColor (0.106, 0.118, 0.137);
+Window.SetBackgroundBottomColor (0.106, 0.118, 0.137);
+
+logo = Image("logo.png")
+logo.Scale(0.40);
+
+screenW = Window.GetWidth();
+screenH = Window.GetHeight();
+
+logoW = logo.GetWidth();
+logoH = logo.GetHeight();
+
+logoX = (screenW - logoW) / 2;
+logoY = (screenH - logoH) / 2 - 40;
+
+logo.SetX(logoX);
+logo.SetY(logoY);
+
+logo.SetOpacity(0.0);
+logo.FadeIn(1.0);
+
+Plymouth.SetQuitFunction(function () {
+    logo.FadeOut(0.6);
+});
