@@ -6,6 +6,8 @@
 
 [![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
 
+#### Working on implementing Chromium Flatpak support. Firefox has been removed.
+
 Outpost is a custom Fedora Kinoite–based image built with **BlueBuild**.  
 It extends the [`ublue-os/kinoite-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
 
@@ -24,13 +26,13 @@ Outpost is built for environments where **Common Access Card (CAC)** authenticat
   Flatpak browsers do not support PKCS#11 modules due to sandboxing.
 
 - **Curated Flatpak baseline**  
-  Flatseal, Kontainer, Signal, OnlyOffice, Warehouse, and more
+  ChromiumFlatseal, Warehouse, Kontainer, OnlyOfficeSignal, and Bazaar
 
 ## Installation
 
 1. First rebase to the **unsigned** image to bootstrap the signing policy:
 
-⚠️ You must rebase from a Kinoite or Kinoite-based image!
+⚠️ You must rebase from Kinoite or a Kinoite-based image!
 
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest

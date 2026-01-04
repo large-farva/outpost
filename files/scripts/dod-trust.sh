@@ -12,7 +12,7 @@ if [[ -f /etc/outpost/dod.env ]]; then
   . /etc/outpost/dod.env
 fi
 
-CERTS_URL="${CERTS_URL:-https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-6_dod.zip}"
+CERTS_URL="${CERTS_URL:-https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-14_dod.zip}"
 CERTS_SHA256="${CERTS_SHA256:-}"
 
 workdir="$(mktemp -d -t dodtrust.XXXXXXXX)" || die "Failed to create temp dir"

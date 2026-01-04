@@ -8,6 +8,6 @@ jobs:
     steps:
       - name: Fetch and hash
         run: |
-          URL="https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-6_dod.zip"
+          URL="https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-14_dod.zip"
           curl -fL "$URL" -o dod.zip
           sha256sum dod.zip

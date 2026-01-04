@@ -37,14 +37,14 @@ jobs:
 
       - name: Ensure DoD env placeholder
         run: |
-          mkdir -p files/system/etc/atlas
-          : > files/system/etc/atlas/dod.env
+          mkdir -p files/system/etc/outpost
+          : > files/system/etc/outpost/dod.env
 
       - name: Inject DoD ZIP checksum
         if: env.CERTS_SHA256 != ''
         run: |
-          printf 'CERTS_SHA256=%s\n' "${CERTS_SHA256}" > files/system/etc/atlas/dod.env
-          echo "Injected CERTS_SHA256 into files/system/etc/atlas/dod.env"
+          printf 'CERTS_SHA256=%s\n' "${CERTS_SHA256}" > files/system/etc/outpost/dod.env
+          echo "Injected CERTS_SHA256 into files/system/etc/outpost/dod.env"
 
       - name: Build Image
         uses: blue-build/github-action@v1.8

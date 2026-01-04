@@ -66,6 +66,7 @@ modules:
           - com.github.tchx84.Flatseal
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
+          - io.github.kolunmi.Bazaar
           - org.chromium.Chromium
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
