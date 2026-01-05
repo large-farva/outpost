@@ -6,41 +6,49 @@
 
 # Outpost
 
-#### Working on implementing Chromium Flatpak support. Firefox has been removed.
+Outpost is a custom **Fedora Kinoite–based** immutable desktop image built with **BlueBuild**.  
+It extends the `ublue-os/kinoite-main` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
 
-Outpost is a custom Fedora Kinoite–based image built with **BlueBuild**.  
-It extends the [`ublue-os/kinoite-main`](https://github.com/ublue-os) base image and provides a CAC-ready Fedora workstation with curated defaults and zero post-install configuration.
-
-Outpost is built for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
+Outpost is designed for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
 ## Features
 
-- **DoD CAC support out of the box**  
-  - `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `p11-kit`, `pcsc-tools`
-  - `pcscd.socket` enabled for automatic activation
+### DoD CAC support out of the box
+- `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `p11-kit`, `pcsc-tools`
+- `pcscd.socket` enabled for automatic activation
+- `p11-kit-server.socket` enabled for Flatpak PKCS#11 access
 
-- **DoD trust anchors installed at build time**  
-  - DISA’s PKI bundle is fetched, verified, converted, and added to the system CA store
+### DoD trust anchors (vendored, auditable)
+- Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
+- ZIP filename is unchanged from the official distribution
+- Certificates are extracted, converted to PEM, and installed into the system trust store at build time
+- No network access required during image builds
 
-- **RPM Firefox for full PKCS#11 + NSS support**  
-  Flatpak browsers do not support PKCS#11 modules due to sandboxing.
+### Chromium Flatpak CAC support
+- **Chromium Flatpak** is supported via PKCS#11 socket passthrough
+- Targeted Flatpak override exposes the `p11-kit` socket only to Chromium
+- No global sandbox weakening
 
-- **Curated Flatpak baseline**  
-  ChromiumFlatseal, Warehouse, Kontainer, OnlyOfficeSignal, and Bazaar
+### Curated Flatpak baseline
+- Chromium
+- Flatseal
+- Warehouse
+- OnlyOffice
+- Signal
+- Kontainer
+- Bazaar (package manager)
 
 ## Installation
 
-1. First rebase to the **unsigned** image to bootstrap the signing policy:
-
 ⚠️ You must rebase from Kinoite or a Kinoite-based image!
 
+### 1. Bootstrap (unsigned image)
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
 ```
 
-2. After reboot, rebase to the **signed** image:
-
+### 2. Rebase to the signed image
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
@@ -62,29 +70,33 @@ Outpost includes all middleware and trust components required for CAC authentica
 
 ### Smart Card Middleware
 
-* `pcsc-lite` / `pcsc-lite-ccid` provide the PC/SC service and CCID driver
-* `pcscd.socket` is enabled for automatic activation
-* `pcsc-tools` for inspection and debugging (`pcsc_scan`)
+- `pcsc-lite` / `pcsc-lite-ccid` provide the PC/SC service and CCID driver
+- `pcscd.socket` is enabled for automatic activation
+- `pcsc-tools` for inspection and debugging (`pcsc_scan`)
 
 ### PKCS#11 Provider
 
-* `opensc` supplies the `opensc-pkcs11.so` module used by Firefox and other NSS apps
+- `opensc` supplies the `opensc-pkcs11.so` module
+- Used by NSS-based applications and Chromium via `p11-kit`
 
 ### System Trust Store
 
-* DISA’s DoD PKCS#7 bundle is downloaded at build time
-* Certificates are extracted, converted to PEM, and installed into:
+- DoD PKCS#7 bundle is vendored in:
+
+  ```
+  /usr/share/outpost/certs/
+  ```
+- Certificates are installed into:
 
   ```
   /etc/pki/ca-trust/source/anchors/
   ```
-* `update-ca-trust` is executed during build
+- `update-ca-trust` is executed during build
 
 ### Browser Support
 
-* **Firefox (RPM)** works out of the box with CAC
-* **Flatpak browsers are not supported**
-* **Chrome / Chromium CAC support** is planned (RPM version only)
+- **Chromium (Flatpak)**: supported with CAC
+- **Other Flatpak browsers**: not currentlysupported
 
 ⚠️ *Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.*
 
@@ -110,15 +122,16 @@ trust list | grep DoD
 sudo update-ca-trust
 ```
 
-### Firefox Not Showing CAC Certificates
+### Chromium not seeing the CAC
 
-Manually load the OpenSC module:
-
-Firefox → `about:preferences` → **Certificates → Security Devices → Load**
-Module path:
-
+- Verify the Flatpak override exists:
 ```
-/usr/lib64/opensc-pkcs11.so
+/etc/flatpak/overrides/org.chromium.Chromium
+```
+
+- Confirm the PKCS#11 socket:
+```bash
+systemctl --user status p11-kit-server.socket
 ```
 
 ### PC/SC Logs
@@ -127,7 +140,7 @@ Module path:
 journalctl -u pcscd.socket
 ```
 
-### USB / Reader Hardware Logs
+### USB / reader hardware logs
 
 ```bash
 journalctl -k | grep -i usb
@@ -135,23 +148,20 @@ journalctl -k | grep -i usb
 
 ## Roadmap
 
-### Chromium (RPM) CAC Support
+### Near-term
+- Okular groundwork for PDF signing with CAC
 
-* Add Chromium/Chrome RPM to the image (optional)
-* Auto-register OpenSC PKCS#11 module for NSS-based apps
-
-### Additional Goals
-
-* Optional hardened/enterprise configuration profile
-* TPM-backed trust store integration (future Fedora feature)
+### Longer-term
+- Optional hardened / enterprise configuration profile
+- TPM-backed trust integration (future Fedora work)
 
 ## Issues
 
-If you encounter problems, open an issue and include relevant logs:
+If you encounter problems, open an issue and include:
 
 ```bash
 journalctl -u pcscd.socket
 opensc-tool -l
 ```
 
-This helps diagnose reader issues, USB enumeration failures, and middleware problems.
+This helps diagnose reader detection, USB enumeration, and middleware issues.
