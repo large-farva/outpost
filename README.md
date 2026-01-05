@@ -1,10 +1,10 @@
+[![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
+
 <p align="center">
   <img src="assets/outpost-logo.svg" alt="Outpost logo" width="200" />
 </p>
 
 # Outpost
-
-[![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
 
 #### Working on implementing Chromium Flatpak support. Firefox has been removed.
 
@@ -86,7 +86,7 @@ Outpost includes all middleware and trust components required for CAC authentica
 * **Flatpak browsers are not supported**
 * **Chrome / Chromium CAC support** is planned (RPM version only)
 
-⚠️ *Outpost does not ship CACKey or proprietary vendor middleware. OpenSC is the supported and tested provider.*
+⚠️ *Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.*
 
 ## Troubleshooting
 
