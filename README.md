@@ -102,6 +102,12 @@ Outpost includes all middleware and trust components required for CAC authentica
 
 ## Troubleshooting
 
+### To verify CAC and Flatpak readiness
+
+```bash
+cac-check
+```
+
 ### Reader Not Detected
 
 ```bash

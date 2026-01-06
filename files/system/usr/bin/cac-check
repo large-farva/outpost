@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+say() { printf '%s\n' "$*"; }
+ok()  { printf '✅ %s\n' "$*"; }
+bad() { printf '❌ %s\n' "$*"; }
+warn(){ printf '⚠️  %s\n' "$*"; }
+
+say "Outpost CAC / Flatpak readiness check"
+say "-----------------------------------"
+
+# pcscd socket (system)
+if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
+  ok "pcscd.socket is enabled"
+else
+  bad "pcscd.socket is NOT enabled"
+fi
+
+if systemctl is-active pcscd.socket >/dev/null 2>&1; then
+  ok "pcscd.socket is active"
+else
+  warn "pcscd.socket is not active (it may activate on demand when a reader is used)"
+fi
+
+# p11-kit server socket (user)
+if systemctl --global --user is-enabled p11-kit-server.socket >/dev/null 2>&1; then
+  ok "p11-kit-server.socket is enabled globally for users"
+else
+  bad "p11-kit-server.socket is NOT enabled globally for users"
+fi
+
+if systemctl --user is-active p11-kit-server.socket >/dev/null 2>&1; then
+  ok "p11-kit-server.socket is active in this user session"
+else
+  warn "p11-kit-server.socket is not active (it is typically socket-activated on demand)"
+fi
+
+# Flatpak override for Chromium
+OVERRIDE="/etc/flatpak/overrides/org.chromium.Chromium"
+if [[ -f "$OVERRIDE" ]]; then
+  ok "Chromium Flatpak override exists: $OVERRIDE"
+  if grep -q "xdg-run/p11-kit/pkcs11" "$OVERRIDE"; then
+    ok "Override includes xdg-run/p11-kit/pkcs11"
+  else
+    bad "Override does NOT mention xdg-run/p11-kit/pkcs11"
+  fi
+else
+  bad "Chromium Flatpak override missing: $OVERRIDE"
+fi
+
+# Socket path (runtime)
+SOCK_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/p11-kit"
+SOCK_PATH="${SOCK_DIR}/pkcs11"
+if [[ -S "$SOCK_PATH" ]]; then
+  ok "PKCS#11 socket exists: $SOCK_PATH"
+else
+  warn "PKCS#11 socket not present at: $SOCK_PATH (will appear when p11-kit-server activates)"
+fi
+
+# OpenSC PKCS#11 library
+OPENSC="/usr/lib64/opensc-pkcs11.so"
+if [[ -f "$OPENSC" ]]; then
+  ok "OpenSC PKCS#11 library present: $OPENSC"
+else
+  warn "OpenSC PKCS#11 library not found at $OPENSC"
+fi
+
+say
+say "Tip: After boot, insert CAC and run:"
+say "  pcsc_scan"
+say "Then launch Chromium Flatpak and test a CAC-required site."

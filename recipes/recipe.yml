@@ -35,6 +35,9 @@ modules:
         - pcsc-tools
         - plymouth-plugin-script
         - unzip
+        - okular
+        - poppler
+        - poppler-utils
 
     remove:
       packages:
@@ -70,5 +73,6 @@ modules:
           - org.chromium.Chromium
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
-
+        remove:
+          - org.kde.okular
   - type: signing
