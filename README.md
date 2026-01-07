@@ -6,8 +6,8 @@
 
 # Outpost
 
-Outpost is a custom **Fedora Kinoite–based** immutable desktop image built with **BlueBuild**.  
-It extends the `ublue-os/kinoite-main` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
+Outpost is a custom **Universal Blue Aurora–based** immutable desktop image built with **BlueBuild**.  
+It extends the `ublue-os/aurora` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
 
 Outpost is designed for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
@@ -16,7 +16,7 @@ Outpost is designed for environments where **Common Access Card (CAC)** authenti
 ### DoD CAC support out of the box
 - `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `p11-kit`, `pcsc-tools`
 - `pcscd.socket` enabled for automatic activation
-- `p11-kit-server.socket` enabled for Flatpak PKCS#11 access
+- Opensc used as the supported PKCS#11 provider
 
 ### DoD trust anchors (vendored, auditable)
 - Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
@@ -24,23 +24,20 @@ Outpost is designed for environments where **Common Access Card (CAC)** authenti
 - Certificates are extracted, converted to PEM, and installed into the system trust store at build time
 - No network access required during image builds
 
-### Chromium Flatpak CAC support
-- **Chromium Flatpak** is supported via PKCS#11 socket passthrough
-- Targeted Flatpak override exposes the `p11-kit` socket only to Chromium
-- No global sandbox weakening
+### Firefox (RPM)
+- **Firefox** is installed as an **RPM**, not Flatpak
+- Uses NSS with full system PKCS#11 and CA trust integration
+- CAC certificate selection is handled correctly and reliably
 
 ### Curated Flatpak baseline
-- Chromium
-- Flatseal
-- Warehouse
+- Kontainer
 - OnlyOffice
 - Signal
-- Kontainer
-- Bazaar (package manager)
 
 ## Installation
 
-⚠️ You must rebase from Kinoite or a Kinoite-based image!
+⚠️ You must rebase from Aurora, Kinoite, or a Kinoite-based image!
+- Rebasing from Aurora is recommended
 
 ### 1. Bootstrap (unsigned image)
 ```bash
@@ -77,7 +74,7 @@ Outpost includes all middleware and trust components required for CAC authentica
 ### PKCS#11 Provider
 
 - `opensc` supplies the `opensc-pkcs11.so` module
-- Used by NSS-based applications and Chromium via `p11-kit`
+- Used by NSS-based applications such as Firefox and eventually Okular
 
 ### System Trust Store
 
@@ -95,8 +92,8 @@ Outpost includes all middleware and trust components required for CAC authentica
 
 ### Browser Support
 
-- **Chromium (Flatpak)**: supported with CAC
-- **Other Flatpak browsers**: not currentlysupported
+- **Firefox (RPM)**: supported with CAC
+- **Flatpak browsers**: not currently supported
 
 ⚠️ *Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.*
 
@@ -128,16 +125,15 @@ trust list | grep DoD
 sudo update-ca-trust
 ```
 
-### Chromium not seeing the CAC
+### Firefox not prompting for CAC
 
-- Verify the Flatpak override exists:
-```
-/etc/flatpak/overrides/org.chromium.Chromium
-```
+In Firefox:
 
-- Confirm the PKCS#11 socket:
-```bash
-systemctl --user status p11-kit-server.socket
+Settings > Privacy & Security > Certificates > Security Devices
+If required, load the OpenSC module manually:
+
+```
+/usr/lib64/opensc-pkcs11.so
 ```
 
 ### PC/SC Logs
@@ -155,11 +151,10 @@ journalctl -k | grep -i usb
 ## Roadmap
 
 ### Near-term
-- Okular groundwork for PDF signing with CAC
+- Okular validation for CAC PDF signing
 
 ### Longer-term
 - Optional hardened / enterprise configuration profile
-- TPM-backed trust integration (future Fedora work)
 
 ## Issues
 

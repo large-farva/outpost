@@ -11,24 +11,26 @@ CERTS_DIR="/usr/share/outpost/certs"
 CERTS_ZIP="${CERTS_DIR}/unclass-certificates_pkcs7_DoD.zip"
 CERTS_SHA256_FILE="${CERTS_DIR}/unclass-certificates_pkcs7_DoD.zip.sha256"
 
-[[ -s "$CERTS_ZIP" ]] || die "DoD cert ZIP not found or empty: $CERTS_ZIP"
+[[ -s "$CERTS_ZIP" ]] || die "DoD certificate ZIP not found or empty: $CERTS_ZIP"
 
 if [[ -s "$CERTS_SHA256_FILE" ]]; then
   (
     cd "$CERTS_DIR"
     sha256sum -c "$(basename "$CERTS_SHA256_FILE")" >/dev/null
-  ) || die "SHA256 verification failed for vendored DoD cert ZIP"
+  ) || die "SHA256 verification failed for vendored DoD certificate ZIP"
 fi
 
 command -v unzip >/dev/null || die "'unzip' not found"
+command -v openssl >/dev/null || die "'openssl' not found"
+command -v update-ca-trust >/dev/null || die "'update-ca-trust' not found"
 
 workdir="$(mktemp -d -t dodtrust.XXXXXXXX)" || die "Failed to create temp dir"
 trap 'rm -rf "$workdir"' EXIT
 
-unzip -q "$CERTS_ZIP" -d "$workdir/unzipped" || die "Failed to unzip DoD cert bundle"
+unzip -q "$CERTS_ZIP" -d "$workdir/unzipped" || die "Failed to unzip DoD certificate bundle"
 
 mapfile -t P7B_FILES < <(find "$workdir/unzipped" -type f -iname '*.p7b' || true)
-[[ ${#P7B_FILES[@]} -gt 0 ]] || die "No .p7b files found in DoD bundle"
+[[ ${#P7B_FILES[@]} -gt 0 ]] || die "No .p7b files found in DoD certificate bundle"
 
 combined_pem="$workdir/dod-trust-combined.pem"
 : > "$combined_pem"

@@ -2,8 +2,8 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
 name: outpost
-description: "Fedora Kinoite based image with built-in DoD CAC support."
-base-image: ghcr.io/ublue-os/kinoite-main
+description: "uBlue Aurora based image with built-in DoD CAC support (Firefox RPM supported)."
+base-image: ghcr.io/ublue-os/aurora
 image-version: latest
 
 modules:
@@ -11,7 +11,7 @@ modules:
     snippets:
       - |
         LABEL org.opencontainers.image.title="Outpost"
-        LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
+        LABEL org.opencontainers.image.description="uBlue Aurora based image with built-in DoD CAC support (Firefox RPM supported)."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
@@ -25,6 +25,7 @@ modules:
       packages:
         - ca-certificates
         - curl
+        - firefox
         - nss-tools
         - opensc
         - openssl
@@ -42,7 +43,7 @@ modules:
     remove:
       packages:
         - fedora-bookmarks
-        - fedora-chromium-config*
+        - sunshine
         - tmux
         - vim*
 
@@ -50,10 +51,6 @@ modules:
     system:
       enabled:
         - pcscd.socket
-
-    user:
-      enabled:
-        - p11-kit-server.socket
 
   - type: script
     scripts:
@@ -69,10 +66,10 @@ modules:
           - com.github.tchx84.Flatseal
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
-          - io.github.kolunmi.Bazaar
-          - org.chromium.Chromium
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
         remove:
           - org.kde.okular
+          - org.mozilla.firefox
+
   - type: signing

@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-say() { printf '%s\n' "$*"; }
 ok()  { printf '✅ %s\n' "$*"; }
 bad() { printf '❌ %s\n' "$*"; }
 warn(){ printf '⚠️  %s\n' "$*"; }
 
-say "Outpost CAC / Flatpak readiness check"
-say "-----------------------------------"
+printf '%s\n' "Outpost CAC readiness check (Firefox RPM path)"
+printf '%s\n' "--------------------------------------------"
 
 # pcscd socket (system)
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
@@ -22,50 +21,34 @@ else
   warn "pcscd.socket is not active (it may activate on demand when a reader is used)"
 fi
 
-# p11-kit server socket (user)
-if systemctl --global --user is-enabled p11-kit-server.socket >/dev/null 2>&1; then
-  ok "p11-kit-server.socket is enabled globally for users"
+# Firefox presence
+if command -v firefox >/dev/null 2>&1; then
+  ok "Firefox (RPM) is installed"
 else
-  bad "p11-kit-server.socket is NOT enabled globally for users"
+  bad "Firefox (RPM) is not installed"
 fi
 
-if systemctl --user is-active p11-kit-server.socket >/dev/null 2>&1; then
-  ok "p11-kit-server.socket is active in this user session"
+# OpenSC PKCS#11 library (common locations)
+OPENSC1="/usr/lib64/opensc-pkcs11.so"
+OPENSC2="/usr/lib64/pkcs11/opensc-pkcs11.so"
+
+if [[ -f "$OPENSC1" ]]; then
+  ok "OpenSC PKCS#11 library present: $OPENSC1"
+elif [[ -f "$OPENSC2" ]]; then
+  ok "OpenSC PKCS#11 library present: $OPENSC2"
 else
-  warn "p11-kit-server.socket is not active (it is typically socket-activated on demand)"
+  bad "OpenSC PKCS#11 library not found in expected locations"
 fi
 
-# Flatpak override for Chromium
-OVERRIDE="/etc/flatpak/overrides/org.chromium.Chromium"
-if [[ -f "$OVERRIDE" ]]; then
-  ok "Chromium Flatpak override exists: $OVERRIDE"
-  if grep -q "xdg-run/p11-kit/pkcs11" "$OVERRIDE"; then
-    ok "Override includes xdg-run/p11-kit/pkcs11"
-  else
-    bad "Override does NOT mention xdg-run/p11-kit/pkcs11"
-  fi
+# p11-kit module presence (helps NSS apps discover PKCS#11 providers)
+if ls /usr/share/p11-kit/modules/*.module >/dev/null 2>&1; then
+  ok "p11-kit module directory present"
 else
-  bad "Chromium Flatpak override missing: $OVERRIDE"
+  warn "p11-kit module directory not found (this may still work, but is unusual)"
 fi
 
-# Socket path (runtime)
-SOCK_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/p11-kit"
-SOCK_PATH="${SOCK_DIR}/pkcs11"
-if [[ -S "$SOCK_PATH" ]]; then
-  ok "PKCS#11 socket exists: $SOCK_PATH"
-else
-  warn "PKCS#11 socket not present at: $SOCK_PATH (will appear when p11-kit-server activates)"
-fi
-
-# OpenSC PKCS#11 library
-OPENSC="/usr/lib64/opensc-pkcs11.so"
-if [[ -f "$OPENSC" ]]; then
-  ok "OpenSC PKCS#11 library present: $OPENSC"
-else
-  warn "OpenSC PKCS#11 library not found at $OPENSC"
-fi
-
-say
-say "Tip: After boot, insert CAC and run:"
-say "  pcsc_scan"
-say "Then launch Chromium Flatpak and test a CAC-required site."
+printf '\n%s\n' "Tips:"
+printf '%s\n' "  1) Insert CAC and run: pcsc_scan"
+printf '%s\n' "  2) In Firefox: Settings → Privacy & Security → Certificates → Security Devices"
+printf '%s\n' "     If needed, load OpenSC module at:"
+printf '%s\n' "       /usr/lib64/opensc-pkcs11.so  (or /usr/lib64/pkcs11/opensc-pkcs11.so)"

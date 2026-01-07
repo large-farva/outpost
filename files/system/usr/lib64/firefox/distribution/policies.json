@@ -3,19 +3,31 @@
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
     "DisablePocket": true,
+    "DisableFeedbackCommands": true,
     "CaptivePortal": false,
-    "DNSOverHTTPS": { "Enabled": false, "Locked": true },
+    "DNSOverHTTPS": {
+      "Enabled": false,
+      "Locked": true
+    },
     "UseSystemPrintDialog": true,
     "PromptForDownloadLocation": true,
     "StartDownloadsInTempDirectory": true,
-
-    "Preferences": {
-      "security.default_personal_cert": { "Value": "Ask Every Time", "Status": "locked" }
-    },
-
     "OfferToSaveLogins": false,
     "PasswordManagerEnabled": false,
-    "DisableFeedbackCommands": true,
-    "DontCheckDefaultBrowser": true
+    "DontCheckDefaultBrowser": true,
+    "Preferences": {
+      "security.default_personal_cert": {
+        "Value": "Ask Every Time",
+        "Status": "locked"
+      },
+      "security.enterprise_roots.enabled": {
+        "Value": true,
+        "Status": "locked"
+      },
+      "security.tls.enable_0rtt_data": {
+        "Value": false,
+        "Status": "locked"
+      }
+    }
   }
 }
