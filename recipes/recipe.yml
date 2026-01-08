@@ -47,6 +47,8 @@ modules:
     remove:
       packages:
         - fedora-bookmarks
+        - kairpods
+        - openrazer*
         - Sunshine
         - tmux
         - vim*
