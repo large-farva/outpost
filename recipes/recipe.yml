@@ -27,7 +27,6 @@ modules:
     install:
       packages:
         - ca-certificates
-        - cosign
         - curl
         - firefox
         - nss-tools
