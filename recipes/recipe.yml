@@ -1,6 +1,9 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
+# Most packages and a couple Flatpaks are already installed by Aurora.
+# Keeping them here for documentation purposes for Kinoite migration.
+
 name: outpost
 description: "uBlue Aurora based image with built-in DoD CAC support (Firefox RPM supported)."
 base-image: ghcr.io/ublue-os/aurora
@@ -24,6 +27,7 @@ modules:
     install:
       packages:
         - ca-certificates
+        - cosign
         - curl
         - firefox
         - nss-tools
@@ -43,7 +47,7 @@ modules:
     remove:
       packages:
         - fedora-bookmarks
-        - sunshine
+        - Sunshine
         - tmux
         - vim*
 
@@ -51,6 +55,9 @@ modules:
     system:
       enabled:
         - pcscd.socket
+    user:
+      enabled:
+        - firefox-module.service
 
   - type: script
     scripts:
@@ -64,11 +71,13 @@ modules:
         scope: system
         install:
           - com.github.tchx84.Flatseal
+          - de.hohnstaedt.xca
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
         remove:
+          - com.ranfdev.DistroShelf
           - org.kde.okular
           - org.mozilla.firefox
 

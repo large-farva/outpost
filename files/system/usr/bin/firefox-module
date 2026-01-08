@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+MODULE_NAME="CAC Module"
+MODULE_PATH="/usr/lib64/pkcs11/opensc-pkcs11.so"
+
+MARKER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cac"
+MARKER_FILE="${MARKER_DIR}/firefox-cac.done"
+
+NSSDB_DIR="$HOME/.pki/nssdb"
+NSSDB="sql:${NSSDB_DIR}"
+
+if [[ -f "$MARKER_FILE" ]]; then
+  exit 0
+fi
+
+if [[ ! -f "$MODULE_PATH" ]]; then
+  exit 0
+fi
+
+command -v certutil >/dev/null 2>&1 || exit 0
+command -v modutil  >/dev/null 2>&1 || exit 0
+
+mkdir -p "$NSSDB_DIR" "$MARKER_DIR"
+
+if [[ ! -f "${NSSDB_DIR}/cert9.db" ]]; then
+  certutil -N -d "$NSSDB" --empty-password >/dev/null 2>&1 || exit 0
+fi
+if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "$MODULE_PATH"; then
+  : > "$MARKER_FILE"
+  exit 0
+fi
+
+modutil -add "$MODULE_NAME" \
+  -libfile "$MODULE_PATH" \
+  -dbdir "$NSSDB" \
+  -force >/dev/null 2>&1 || exit 0
+
+: > "$MARKER_FILE"
+exit 0

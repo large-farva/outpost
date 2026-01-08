@@ -6,6 +6,8 @@
 
 # Outpost
 
+### ⚠️ Work in progress!
+
 Outpost is a custom **Universal Blue Aurora–based** immutable desktop image built with **BlueBuild**.  
 It extends the `ublue-os/aurora` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
 
@@ -14,30 +16,29 @@ Outpost is designed for environments where **Common Access Card (CAC)** authenti
 ## Features
 
 ### DoD CAC support out of the box
-- `pcsc-lite`, `pcsc-lite-ccid`, `opensc`, `p11-kit`, `pcsc-tools`
+- `opensc`, `pcsc-lite`,`pcsc-tools`, `pcsc-lite-ccid`, `p11-kit`
 - `pcscd.socket` enabled for automatic activation
-- Opensc used as the supported PKCS#11 provider
+
+⚠️ Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.
 
 ### DoD trust anchors (vendored, auditable)
 - Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
 - ZIP filename is unchanged from the official distribution
 - Certificates are extracted, converted to PEM, and installed into the system trust store at build time
-- No network access required during image builds
 
 ### Firefox (RPM)
 - **Firefox** is installed as an **RPM**, not Flatpak
 - Uses NSS with full system PKCS#11 and CA trust integration
-- CAC certificate selection is handled correctly and reliably
 
 ### Curated Flatpak baseline
 - Kontainer
 - OnlyOffice
 - Signal
+- XCA
 
 ## Installation
 
-⚠️ You must rebase from Aurora, Kinoite, or a Kinoite-based image!
-- Rebasing from Aurora is recommended
+⚠️ You must rebase from Aurora, Kinoite, or a Kinoite-based image! Aurora is recommended.
 
 ### 1. Bootstrap (unsigned image)
 ```bash
@@ -95,8 +96,6 @@ Outpost includes all middleware and trust components required for CAC authentica
 - **Firefox (RPM)**: supported with CAC
 - **Flatpak browsers**: not currently supported
 
-⚠️ *Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.*
-
 ## Troubleshooting
 
 ### To verify CAC and Flatpak readiness
@@ -151,10 +150,10 @@ journalctl -k | grep -i usb
 ## Roadmap
 
 ### Near-term
-- Okular validation for CAC PDF signing
+- Getting Firefox to work with CAC without manual intervention
 
 ### Longer-term
-- Optional hardened / enterprise configuration profile
+- Okular support for CAC PDF signing
 
 ## Issues
 

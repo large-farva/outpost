@@ -5,10 +5,9 @@ ok()  { printf '✅ %s\n' "$*"; }
 bad() { printf '❌ %s\n' "$*"; }
 warn(){ printf '⚠️  %s\n' "$*"; }
 
-printf '%s\n' "Outpost CAC readiness check (Firefox RPM path)"
-printf '%s\n' "--------------------------------------------"
+printf '%s\n' "CAC readiness check"
+printf '%s\n' "-------------------------"
 
-# pcscd socket (system)
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
   ok "pcscd.socket is enabled"
 else
@@ -21,14 +20,6 @@ else
   warn "pcscd.socket is not active (it may activate on demand when a reader is used)"
 fi
 
-# Firefox presence
-if command -v firefox >/dev/null 2>&1; then
-  ok "Firefox (RPM) is installed"
-else
-  bad "Firefox (RPM) is not installed"
-fi
-
-# OpenSC PKCS#11 library (common locations)
 OPENSC1="/usr/lib64/opensc-pkcs11.so"
 OPENSC2="/usr/lib64/pkcs11/opensc-pkcs11.so"
 
@@ -38,13 +29,6 @@ elif [[ -f "$OPENSC2" ]]; then
   ok "OpenSC PKCS#11 library present: $OPENSC2"
 else
   bad "OpenSC PKCS#11 library not found in expected locations"
-fi
-
-# p11-kit module presence (helps NSS apps discover PKCS#11 providers)
-if ls /usr/share/p11-kit/modules/*.module >/dev/null 2>&1; then
-  ok "p11-kit module directory present"
-else
-  warn "p11-kit module directory not found (this may still work, but is unusual)"
 fi
 
 printf '\n%s\n' "Tips:"

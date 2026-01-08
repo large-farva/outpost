@@ -1,0 +1,11 @@
+[Unit]
+Description=Outpost: register OpenSC module for Firefox
+ConditionPathExists=!%h/.config/cac/firefox-cac.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/firefox-module
+SuccessExitStatus=0
+
+[Install]
+WantedBy=default.target
