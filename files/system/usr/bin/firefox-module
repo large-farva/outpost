@@ -11,22 +11,31 @@ MARKER_FILE="${MARKER_DIR}/firefox-cac.done"
 NSSDB_DIR="$HOME/.pki/nssdb"
 NSSDB="sql:${NSSDB_DIR}"
 
-if [[ -f "$MARKER_FILE" ]]; then
-  exit 0
-fi
+log() { logger -t firefox-module -- "$*"; }
+
+[[ -f "$MARKER_FILE" ]] && exit 0
 
 if [[ ! -f "$MODULE_PATH" ]]; then
+  log "OpenSC module missing at $MODULE_PATH"
   exit 0
 fi
 
-command -v certutil >/dev/null 2>&1 || exit 0
-command -v modutil  >/dev/null 2>&1 || exit 0
+if ! command -v certutil >/dev/null 2>&1; then
+  log "certutil not found"
+  exit 0
+fi
+
+if ! command -v modutil >/dev/null 2>&1; then
+  log "modutil not found"
+  exit 0
+fi
 
 mkdir -p "$NSSDB_DIR" "$MARKER_DIR"
 
 if [[ ! -f "${NSSDB_DIR}/cert9.db" ]]; then
-  certutil -N -d "$NSSDB" --empty-password >/dev/null 2>&1 || exit 0
+  certutil -N -d "$NSSDB" --empty-password >/dev/null 2>&1 || { log "certutil init failed"; exit 0; }
 fi
+
 if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "$MODULE_PATH"; then
   : > "$MARKER_FILE"
   exit 0
@@ -35,7 +44,7 @@ fi
 modutil -add "$MODULE_NAME" \
   -libfile "$MODULE_PATH" \
   -dbdir "$NSSDB" \
-  -force >/dev/null 2>&1 || exit 0
+  -force >/dev/null 2>&1 || { log "modutil add failed"; exit 0; }
 
 : > "$MARKER_FILE"
 exit 0

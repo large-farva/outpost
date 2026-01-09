@@ -1,7 +1,9 @@
-[![bluebuild build badge](https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg)](https://github.com/large-farva/outpost/actions/workflows/build.yml)
+<p align="center">
+  <img src="assets/outpost-logo.svg" alt="Outpost logo" width="300" />
+</p>
 
 <p align="center">
-  <img src="assets/outpost-logo.svg" alt="Outpost logo" width="200" />
+  <img src="https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg">
 </p>
 
 # Outpost
@@ -19,7 +21,7 @@ Outpost is designed for environments where **Common Access Card (CAC)** authenti
 - `opensc`, `pcsc-lite`,`pcsc-tools`, `pcsc-lite-ccid`, `p11-kit`
 - `pcscd.socket` enabled for automatic activation
 
-⚠️ Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.
+Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.
 
 ### DoD trust anchors (vendored, auditable)
 - Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
