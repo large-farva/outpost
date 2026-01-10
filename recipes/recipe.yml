@@ -5,7 +5,7 @@
 # Keeping them here for documentation purposes for Kinoite migration.
 
 name: outpost
-description: "uBlue Aurora based image with built-in DoD CAC support (Firefox RPM supported)."
+description: "uBlue Aurora based image with built-in DoD CAC support."
 base-image: ghcr.io/ublue-os/aurora
 image-version: latest
 
@@ -14,7 +14,7 @@ modules:
     snippets:
       - |
         LABEL org.opencontainers.image.title="Outpost"
-        LABEL org.opencontainers.image.description="uBlue Aurora based image with built-in DoD CAC support (Firefox RPM supported)."
+        LABEL org.opencontainers.image.description="uBlue Aurora based image with built-in DoD CAC support."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
@@ -29,8 +29,10 @@ modules:
         - ca-certificates
         - curl
         - firefox
+        - git
         - nss-tools
         - opensc
+        - opensc-tools
         - openssl
         - p11-kit
         - p11-kit-trust

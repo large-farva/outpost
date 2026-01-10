@@ -1,0 +1,16 @@
+[SddmGreeterTheme]
+Name=Outpost
+Description=Outpost Theme (fork of Breeze Aurora)
+Author=Outpost Contributors
+Copyright=(c) 2014, David Edmundson; Outpost modifications
+License=CC-BY-SA
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/large-farva/outpost
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Theme-Id=outpost
+Theme-API=2.0
+QtVersion=6
