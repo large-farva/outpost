@@ -1,0 +1,10 @@
+[Common]
+OutlineCloseButton=true
+OutlineIntensity=OutlineOff
+ShadowSize=ShadowMedium
+ShadowStrength=204
+
+[Windeco]
+ButtonSize=ButtonLarge
+DrawBackgroundGradient=true
+DrawBorderOnMaximizedWindows=true
