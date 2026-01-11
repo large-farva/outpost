@@ -1,31 +1,16 @@
 /*
     SPDX-FileCopyrightText: 2014 Marco Martin <mart@kde.org>
-
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
 import QtQuick
 import org.kde.kirigami 2 as Kirigami
-import Qt5Compat.GraphicalEffects
 
 Rectangle {
     id: root
     color: "black"
 
     property int stage
-
-    readonly property color outpostAccent: "#4c607a"
-
-    onStageChanged: {
-        if (stage == 2) {
-            introAnimation.running = true;
-        } else if (stage == 5) {
-            introAnimation.target = busyIndicator;
-            introAnimation.from = 1;
-            introAnimation.to = 0;
-            introAnimation.running = true;
-        }
-    }
 
     Item {
         id: content
@@ -37,35 +22,22 @@ Rectangle {
             readonly property real size: Kirigami.Units.gridUnit * 8
 
             anchors.centerIn: parent
-
             asynchronous: true
-            source: "/usr/share/pixmaps/outpost-logo.svg"
+            source: "images/outpost_logo.svgz"
 
             sourceSize.width: size
             sourceSize.height: size
         }
+    }
 
-        Image {
-            id: busyIndicator
-            y: parent.height - (parent.height - logo.y) / 2 - height/2
-            anchors.horizontalCenter: parent.horizontalCenter
-            asynchronous: true
-            source: "images/busywidget.svgz"
-            sourceSize.height: Kirigami.Units.gridUnit * 2
-            sourceSize.width: Kirigami.Units.gridUnit * 2
-
-            layer.enabled: true
-            layer.effect: ColorOverlay {
-                color: root.outpostAccent
-            }
-
-            RotationAnimator on rotation {
-                from: 0
-                to: 360
-                duration: 2000
-                loops: Animation.Infinite
-                running: Kirigami.Units.longDuration > 1
-            }
+    onStageChanged: {
+        if (stage == 2) {
+            introAnimation.running = true;
+        } else if (stage == 5) {
+            introAnimation.target = content;
+            introAnimation.from = 1;
+            introAnimation.to = 0;
+            introAnimation.running = true;
         }
     }
 
