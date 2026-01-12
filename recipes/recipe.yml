@@ -53,19 +53,6 @@ modules:
         - Sunshine
         - tmux
         - vim*
-
-  - type: systemd
-    system:
-      enabled:
-        - pcscd.socket
-    user:
-      enabled:
-        - firefox-module.service
-
-  - type: script
-    scripts:
-      - dod-trust.sh
-      - plymouth.sh
       
   - type: default-flatpaks
     configurations:
@@ -82,7 +69,20 @@ modules:
           - com.ranfdev.DistroShelf
           - org.kde.okular
           - org.mozilla.firefox
-  
+
+  - type: systemd
+    system:
+      enabled:
+        - pcscd.socket
+    user:
+      enabled:
+        - firefox-module.service
+
+  - type: script
+    scripts:
+      - dod-trust.sh
+      - plymouth.sh
+      
   - type: os-release
     properties:
       ID: outpost
