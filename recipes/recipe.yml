@@ -90,8 +90,6 @@ modules:
       ID_LIKE: fedora
       NAME: Outpost
       PRETTY_NAME: Outpost 43
-      VERSION: 43
-      VERSION_ID: 43
       VARIANT: CAC Workstation
       VARIANT_ID: cac-workstation
       VERSION_CODENAME: watchtower
