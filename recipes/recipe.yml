@@ -4,9 +4,12 @@
 # Most packages and a couple Flatpaks are already installed by Aurora.
 # Keeping them here for documentation purposes for Kinoite migration.
 
+# Using Nvidia based image for the time being.
+# TODO: offer multiple images for hardware compatability
+
 name: outpost
 description: "uBlue Aurora based image with built-in DoD CAC support."
-base-image: ghcr.io/ublue-os/aurora-nvidia
+base-image: ghcr.io/ublue-os/aurora-nvidia-open
 image-version: latest
 
 modules:
@@ -25,7 +28,7 @@ modules:
 
   - type: dnf
     install:
-      skip-unavailable: true
+      install-weak-deps: false
       packages:
         - ca-certificates
         - curl
@@ -70,6 +73,11 @@ modules:
           - org.kde.okular
           - org.mozilla.firefox
 
+  - type: script
+    scripts:
+      - dod-trust.sh
+      - plymouth.sh
+
   - type: systemd
     system:
       enabled:
@@ -78,28 +86,24 @@ modules:
       enabled:
         - firefox-module.service
 
-  - type: script
-    scripts:
-      - dod-trust.sh
-      - plymouth.sh
-      
   - type: os-release
     properties:
+      NAME: Outpost
       ID: outpost
       ID_LIKE: fedora
-      NAME: Outpost
-      PRETTY_NAME: Outpost 43
-      VARIANT: CAC Workstation
-      VARIANT_ID: cac-workstation
-      VERSION_CODENAME: watchtower
+      VERSION_CODENAME: Watchtower
+      PRETTY_NAME: Outpost 43 (Version: latest-43.20250112.1)
+      ANSI_COLOR: 
+      LOGO: outpost-logo
+      DEFAULT_HOSTNAME: outpost
       HOME_URL: https://github.com/large-farva/outpost
       DOCUMENTATION_URL: https://github.com/large-farva/outpost
       SUPPORT_URL: https://github.com/large-farva/outpost/issues
       BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
-      LOGO: outpost-logo
-      IMAGE_ID: outpost
-      IMAGE_VERSION: latest
-      DEFAULT_HOSTNAME: outpost
+      VARIANT: Kinoite
+      VARIANT_ID: outpost-nvidia
+      IMAGE_ID: outpost-nvidia
+      IMAGE_VERSION: latest-43.20250112.1
 
   - type: initramfs
   
