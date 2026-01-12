@@ -28,7 +28,6 @@ modules:
 
   - type: dnf
     install:
-      install-weak-deps: false
       packages:
         - ca-certificates
         - curl
@@ -73,11 +72,6 @@ modules:
           - org.kde.okular
           - org.mozilla.firefox
 
-  - type: script
-    scripts:
-      - dod-trust.sh
-      - plymouth.sh
-
   - type: systemd
     system:
       enabled:
@@ -86,23 +80,29 @@ modules:
       enabled:
         - firefox-module.service
 
+  - type: script
+    scripts:
+      - dod-trust.sh
+      - plymouth.sh
+
   - type: os-release
     properties:
       NAME: Outpost
       ID: outpost
       ID_LIKE: fedora
       VERSION_CODENAME: Watchtower
-      PRETTY_NAME: Outpost 43 (Version: latest-43.20250112.1)
+      PRETTY_NAME: Outpost 43 (Version: latest-43)
       LOGO: outpost-logo
       DEFAULT_HOSTNAME: outpost
+      VARIANT: Kinoite
+      VARIANT_ID: outpost-nvidia
+      IMAGE_ID: outpost-nvidia
+      IMAGE_VERSION: latest-43
+      
       HOME_URL: https://github.com/large-farva/outpost
       DOCUMENTATION_URL: https://github.com/large-farva/outpost
       SUPPORT_URL: https://github.com/large-farva/outpost/issues
       BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
-      VARIANT: Kinoite
-      VARIANT_ID: outpost-nvidia
-      IMAGE_ID: outpost-nvidia
-      IMAGE_VERSION: latest-43.20250112.1
 
   - type: initramfs
   
