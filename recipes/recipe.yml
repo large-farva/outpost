@@ -69,8 +69,11 @@ modules:
           - org.signal.Signal
         remove:
           - com.ranfdev.DistroShelf
+          - op.missioncenter.MissionCenter
+          - org.deskflow.desktop
           - org.kde.okular
           - org.mozilla.firefox
+          - org.mozilla.Thunderbird
 
   - type: systemd
     system:
