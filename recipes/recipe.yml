@@ -93,7 +93,6 @@ modules:
       ID_LIKE: fedora
       VERSION_CODENAME: Watchtower
       PRETTY_NAME: Outpost 43 (Version: latest-43.20250112.1)
-      ANSI_COLOR: 
       LOGO: outpost-logo
       DEFAULT_HOSTNAME: outpost
       HOME_URL: https://github.com/large-farva/outpost
