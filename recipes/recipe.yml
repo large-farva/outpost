@@ -91,7 +91,7 @@ modules:
       ID: outpost
       ID_LIKE: fedora
       VERSION_CODENAME: Watchtower
-      PRETTY_NAME: Outpost 43 (Version: latest-43)
+      PRETTY_NAME: Outpost 43
       LOGO: outpost-logo
       DEFAULT_HOSTNAME: outpost
       VARIANT: Kinoite
