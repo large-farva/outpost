@@ -33,7 +33,6 @@ modules:
         - git
         - nss-tools
         - opensc
-        - opensc-tools
         - openssl
         - p11-kit
         - p11-kit-trust
