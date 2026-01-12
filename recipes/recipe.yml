@@ -6,7 +6,7 @@
 
 name: outpost
 description: "uBlue Aurora based image with built-in DoD CAC support."
-base-image: ghcr.io/ublue-os/aurora
+base-image: ghcr.io/ublue-os/aurora-nvidia
 image-version: latest
 
 modules:
@@ -67,8 +67,7 @@ modules:
     scripts:
       - dod-trust.sh
       - plymouth.sh
-      - os-release.sh
-
+      
   - type: default-flatpaks
     configurations:
       - notify: true
@@ -84,5 +83,27 @@ modules:
           - com.ranfdev.DistroShelf
           - org.kde.okular
           - org.mozilla.firefox
+  
+  - type: os-release
+    properties:
+      ID: outpost
+      ID_LIKE: fedora
+      NAME: Outpost
+      PRETTY_NAME: Outpost 43
+      VERSION: 43
+      VERSION_ID: 43
+      VARIANT: CAC Workstation
+      VARIANT_ID: cac-workstation
+      VERSION_CODENAME: watchtower
+      HOME_URL: https://github.com/large-farva/outpost
+      DOCUMENTATION_URL: https://github.com/large-farva/outpost
+      SUPPORT_URL: https://github.com/large-farva/outpost/issues
+      BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
+      LOGO: outpost-logo
+      IMAGE_ID: outpost
+      IMAGE_VERSION: latest
+      DEFAULT_HOSTNAME: outpost
 
+  - type: initramfs
+  
   - type: signing
