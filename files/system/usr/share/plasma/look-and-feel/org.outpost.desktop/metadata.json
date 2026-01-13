@@ -1,18 +1,23 @@
 {
     "KPackageStructure": "Plasma/LookAndFeel",
     "KPlugin": {
-        "Id": "org.outpost.desktop",
-        "Name": "Outpost",
-        "Description": "Outpost Look and Feel",
-        "Version": "1.0",
-        "Website": "https://github.com/large-farva/outpost",
         "Authors": [
             {
-                "Name": "Outpost contributors"
+                "Email": "",
+                "Name": "Large Farva"
             }
         ],
-        "License": "GPL-2.0+",
-        "Category": "Plasma Look And Feel"
+        "Category": "",
+        "Description": "Outpost - Theme variant of KDE BreezeDark",
+        "Id": "org.outpost.desktop",
+        "License": "GPLv2+",
+        "Name": "Outpost",
+        "ServiceTypes": [
+            "Plasma/LookAndFeel"
+        ],
+        "Version": "0.01",
+        "Website": "https://github.com/large-farva/outpost"
     },
-    "X-Plasma-API": "2.0"
+    "X-KDE-ParentApp": "",
+    "X-Plasma-MainScript": "defaults"
 }

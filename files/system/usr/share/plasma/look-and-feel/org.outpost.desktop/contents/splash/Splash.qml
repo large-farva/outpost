@@ -1,5 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2014 Marco Martin <mart@kde.org>
+
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
@@ -12,6 +13,17 @@ Rectangle {
 
     property int stage
 
+    onStageChanged: {
+        if (stage == 2) {
+            introAnimation.running = true;
+        } else if (stage == 5) {
+            introAnimation.target = busyIndicator;
+            introAnimation.from = 1;
+            introAnimation.to = 0;
+            introAnimation.running = true;
+        }
+    }
+
     Item {
         id: content
         anchors.fill: parent
@@ -22,22 +34,30 @@ Rectangle {
             readonly property real size: Kirigami.Units.gridUnit * 8
 
             anchors.centerIn: parent
+
             asynchronous: true
             source: "images/outpost_logo.svgz"
 
             sourceSize.width: size
             sourceSize.height: size
         }
-    }
 
-    onStageChanged: {
-        if (stage == 2) {
-            introAnimation.running = true;
-        } else if (stage == 5) {
-            introAnimation.target = content;
-            introAnimation.from = 1;
-            introAnimation.to = 0;
-            introAnimation.running = true;
+        Image {
+            id: busyIndicator
+            y: parent.height - (parent.height - logo.y) / 2 - height/2
+            anchors.horizontalCenter: parent.horizontalCenter
+            asynchronous: true
+            source: "images/busywidget.svgz"
+            sourceSize.height: Kirigami.Units.gridUnit * 2
+            sourceSize.width: Kirigami.Units.gridUnit * 2
+            RotationAnimator on rotation {
+                id: rotationAnimator
+                from: 0
+                to: 360
+                duration: 2000
+                loops: Animation.Infinite
+                running: Kirigami.Units.longDuration > 1
+            }
         }
     }
 
