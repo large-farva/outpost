@@ -1,8 +1,0 @@
-[Plymouth Theme]
-Name=Outpost
-Description=Outpost Boot Theme
-ModuleName=script
-
-[Script]
-ImageDir=/usr/share/plymouth/themes/outpost
-ScriptFile=/usr/share/plymouth/themes/outpost.script
