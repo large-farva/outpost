@@ -1,22 +1,43 @@
 #!/usr/bin/env bash
-set -oue pipefail
+set -euo pipefail
+umask 022
 
-# Temperary solution for cleaning up branding form base image.
+# Temporary solution for cleaning up branding from base image.
+
+shopt -s nullglob
 
 # Remove Aurora and Fedora backgrounds
-rm -rf /usr/share/backgrounds/aurora/
-rm -rf /usr/share/backgrounds/f43/
-rm -rf /usr/share/backgrounds/fedora-workstation/
-rm -rf /usr/share/backgrounds/images/
+rm -rf /usr/share/backgrounds/aurora/ \
+       /usr/share/backgrounds/f43/ \
+       /usr/share/backgrounds/fedora-workstation/ \
+       /usr/share/backgrounds/images/ || true
 
-# Remove Aurora's other watermark in Spinner plymouth theme.
-rm /usr/share/plymouth/themes/spinner/kinoite-watermark.png
+# Remove Aurora's watermark in Spinner plymouth theme.
+rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
 
 # Remove Aurora's icons
-rm /usr/share/icons/hicolor/scalable/places/auroralogo*
+rm -f /usr/share/icons/hicolor/scalable/places/auroralogo* || true
 
 # Remove Aurora's autostart entries that don't apply to Outpost
-rm /etc/xdg/autostart/orca-autostart.desktop
-rm /etc/xdg/autostart/vboxclient.desktop
-rm /etc/xdg/autostart/vmware-user.desktop
+rm -f /etc/xdg/autostart/orca-autostart.desktop \
+      /etc/xdg/autostart/vboxclient.desktop \
+      /etc/xdg/autostart/vmware-user.desktop || true
 
+# Remove Aurora's avatars
+rm -f /usr/share/plasma/avatars/*.png || true
+
+# Remove Aurora's look-and-feel package (base theme)
+rm -rf /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/ || true
+
+# Remove Aurora's SDDM theme
+rm -rf /usr/share/sddm/themes/01-breeze-aurora/ || true
+
+# Remove Aurora's background symlinks
+ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
+       /usr/share/backgrounds/default.jxl
+
+ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
+       /usr/share/backgrounds/default-dark.jxl
+
+ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
+       /usr/share/backgrounds/default-light.jxl

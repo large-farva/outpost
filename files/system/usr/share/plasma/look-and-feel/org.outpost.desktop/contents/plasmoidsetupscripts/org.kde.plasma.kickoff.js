@@ -1,3 +1,3 @@
 applet.currentConfigGroup = ["General"]
-applet.writeConfig("icon", "distributor-logo-symbolic")
+applet.writeConfig("icon", "menu")
 applet.reloadConfig()

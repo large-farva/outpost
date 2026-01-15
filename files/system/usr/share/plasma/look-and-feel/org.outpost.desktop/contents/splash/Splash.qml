@@ -36,7 +36,7 @@ Rectangle {
             anchors.centerIn: parent
 
             asynchronous: true
-            source: "images/outpost_logo.svgz"
+            source: "images/outpost-logo.svg"
 
             sourceSize.width: size
             sourceSize.height: size
