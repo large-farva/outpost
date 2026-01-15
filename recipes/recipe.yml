@@ -86,8 +86,8 @@ modules:
   - type: script
     scripts:
       - dod-trust.sh
-      - plymouth.sh
-
+      - cleanup.sh
+      
   - type: os-release
     properties:
       NAME: Outpost
