@@ -5,6 +5,7 @@
 # Keeping them here for documentation purposes for Kinoite migration.
 
 # Using Nvidia based image for the time being.
+
 # TODO: offer multiple images for hardware compatability
 
 name: outpost
@@ -34,6 +35,7 @@ modules:
         - firefox
         - git
         - nss-tools
+        - okular
         - opensc
         - openssl
         - p11-kit
@@ -41,11 +43,9 @@ modules:
         - pcsc-lite
         - pcsc-lite-ccid
         - pcsc-tools
-        - plymouth-plugin-script
-        - unzip
-        - okular
         - poppler
         - poppler-utils
+        - unzip
 
     remove:
       packages:
@@ -87,7 +87,7 @@ modules:
     scripts:
       - dod-trust.sh
       - cleanup.sh
-      
+
   - type: os-release
     properties:
       NAME: Outpost
