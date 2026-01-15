@@ -13,7 +13,7 @@ rm -rf /usr/share/backgrounds/images/
 rm /usr/share/plymouth/themes/spinner/kinoite-watermark.png
 
 # Remove Aurora's icons
-rm /usr/share/icons/hicolor/scalable/places/auroalogo*
+rm /usr/share/icons/hicolor/scalable/places/auroralogo*
 
 # Remove Aurora's autostart entries that don't apply to Outpost
 rm /etc/xdg/autostart/orca-autostart.desktop
