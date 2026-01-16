@@ -1,9 +1,3 @@
-/*
-    SPDX-FileCopyrightText: 2014 Marco Martin <mart@kde.org>
-
-    SPDX-License-Identifier: GPL-2.0-or-later
-*/
-
 import QtQuick
 import org.kde.kirigami 2 as Kirigami
 
@@ -34,12 +28,15 @@ Rectangle {
             readonly property real size: Kirigami.Units.gridUnit * 8
 
             anchors.centerIn: parent
-
             asynchronous: true
-            source: "images/outpost-logo.svg"
+            source: "images/logo.png"
 
-            sourceSize.width: size
-            sourceSize.height: size
+            width: size
+            height: size
+            fillMode: Image.PreserveAspectFit
+
+            smooth: true
+            mipmap: true
         }
 
         Image {

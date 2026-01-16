@@ -1,0 +1,7 @@
+[Daemon]
+LockGrace=10
+Timeout=5
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/wallpapers/Outpost/
+PreviewImage=file:///usr/share/wallpapers/Outpost/
