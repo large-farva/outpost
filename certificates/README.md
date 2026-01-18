@@ -21,5 +21,5 @@ This directory contains the DoD PKI CA certificate bundle used by Outpost to ena
 
 From this directory:
 
-```sh
+``` sh
 sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256
