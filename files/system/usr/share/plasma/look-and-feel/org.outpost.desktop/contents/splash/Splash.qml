@@ -26,17 +26,11 @@ Rectangle {
         Image {
             id: logo
             readonly property real size: Kirigami.Units.gridUnit * 8
-
             anchors.centerIn: parent
             asynchronous: true
             source: "images/logo.png"
-
             width: size
             height: size
-            fillMode: Image.PreserveAspectFit
-
-            smooth: true
-            mipmap: true
         }
 
         Image {

@@ -46,7 +46,6 @@ modules:
         - poppler
         - poppler-utils
         - unzip
-
     remove:
       packages:
         - fedora-bookmarks

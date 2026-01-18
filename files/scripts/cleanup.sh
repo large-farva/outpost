@@ -27,7 +27,8 @@ rm -f /etc/xdg/autostart/orca-autostart.desktop \
 rm -f /usr/share/plasma/avatars/*.png || true
 
 # Remove look-and-feel package (base theme)
-rm -rf /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/ || true
+rm -rf /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/ \
+       /usr/share/plasma/look-and-feel/dev.getaurora.auroralight.desktop/ || true
 
 # Remove SDDM theme
 rm -rf /usr/share/sddm/themes/01-breeze-aurora/ || true
@@ -89,3 +90,6 @@ rm -f /usr/share/ublue-os/bazaar-install-count \
 
 # Remove motd tips
 rm -rf /usr/share/ublue-os/motd/tips/
+
+# Remove Aurora offline docs
+rm -rf /usr/share/doc/aurora/
