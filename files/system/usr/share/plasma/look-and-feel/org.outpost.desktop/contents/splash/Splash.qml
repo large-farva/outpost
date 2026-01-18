@@ -29,8 +29,8 @@ Rectangle {
             anchors.centerIn: parent
             asynchronous: true
             source: "images/logo.png"
-            sourceSize.width: 1024
-            sourceSize.height: 1024
+            sourceSize.width: 130
+            sourceSize.height: 130
             fillMode: Image.PreserveAspectFit
             smooth: true
             mipmap: true
