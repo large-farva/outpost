@@ -1,0 +1,9 @@
+{
+    "image-name": "outpost",
+    "image-flavor": "nvidia",
+    "image-vendor": "large-farva",
+    "image-ref": "ghcr.io/large-farva/outpost-nvidia",
+    "image-tag": "latest",
+    "fedora-version": "43",
+    "base-image": "kinoite"
+}

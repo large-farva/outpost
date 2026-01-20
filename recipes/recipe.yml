@@ -1,24 +1,21 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-# Most packages and a couple Flatpaks are already installed by Aurora.
-# Keeping them here for documentation purposes for Kinoite migration.
-
-# Using Nvidia based image for the time being.
+# Working on Kinoite migration.
 
 # TODO: offer multiple images for hardware compatability
 
 name: outpost
-description: "uBlue Aurora based image with built-in DoD CAC support."
-base-image: ghcr.io/ublue-os/aurora-nvidia-open
-image-version: latest
+description: "Fedora Kinoite based image with built-in DoD CAC support."
+base-image: quay.io/fedora-ostree-desktops/kinoite
+image-version: 43
 
 modules:
   - type: containerfile
     snippets:
       - |
         LABEL org.opencontainers.image.title="Outpost"
-        LABEL org.opencontainers.image.description="uBlue Aurora based image with built-in DoD CAC support."
+        LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
 
@@ -28,12 +25,18 @@ modules:
         destination: /
 
   - type: dnf
+    repos:
+      copr:
+        - atim/starship
     install:
       packages:
         - ca-certificates
         - curl
+        - distrobox
         - firefox
+        - gettext
         - git
+        - jq
         - nss-tools
         - okular
         - opensc
@@ -45,15 +48,13 @@ modules:
         - pcsc-tools
         - poppler
         - poppler-utils
+        - starship
         - unzip
     remove:
       packages:
         - fedora-bookmarks
-        - kairpods
-        - openrazer*
-        - Sunshine
-        - tmux
-        - vim*
+        - fedora-release-toolbx
+        - toolbox
       
   - type: default-flatpaks
     configurations:
@@ -67,17 +68,20 @@ modules:
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
         remove:
-          - com.ranfdev.DistroShelf
-          - op.missioncenter.MissionCenter
-          - org.deskflow.desktop
           - org.kde.okular
           - org.mozilla.firefox
           - org.mozilla.Thunderbird
+  
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - AdwaitaMono
 
   - type: systemd
     system:
       enabled:
         - pcscd.socket
+        - outpost-motd.service
     user:
       enabled:
         - firefox-module.service
@@ -97,8 +101,8 @@ modules:
       LOGO: outpost-logo
       DEFAULT_HOSTNAME: outpost
       VARIANT: Kinoite
-      VARIANT_ID: outpost-nvidia
-      IMAGE_ID: outpost-nvidia
+      VARIANT_ID: outpost
+      IMAGE_ID: outpost
       IMAGE_VERSION: latest-43
       
       HOME_URL: https://github.com/large-farva/outpost

@@ -87,9 +87,3 @@ ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
 # Remove bazaar-install-count and fastetch-user-count
 rm -f /usr/share/ublue-os/bazaar-install-count \
       /usr/share/ublue-os/fastetch-user-count || true
-
-# Remove motd tips
-rm -rf /usr/share/ublue-os/motd/tips/
-
-# Remove Aurora offline docs
-rm -rf /usr/share/doc/aurora/
