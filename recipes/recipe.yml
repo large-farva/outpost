@@ -33,6 +33,7 @@ modules:
         - ca-certificates
         - curl
         - distrobox
+        - fastfetch
         - firefox
         - gettext
         - git
@@ -76,6 +77,7 @@ modules:
     fonts:
       nerd-fonts:
         - AdwaitaMono
+        - NerdFontsSymbolsOnly
 
   - type: systemd
     system:
