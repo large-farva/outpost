@@ -30,31 +30,17 @@ modules:
         - atim/starship
     install:
       packages:
-        - ca-certificates
-        - curl
         - distrobox
         - fastfetch
-        - firefox
         - gettext
         - git
-        - jq
         - nss-tools
         - okular
-        - opensc
-        - openssl
-        - p11-kit
-        - p11-kit-trust
-        - pcsc-lite
-        - pcsc-lite-ccid
         - pcsc-tools
-        - poppler
-        - poppler-utils
         - starship
-        - unzip
     remove:
       packages:
         - fedora-bookmarks
-        - fedora-release-toolbx
         - toolbox
       
   - type: default-flatpaks
@@ -70,7 +56,6 @@ modules:
           - org.signal.Signal
         remove:
           - org.kde.okular
-          - org.mozilla.firefox
           - org.mozilla.Thunderbird
   
   - type: fonts

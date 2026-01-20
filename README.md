@@ -10,8 +10,8 @@
 
 ### ⚠️ Work in progress!
 
-Outpost is a custom **Universal Blue Aurora–based** immutable desktop image built with **BlueBuild**.  
-It extends the `ublue-os/aurora` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
+Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.  
+It extends the `fedora-ostree-desktops/kinoite` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
 
 Outpost is designed for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
@@ -40,7 +40,7 @@ Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC 
 
 ## Installation
 
-⚠️ You must rebase from Aurora, Kinoite, or a Kinoite-based image! Aurora is recommended.
+⚠️ You must rebase from Kinoite or a Kinoite-based image! Kinoite is recommended.
 
 ### 1. Bootstrap (unsigned image)
 ```bash

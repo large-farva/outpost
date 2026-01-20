@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE_REF="ostree-unverified-registry:ghcr.io/large-farva/outpost:latest"
+
+require_root() {
+  if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+    if command -v sudo >/dev/null 2>&1; then
+      exec sudo -E "$0" "$@"
+    fi
+    echo "Error: outpost-update must be run as root (sudo)." >&2
+    exit 1
+  fi
+}
+
+main() {
+  require_root "$@"
+
+  if ! command -v rpm-ostree >/dev/null 2>&1; then
+    echo "Error: rpm-ostree not found." >&2
+    exit 1
+  fiup
+
+  echo "Outpost update: rebasing to ${IMAGE_REF}"
+  rpm-ostree rebase "${IMAGE_REF}"
+
+  echo
+  echo "Update staged."
+  echo "Reboot to apply: sudo systemctl reboot"
+}
+
+main "$@"
