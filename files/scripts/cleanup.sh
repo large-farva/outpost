@@ -7,31 +7,23 @@ umask 022
 shopt -s nullglob
 
 # Remove backgrounds
-rm -rf /usr/share/backgrounds/aurora/ \
-       /usr/share/backgrounds/f43/ \
+rm -rf /usr/share/backgrounds/f43/ \
        /usr/share/backgrounds/fedora-workstation/ \
        /usr/share/backgrounds/images/ || true
 
 # Remove watermark in Spinner plymouth theme.
 rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
 
-# Remove icons
-rm -f /usr/share/icons/hicolor/scalable/places/auroralogo* || true
-
-# Remove autostart entries that don't apply to Outpost
-rm -f /etc/xdg/autostart/orca-autostart.desktop \
-      /etc/xdg/autostart/vboxclient.desktop \
-      /etc/xdg/autostart/vmware-user.desktop || true
-
 # Remove avatars
 rm -f /usr/share/plasma/avatars/*.png || true
 
 # Remove look-and-feel package (base theme)
-rm -rf /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/ \
-       /usr/share/plasma/look-and-feel/dev.getaurora.auroralight.desktop/ || true
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
+       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
+       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
 
 # Remove SDDM theme
-rm -rf /usr/share/sddm/themes/01-breeze-aurora/ || true
+rm -rf /usr/share/sddm/themes/01-breeze-fedora/ || true
 
 # Remove wallpapers
 rm -rf /usr/share/wallpapers/Altai/ \
@@ -83,7 +75,3 @@ ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
 
 ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
        /usr/share/backgrounds/default-light.jxl
-
-# Remove bazaar-install-count and fastetch-user-count
-rm -f /usr/share/ublue-os/bazaar-install-count \
-      /usr/share/ublue-os/fastetch-user-count || true

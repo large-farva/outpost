@@ -1,32 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE_REF="ostree-unverified-registry:ghcr.io/large-farva/outpost:latest"
+# Pick the active "automatic updates" unit name, if present
+if systemctl cat --quiet uupd.timer &>/dev/null; then
+  SERVICE="uupd.service"
+else
+  SERVICE="rpm-ostreed-automatic.service"
+fi
 
-require_root() {
-  if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-    if command -v sudo >/dev/null 2>&1; then
-      exec sudo -E "$0" "$@"
-    fi
-    echo "Error: outpost-update must be run as root (sudo)." >&2
-    exit 1
+if systemctl is-active --quiet "$SERVICE"; then
+  echo "automatic updates are currently running, use \`journalctl -fexu $SERVICE\` to see logs"
+  exit 1
+fi
+
+if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+  if command -v sudo >/dev/null 2>&1; then
+    exec sudo -E "$0" "$@"
   fi
-}
+  echo "Error: sudo is required to update the OS (rpm-ostree). Install sudo or run as root." >&2
+  exit 1
+fi
 
-main() {
-  require_root "$@"
+echo "Updating OS (rpm-ostree)..."
+rpm-ostree upgrade
 
-  if ! command -v rpm-ostree >/dev/null 2>&1; then
-    echo "Error: rpm-ostree not found." >&2
-    exit 1
-  fiup
+if command -v flatpak >/dev/null 2>&1; then
+  if flatpak --system remotes >/dev/null 2>&1 && [[ -n "$(flatpak --system remotes 2>/dev/null | awk 'NF{print; exit}')" ]]; then
+    echo "Updating system Flatpaks..."
+    flatpak --system update -y
+  fi
 
-  echo "Outpost update: rebasing to ${IMAGE_REF}"
-  rpm-ostree rebase "${IMAGE_REF}"
+  TARGET_USER="${SUDO_USER:-}"
+  if [[ -n "$TARGET_USER" ]]; then
+    if sudo -u "$TARGET_USER" flatpak --user remotes >/dev/null 2>&1 \
+      && [[ -n "$(sudo -u "$TARGET_USER" flatpak --user remotes 2>/dev/null | awk 'NF{print; exit}')" ]]; then
+      echo "Updating user Flatpaks for $TARGET_USER..."
+      sudo -u "$TARGET_USER" flatpak --user update -y
+    fi
+  fi
+fi
 
-  echo
-  echo "Update staged."
-  echo "Reboot to apply: sudo systemctl reboot"
-}
+TARGET_USER="${SUDO_USER:-}"
+if [[ -n "$TARGET_USER" ]] && [[ -x "/var/home/$TARGET_USER/.linuxbrew/bin/brew" ]]; then
+  echo "Updating Homebrew packages for $TARGET_USER..."
+  sudo -u "$TARGET_USER" "/var/home/$TARGET_USER/.linuxbrew/bin/brew" upgrade || true
+fi
 
-main "$@"
+echo
+echo "Update staged. Reboot to apply: systemctl reboot"

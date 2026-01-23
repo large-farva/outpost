@@ -1,38 +1,86 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ok()  { printf '✅ %s\n' "$*"; }
-bad() { printf '❌ %s\n' "$*"; }
-warn(){ printf '⚠️  %s\n' "$*"; }
+ok()   { printf ' %s\n' "$*"; }
+bad()  { printf ' %s\n' "$*"; }
+warn() { printf ' %s\n' "$*"; }
 
-printf '%s\n' "CAC readiness check"
-printf '%s\n' "-------------------------"
+have() { command -v "$1" >/dev/null 2>&1; }
 
+title() {
+  printf '%s\n' "CAC readiness check"
+  printf '%s\n' "-------------------------"
+}
+
+fail=0
+title
+
+# 1) pcscd
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
-  ok "pcscd.socket is enabled"
+  ok "pcscd.socket enabled"
 else
-  bad "pcscd.socket is NOT enabled"
+  bad "pcscd.socket NOT enabled"
+  fail=1
 fi
 
 if systemctl is-active pcscd.socket >/dev/null 2>&1; then
-  ok "pcscd.socket is active"
+  ok "pcscd.socket active"
 else
-  warn "pcscd.socket is not active (it may activate on demand when a reader is used)"
+  warn "pcscd.socket not active (may activate on demand)"
 fi
 
-OPENSC1="/usr/lib64/opensc-pkcs11.so"
-OPENSC2="/usr/lib64/pkcs11/opensc-pkcs11.so"
+if systemctl list-unit-files pcscd.service >/dev/null 2>&1; then
+  if systemctl is-active pcscd.service >/dev/null 2>&1; then
+    ok "pcscd.service active"
+  else
+    warn "pcscd.service not active (socket activation may be used instead)"
+  fi
+fi
 
-if [[ -f "$OPENSC1" ]]; then
-  ok "OpenSC PKCS#11 library present: $OPENSC1"
-elif [[ -f "$OPENSC2" ]]; then
-  ok "OpenSC PKCS#11 library present: $OPENSC2"
+# 2) OpenSC PKCS#11 library path
+OPENSC_LIB=""
+for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
+  if [[ -f "$p" ]]; then OPENSC_LIB="$p"; break; fi
+done
+
+if [[ -n "$OPENSC_LIB" ]]; then
+  ok "OpenSC PKCS#11 present: $OPENSC_LIB"
 else
-  bad "OpenSC PKCS#11 library not found in expected locations"
+  bad "OpenSC PKCS#11 library not found"
+  fail=1
+fi
+
+# 3) p11-kit visibility
+if have p11-kit && [[ -n "$OPENSC_LIB" ]]; then
+  if p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
+    ok "p11-kit sees OpenSC module"
+  else
+    warn "p11-kit does NOT list OpenSC (may still work via NSS direct load)"
+  fi
+fi
+
+# 4) DoD trust bundle anchor
+ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
+if [[ -f "$ANCHOR" ]]; then
+  ok "DoD trust anchor installed: $ANCHOR"
+else
+  bad "DoD trust anchor missing: $ANCHOR"
+  fail=1
+fi
+
+# 5) Trust store contains DoD roots
+if have trust; then
+  if trust list 2>/dev/null | grep -qi -m 1 'dod '; then
+    ok "System trust contains DoD entries"
+  else
+    warn "No obvious DoD entries found in trust list"
+  fi
 fi
 
 printf '\n%s\n' "Tips:"
-printf '%s\n' "  1) Insert CAC and run: pcsc_scan"
-printf '%s\n' "  2) In Firefox: Settings → Privacy & Security → Certificates → Security Devices"
-printf '%s\n' "     If needed, load OpenSC module at:"
-printf '%s\n' "       /usr/lib64/opensc-pkcs11.so  (or /usr/lib64/pkcs11/opensc-pkcs11.so)"
+printf '%s\n' "  - Insert CAC and run: pcsc_scan"
+printf '%s\n' "  - OpenSC reader list: opensc-tool -l"
+printf '%s\n' "  - In Firefox: Settings → Privacy & Security → Certificates → Security Devices"
+printf '%s\n' "    If needed, load OpenSC module from: ${OPENSC_LIB:-/usr/lib64/pkcs11/opensc-pkcs11.so}"
+
+exit "$fail"

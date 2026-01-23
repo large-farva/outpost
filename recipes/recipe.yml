@@ -32,8 +32,10 @@ modules:
       packages:
         - distrobox
         - fastfetch
+        - figlet
         - gettext
         - git
+        - lolcat
         - nss-tools
         - okular
         - pcsc-tools
@@ -41,6 +43,10 @@ modules:
     remove:
       packages:
         - fedora-bookmarks
+        - firewall-config
+        - kcharselect
+        - khelpcenter
+        - plasma-welcome
         - toolbox
       
   - type: default-flatpaks
@@ -52,6 +58,7 @@ modules:
           - de.hohnstaedt.xca
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
+          - org.kde.kate
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
         remove:
@@ -61,7 +68,6 @@ modules:
   - type: fonts
     fonts:
       nerd-fonts:
-        - AdwaitaMono
         - NerdFontsSymbolsOnly
 
   - type: systemd

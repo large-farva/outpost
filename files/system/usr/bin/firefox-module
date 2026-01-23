@@ -2,6 +2,9 @@
 set -euo pipefail
 umask 077
 
+# p11-kit-proxy is taking over for some reason, so we can't add CAC Module.
+# If p11-kit-proxy is present, we're good, but it's still annoying. Working on it.
+
 MODULE_NAME="CAC Module"
 OPENSC_MODULE_PATH="/usr/lib64/pkcs11/opensc-pkcs11.so"
 

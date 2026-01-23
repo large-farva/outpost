@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+set -eu
+
+MOTD_DIR="/usr/share/outpost/motd"
+ENV_FILE="${MOTD_DIR}/env.sh"
+TEMPLATE_MD="${MOTD_DIR}/template.md"
+
+if [ -z "${MOTD_IMAGE_INFO_FILE:-}" ] && [ -r "/usr/share/outpost/image-info.json" ]; then
+  export MOTD_IMAGE_INFO_FILE="/usr/share/outpost/image-info.json"
+fi
+
+[ -r "$ENV_FILE" ] && . "$ENV_FILE"
+
+if command -v envsubst >/dev/null 2>&1 && [ -r "$TEMPLATE_MD" ]; then
+  envsubst < "$TEMPLATE_MD"
+fi
