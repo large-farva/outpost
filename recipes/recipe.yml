@@ -81,7 +81,10 @@ modules:
       enabled:
         - firefox-module.service
 
-  - type: dod-trust
+  - type: script
+    scripts:
+      - dod-trust.sh
+      - cleanup.sh
 
   - type: os-release
     properties:
@@ -102,10 +105,6 @@ modules:
       SUPPORT_URL: https://github.com/large-farva/outpost/issues
       BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
   
-  - type: script
-    scripts:
-      - cleanup.sh
-
   - type: initramfs
   
   - type: signing
