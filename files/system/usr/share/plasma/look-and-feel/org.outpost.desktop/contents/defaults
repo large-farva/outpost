@@ -8,19 +8,17 @@ ColorScheme=Outpost
 Theme=breeze-dark
 
 [plasmarc][Theme]
-name=default
+name=breeze-dark
+
+[Wallpaper]
+Image=Outpost
 
 [kcminputrc][Mouse]
 cursorTheme=breeze_cursors
 
-[kwinrc][WindowSwitcher]
-LayoutName=org.kde.breeze.desktop
-
-[kwinrc][DesktopSwitcher]
-LayoutName=org.kde.breeze.desktop
-
 [kwinrc][org.kde.kdecoration2]
 library=org.kde.breeze
+theme=Breeze
 
 [KSplash]
 Theme=org.outpost.desktop

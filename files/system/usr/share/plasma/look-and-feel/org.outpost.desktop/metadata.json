@@ -4,11 +4,11 @@
         "Authors": [
             {
                 "Email": "",
-                "Name": "Large Farva"
+                "Name": "large-farva"
             }
         ],
         "Category": "",
-        "Description": "Outpost - Theme variant of KDE BreezeDark",
+        "Description": "Outpost - Theme variant of KDE Breeze Dark",
         "Id": "org.outpost.desktop",
         "License": "GPLv2+",
         "Name": "Outpost",
@@ -18,6 +18,6 @@
         "Version": "0.01",
         "Website": "https://github.com/large-farva/outpost"
     },
-    "X-KDE-ParentApp": "",
+    "X-KDE-ParentApp": "org.kde.breezedark.desktop",
     "X-Plasma-MainScript": "defaults"
 }
