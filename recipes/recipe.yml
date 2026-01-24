@@ -46,6 +46,7 @@ modules:
         - firewall-config
         - kcharselect
         - khelpcenter
+        - plasma-discover
         - plasma-welcome
         - toolbox
       
