@@ -11,7 +11,7 @@
 ### ⚠️ Work in progress!
 
 Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.  
-It extends the `fedora-ostree-desktops/kinoite` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
+It extends the `fedora-ostree-desktops/kinoite:43` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
 
 Outpost is designed for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
 
