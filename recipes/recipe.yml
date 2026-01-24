@@ -76,7 +76,6 @@ modules:
     system:
       enabled:
         - pcscd.socket
-        - outpost-motd.service
     user:
       enabled:
         - firefox-module.service
