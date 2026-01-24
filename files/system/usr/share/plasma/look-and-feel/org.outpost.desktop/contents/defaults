@@ -20,5 +20,11 @@ cursorTheme=breeze_cursors
 library=org.kde.breeze
 theme=Breeze
 
+[kwinrc][WindowSwitcher]
+LayoutName=org.kde.breeze.desktop
+
+[kwinrc][DesktopSwitcher]
+LayoutName=org.kde.breeze.desktop
+
 [KSplash]
 Theme=org.outpost.desktop
