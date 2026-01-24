@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Pick the active "automatic updates" unit name, if present
 if systemctl cat --quiet uupd.timer &>/dev/null; then
   SERVICE="uupd.service"
 else

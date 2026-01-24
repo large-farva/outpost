@@ -8,11 +8,9 @@
 # /etc/profile.d/ to make custom changes to your environment, as this
 # will prevent the need for merging in future updates.
 
-# Prevent doublesourcing
 if [ -z "$BASHRCSOURCED" ]; then
   BASHRCSOURCED="Y"
 
-  # are we an interactive shell?
   if [ "$PS1" ]; then
     if [ -z "$PROMPT_COMMAND" ]; then
       declare -a PROMPT_COMMAND
@@ -36,23 +34,19 @@ if [ -z "$BASHRCSOURCED" ]; then
         ;;
       esac
     fi
-    # Turn on parallel history
+    
     shopt -s histappend
-    # Turn on checkwinsize
+    
     shopt -s checkwinsize
-    # Change the default prompt string
+    
     [ "$PS1" = "\\s-\\v\\\$ " ] && PS1="[\u@\h \W]\\$ "
-    # You might want to have e.g. tty in prompt (e.g. more virtual machines)
-    # and console windows
-    # If you want to do so, just add e.g.
-    # if [ "$PS1" ]; then
-    #   PS1="[\u@\h:\l \W]\\$ "
-    # fi
-    # to your custom modification shell script in /etc/profile.d/ directory
+
+    if [ "$PS1" ]; then
+      PS1="[\u@\h:\l \W]\\$ "
+    fi
   fi
 
-  if ! shopt -q login_shell ; then # We're not a login shell
-    # Need to redefine pathmunge, it gets undefined at the end of /etc/profile
+  if ! shopt -q login_shell ; then
     pathmunge () {
         case ":${PATH}:" in
             *:"$1":*)
@@ -66,12 +60,9 @@ if [ -z "$BASHRCSOURCED" ]; then
         esac
     }
 
-    # Set default umask for non-login shell only if it is set to 0
     [ `umask` -eq 0 ] && umask 022
 
     SHELL=/bin/bash
-    # Only display echos from profile.d scripts if we are no login shell
-    # and interactive - otherwise just process them to set envvars
     for i in /etc/profile.d/*.sh; do
         if [ -r "$i" ]; then
             if [ "$PS1" ]; then
@@ -87,5 +78,5 @@ if [ -z "$BASHRCSOURCED" ]; then
   fi
 
 fi
-# vim:ts=4:sw=4
+
 eval "$(starship init bash)"

@@ -46,6 +46,7 @@ modules:
         - firewall-config
         - kcharselect
         - khelpcenter
+        - plasma-discover
         - plasma-welcome
         - toolbox
       
@@ -58,6 +59,7 @@ modules:
           - de.hohnstaedt.xca
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
+          - io.github.kolunmi.Bazaar
           - org.kde.kate
           - org.onlyoffice.desktopeditors
           - org.signal.Signal
@@ -79,10 +81,7 @@ modules:
       enabled:
         - firefox-module.service
 
-  - type: script
-    scripts:
-      - dod-trust.sh
-      - cleanup.sh
+  - type: dod-trust
 
   - type: os-release
     properties:
@@ -102,6 +101,10 @@ modules:
       DOCUMENTATION_URL: https://github.com/large-farva/outpost
       SUPPORT_URL: https://github.com/large-farva/outpost/issues
       BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
+  
+  - type: script
+    scripts:
+      - cleanup.sh
 
   - type: initramfs
   

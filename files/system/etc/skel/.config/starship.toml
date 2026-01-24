@@ -7,7 +7,7 @@ add_newline = true
 disabled = false
 
 [username]
-style_user = 'blue bold'
+style_user = 'green bold'
 style_root = 'red bold'
 format = '[$user]($style)'
 disabled = false
@@ -16,7 +16,7 @@ show_always = true
 [hostname]
 ssh_only = false
 ssh_symbol = " "
-format = '[$ssh_symbol](bold gray) at [$hostname](bold green) '
+format = '[$ssh_symbol](bold gray) at [$hostname](bold blue) '
 disabled = false
 
 [character]
@@ -203,4 +203,3 @@ command = 'echo "New deployment staged"'
 symbol = ""
 format = " $symbol [($output)]($style) "
 style = "italic green"
-
