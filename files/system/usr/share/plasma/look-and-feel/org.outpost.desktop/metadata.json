@@ -18,6 +18,6 @@
         "Version": "0.01",
         "Website": "https://github.com/large-farva/outpost"
     },
-    "X-Plasma-Parent": "org.kde.breezedark.desktop",
+    "X-KDE-ParentApp": "org.kde.breeze.desktop",
     "X-Plasma-MainScript": "defaults"
 }
