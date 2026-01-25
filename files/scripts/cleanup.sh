@@ -18,9 +18,9 @@ rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
 rm -f /usr/share/plasma/avatars/*.png || true
 
 # Remove look-and-feel package (base theme)
-rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
-       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
-       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
+# rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
+#        /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
+#        /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
 
 # Remove SDDM theme
 rm -rf /usr/share/sddm/themes/01-breeze-fedora/ || true
