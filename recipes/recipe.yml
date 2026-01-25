@@ -36,7 +36,6 @@ modules:
         - lolcat
         - nss-tools
         - okular
-        - opensc-tools
         - pcsc-tools
         - starship
     remove:
