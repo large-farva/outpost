@@ -50,6 +50,7 @@ modules:
         - plasma-discover
         - plasma-welcome
         - toolbox
+        - vim*
       
   - type: default-flatpaks
     configurations:
@@ -84,7 +85,6 @@ modules:
   - type: script
     scripts:
       - dod-trust.sh
-      - cleanup.sh
 
   - type: os-release
     properties:
