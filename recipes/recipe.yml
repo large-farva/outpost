@@ -9,7 +9,7 @@ base-image: quay.io/fedora/fedora-kinoite
 image-version: 43
 blue-build: none
 platforms: 
-  linux/amd64
+  - linux/amd64
 
 modules:
   - type: containerfile
