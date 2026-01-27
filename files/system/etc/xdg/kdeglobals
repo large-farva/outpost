@@ -10,7 +10,7 @@ fixed=Adwaita Mono,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 Theme=breeze-dark
 
 [KDE]
-LookAndFeelPackage=org.outpost.desktop
+# LookAndFeelPackage=org.outpost.desktop
 
 [KFileDialog Settings]
 Allow Expansion=false
