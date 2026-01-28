@@ -34,6 +34,7 @@ modules:
         - ca-certificates
         - curl
         - distrobox
+        - fastfetch
         - firefox
         - gettext
         - git
