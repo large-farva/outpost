@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "",
+                "Name": "large-farva"
+            }
+        ],
+        "Category": "",
+        "Description": "Outpost Look and Feel",
+        "Id": "org.outpost.desktop",
+        "License": "GPLv2+",
+        "Name": "Outpost",
+        "Website": "https://github.com/large-farva/outpost"
+    }
+}

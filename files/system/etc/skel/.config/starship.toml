@@ -7,7 +7,7 @@ add_newline = true
 disabled = false
 
 [username]
-style_user = 'green bold'
+style_user = 'orange bold'
 style_root = 'red bold'
 format = '[$user]($style)'
 disabled = false

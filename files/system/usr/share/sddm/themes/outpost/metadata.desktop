@@ -1,0 +1,17 @@
+[SddmGreeterTheme]
+Name=Breeze Outpost
+Description=Breeze Outpost Theme - Fork of Breeze Fedora
+Author=Fedora KDE SIG, KDE Visual Design Group
+Copyright=(c) 2014, David Edmundson
+License=CC-BY-SA
+Type=sddm-theme
+Version=0.3
+Website=https://github.com/large-farva/outpost
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Email=kde@lists.fedoraproject.org
+Theme-Id=outpost
+Theme-API=2.0
+QtVersion=6

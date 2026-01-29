@@ -75,7 +75,6 @@ modules:
           - org.signal.Signal
         remove:
           - org.kde.okular
-          - org.mozilla.Thunderbird
   
   - type: fonts
     fonts:

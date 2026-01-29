@@ -2,12 +2,12 @@
     "KPlugin": {
         "Authors": [
             {
-                "Email": "https://ko-fi.com/chandeleer",
-                "Name": "Chandeleer"
+                "Email": "",
+                "Name": "Sebastian Vencill"
             }
         ],
-        "Id": "Coneheads",
+        "Id": "Outpost",
         "License": "CC-BY-SA",
-        "Name": "Coneheads"
+        "Name": "Outpost"
     }
 }
