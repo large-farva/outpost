@@ -1,7 +1,7 @@
 [SddmGreeterTheme]
-Name=Breeze Outpost
-Description=Breeze Outpost Theme - Fork of Breeze Fedora
-Author=Fedora KDE SIG, KDE Visual Design Group
+Name=Outpost
+Description=Outpost Theme - Fork of Breeze
+Author=large-farva
 Copyright=(c) 2014, David Edmundson
 License=CC-BY-SA
 Type=sddm-theme
@@ -11,7 +11,7 @@ Screenshot=preview.png
 MainScript=Main.qml
 ConfigFile=theme.conf
 TranslationsDirectory=translations
-Email=kde@lists.fedoraproject.org
+Email=
 Theme-Id=outpost
 Theme-API=2.0
 QtVersion=6
