@@ -1,49 +1,69 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if systemctl cat --quiet uupd.timer &>/dev/null; then
-  SERVICE="uupd.service"
-else
-  SERVICE="rpm-ostreed-automatic.service"
-fi
+# Simple helper for updating an rpm-ostree based system.
+# Handles OS updates, Flatpaks, and Homebrew (if present).
 
-if systemctl is-active --quiet "$SERVICE"; then
-  echo "automatic updates are currently running, use \`journalctl -fexu $SERVICE\` to see logs"
-  exit 1
-fi
+VERSION="1.0"
 
+usage() {
+  cat <<'EOF'
+Usage: update [--help] [--version]
+
+Runs:
+  - rpm-ostree upgrade
+  - system Flatpak updates
+  - user Flatpak updates (if applicable)
+  - Homebrew upgrade for the invoking user (if present)
+
+A reboot is required to apply OS updates.
+EOF
+}
+
+err() { printf 'Error: %s\n' "$*" >&2; }
+msg() { printf '%s\n' "$*"; }
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# rpm-ostree requires root. If we're not root, re-exec via sudo.
 if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-  if command -v sudo >/dev/null 2>&1; then
+  if have sudo; then
     exec sudo -E "$0" "$@"
   fi
-  echo "Error: sudo is required to update the OS (rpm-ostree). Install sudo or run as root." >&2
+  err "sudo is required to update the OS (rpm-ostree)."
   exit 1
-fi
-
-echo "Updating OS (rpm-ostree)..."
-rpm-ostree upgrade
-
-if command -v flatpak >/dev/null 2>&1; then
-  if flatpak --system remotes >/dev/null 2>&1 && [[ -n "$(flatpak --system remotes 2>/dev/null | awk 'NF{print; exit}')" ]]; then
-    echo "Updating system Flatpaks..."
-    flatpak --system update -y
-  fi
-
-  TARGET_USER="${SUDO_USER:-}"
-  if [[ -n "$TARGET_USER" ]]; then
-    if sudo -u "$TARGET_USER" flatpak --user remotes >/dev/null 2>&1 \
-      && [[ -n "$(sudo -u "$TARGET_USER" flatpak --user remotes 2>/dev/null | awk 'NF{print; exit}')" ]]; then
-      echo "Updating user Flatpaks for $TARGET_USER..."
-      sudo -u "$TARGET_USER" flatpak --user update -y
-    fi
-  fi
 fi
 
 TARGET_USER="${SUDO_USER:-}"
-if [[ -n "$TARGET_USER" ]] && [[ -x "/var/home/$TARGET_USER/.linuxbrew/bin/brew" ]]; then
-  echo "Updating Homebrew packages for $TARGET_USER..."
-  sudo -u "$TARGET_USER" "/var/home/$TARGET_USER/.linuxbrew/bin/brew" upgrade || true
+
+# OS updates
+msg "Updating OS (rpm-ostree)..."
+rpm-ostree upgrade
+
+# Flatpak
+if have flatpak; then
+  msg "Updating system Flatpaks..."
+  flatpak --system update -y
+
+  if [[ -n "$TARGET_USER" ]]; then
+    msg "Updating user Flatpaks for $TARGET_USER..."
+    sudo -u "$TARGET_USER" flatpak --user update -y
+  fi
 fi
 
-echo
-echo "Update staged. Reboot to apply: systemctl reboot"
+# Homebrew
+if [[ -n "$TARGET_USER" ]]; then
+  BREW="/var/home/$TARGET_USER/.linuxbrew/bin/brew"
+  if [[ -x "$BREW" ]]; then
+    msg "Updating Homebrew packages for $TARGET_USER..."
+    sudo -u "$TARGET_USER" "$BREW" upgrade || true
+  fi
+fi
+
+msg ""
+msg "Update staged. Reboot to apply: systemctl reboot"

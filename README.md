@@ -10,27 +10,38 @@
 
 ### ⚠️ Work in progress!
 
-Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.  
-It extends the `fedora-ostree-desktops/kinoite:43` base image and provides a **CAC-ready Fedora workstation** with curated defaults and zero post-install configuration.
+Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.
 
-Outpost is designed for environments where **Common Access Card (CAC)** authentication and secure DoD network access are required.
+It is based on the **official upstream Fedora Kinoite image** and provides a **CAC-ready Fedora workstation** with curated defaults and **no post-install configuration required**.
+
+Outpost is designed for environments where **Common Access Card (CAC)** authentication and DoD PKI trust are required.
 
 ## Features
 
-### DoD CAC support out of the box
-- `opensc`, `pcsc-lite`,`pcsc-tools`, `pcsc-lite-ccid`, `p11-kit`
-- `pcscd.socket` enabled for automatic activation
+### DoD CAC support (out of the box)
+- `opensc`
+- `pcsc-lite`, `pcsc-lite-ccid`
+- `pcsc-tools`
+- `p11-kit`
+- `pcscd.socket` enabled for on-demand activation
 
-Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC is the supported and tested provider.
+Outpost does **not** ship CACKey, CoolKey, or proprietary vendor middleware.  
+**OpenSC** is the supported and tested provider.
+
+---
 
 ### DoD trust anchors (vendored, auditable)
 - Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
 - ZIP filename is unchanged from the official distribution
 - Certificates are extracted, converted to PEM, and installed into the system trust store at build time
 
+---
+
 ### Firefox (RPM)
-- **Firefox** is installed as an **RPM**, not Flatpak
-- Uses NSS with full system PKCS#11 and CA trust integration
+- Firefox is installed as an **RPM**, not a Flatpak
+- Uses system NSS, PKCS#11, and CA trust integration
+- CAC works without per-user manual setup in normal cases
+---
 
 ### Curated Flatpak baseline
 - Kontainer
@@ -40,7 +51,7 @@ Outpost does not ship CACKey, CoolKey, or proprietary vendor middleware. OpenSC 
 
 ## Installation
 
-⚠️ You must rebase from Kinoite or a Kinoite-based image! Kinoite is recommended.
+⚠️ You must rebase from **Fedora Kinoite** or a Kinoite-based image.  
 
 ### 1. Bootstrap (unsigned image)
 ```bash
@@ -64,106 +75,41 @@ Verify with the included public key:
 cosign verify --key cosign.pub ghcr.io/large-farva/outpost:latest
 ```
 
-## CAC Usage
+## CAC Support
 
 Outpost includes all middleware and trust components required for CAC authentication.
 
-### Smart Card Middleware
+Supported:
+- Firefox (RPM)
+- System-wide PKCS#11 and CA trust integration
 
-- `pcsc-lite` / `pcsc-lite-ccid` provide the PC/SC service and CCID driver
-- `pcscd.socket` is enabled for automatic activation
-- `pcsc-tools` for inspection and debugging (`pcsc_scan`)
+Not supported:
+- Flatpak browsers
+- Proprietary middleware
 
-### PKCS#11 Provider
+## Documentation
 
-- `opensc` supplies the `opensc-pkcs11.so` module
-- Used by NSS-based applications such as Firefox and eventually Okular
+Detailed documentation is available in the [Wiki](https://github.com/large-farva/outpost/wiki).
 
-### System Trust Store
+This includes:
+- CAC architecture and behavior
+- Diagnostics and troubleshooting
+- Firefox-specific behavior
+- Trust store handling
+- Network and captive portal considerations
 
-- DoD PKCS#7 bundle is vendored in:
-
-  ```
-  /usr/share/outpost/certs/
-  ```
-- Certificates are installed into:
-
-  ```
-  /etc/pki/ca-trust/source/anchors/
-  ```
-- `update-ca-trust` is executed during build
-
-### Browser Support
-
-- **Firefox (RPM)**: supported with CAC
-- **Flatpak browsers**: not currently supported
-
-## Troubleshooting
-
-### To verify CAC and Flatpak readiness
-
-```bash
-cac-check
-```
-
-### Reader Not Detected
-
-```bash
-pcsc_scan
-systemctl status pcscd.socket
-```
-
-### OpenSC Not Listing the Reader
-
-```bash
-opensc-tool -l
-```
-
-### DoD Sites Not Trusted
-
-```bash
-trust list | grep DoD
-sudo update-ca-trust
-```
-
-### Firefox not prompting for CAC
-
-In Firefox:
-
-Settings > Privacy & Security > Certificates > Security Devices
-If required, load the OpenSC module manually:
-
-```
-/usr/lib64/opensc-pkcs11.so
-```
-
-### PC/SC Logs
-
-```bash
-journalctl -u pcscd.socket
-```
-
-### USB / reader hardware logs
-
-```bash
-journalctl -k | grep -i usb
-```
+Please review the wiki before opening an issue.
 
 ## Roadmap
 
 ### Near-term
-- Getting Firefox to work with CAC without manual intervention
+- Documentation polish
+- Diagnostics refinement
 
 ### Longer-term
-- Okular support for CAC PDF signing
+- Okular support for CAC based PDF signing
+- Optional NVIDIA-compatibile image variant
 
 ## Issues
 
-If you encounter problems, open an issue and include:
-
-```bash
-journalctl -u pcscd.socket
-opensc-tool -l
-```
-
-This helps diagnose reader detection, USB enumeration, and middleware issues.
+When reporting issues, include relevant diagnostics from the wiki where applicable.

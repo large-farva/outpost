@@ -1,5 +1,10 @@
 {
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "image",
+        "source": "/usr/share/outpost/logo.png",
+        "width": 32
+    },
     "display": {
         "separator": "  "
     },
@@ -8,38 +13,34 @@
             "type": "title",
             "key": "",
             "color": {
-                "user": "#b75761",
-                "at": "#a64c6a",
-                "host": "#4075bf"
+                "user": "#c17c4a",
+                "at": "#7a6fd6",
+                "host": "#4f83cc"
             }
         },
         "break",
         {
-            "type": "command",
-            "key": "",
-            "text": "/usr/bin/ublue-image-info.sh",
-            "keyColor": "#ad67d7"
-        },
-        {
             "type": "os",
             "key": "󱝂",
+            "keyColor": "#4f83cc",
             "format": "{pretty-name}"
         },
         {
             "type": "kernel",
             "key": "",
+            "keyColor": "#4f83cc",
             "format": "{1} {2}"
         },
         {
             "type": "uptime",
-            "key": "󰅐"
+            "key": "󰅐",
+            "keyColor": "#4f83cc"
         },
         {
             "type": "command",
             "key": "󰔠",
             "text": "date -d$(ls -alct /var/log --time-style=full-iso|tail -1|awk '{print $6}') +'Forged on %b %d %G'",
-            "shell": "/bin/bash",
-            "keyColor": ""
+            "shell": "/bin/bash"
         },
         "break",
         {
@@ -48,77 +49,81 @@
         },
         {
             "type": "cpu",
-            "key": "󰻠"
+            "key": "󰻠",
+            "keyColor": "#7a6fd6"
         },
         {
             "type": "gpu",
-            "key": "󰍛"
+            "key": "󰍛",
+            "keyColor": "#7a6fd6"
         },
         {
             "type": "memory",
-            "key": "󰧑"
+            "key": "󰧑",
+            "keyColor": "#7a6fd6"
         },
         {
             "type": "disk",
             "key": "",
+            "keyColor": "#7a6fd6",
             "hideFS": "overlay"
         },
         {
             "type": "display",
-            "key": "󰍹"
+            "key": "󰍹",
+            "keyColor": "#7a6fd6"
         },
         {
             "type": "battery",
-            "key": ""
-        },
-        {
-            "type": "gamepad",
-            "key": "󰖺"
+            "key": "",
+            "keyColor": "#7a6fd6"
         },
         "break",
         {
             "type": "de",
             "key": "",
-            "keyColor": "#20a0f5"
+            "keyColor": "#4f83cc"
         },
         {
             "type": "wm",
             "key": "",
-            "keyColor": "#20a0f5"
+            "keyColor": "#4f83cc"
         },
         {
             "type": "packages",
             "key": "",
+            "keyColor": "#c17c4a",
             "disabled": [
                 "rpm",
                 "brew"
             ]
         },
+        {
+            "type": "packages",
+            "key": "",
+            "keyColor": "#c17c4a",
+            "disabled": [
+                "rpm",
+                "flatpak"
+            ]
+        },
         "break",
         {
             "type": "shell",
-            "key": ""
+            "key": "",
+            "keyColor": "#4f83cc"
         },
         {
             "type": "terminal",
-            "key": ""
+            "key": "",
+            "keyColor": "#4f83cc"
         },
         {
             "type": "command",
             "shell": "/usr/bin/bash",
             "text": "$EDITOR --version | head -1",
             "key": "",
-            "keyColor": "",
             "format": "{1}"
-        },
-        {
-            "type": "packages",
-            "key": "",
-            "disabled": [
-                "rpm",
-                "flatpak"
-            ],
-            "keyColor": "#fbb040"
         },
         "break",
         {

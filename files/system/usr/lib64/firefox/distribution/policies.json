@@ -11,8 +11,6 @@
     },
     "UseSystemPrintDialog": true,
     "PromptForDownloadLocation": true,
-    "StartDownloadsInTempDirectory": true,
-    "OfferToSaveLogins": false,
     "PasswordManagerEnabled": false,
     "DontCheckDefaultBrowser": true,
     "Preferences": {

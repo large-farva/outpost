@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -ouex pipefail
 umask 022
 
@@ -35,11 +35,16 @@ mapfile -t P7B_FILES < <(find "$workdir/unzipped" -type f -iname '*.p7b' || true
 combined_pem="$workdir/dod-trust-combined.pem"
 : > "$combined_pem"
 
-for p7b in "${P7B_FILES[@]}"; do
+convert_p7b_to_pem() {
+  local p7b="$1"
   if ! openssl pkcs7 -print_certs -inform DER -in "$p7b" -out "$workdir/tmp.pem" 2>/dev/null; then
     openssl pkcs7 -print_certs -in "$p7b" -out "$workdir/tmp.pem" \
-      || die "OpenSSL PKCS#7 conversion failed"
+      || die "OpenSSL PKCS#7 conversion failed: $p7b"
   fi
+}
+
+for p7b in "${P7B_FILES[@]}"; do
+  convert_p7b_to_pem "$p7b"
   cat "$workdir/tmp.pem" >> "$combined_pem"
 done
 

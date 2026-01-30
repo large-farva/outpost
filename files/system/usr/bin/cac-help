@@ -1,42 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-STATE_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/outpost"
-DISABLE_FILE="${STATE_DIR}/disable-motd"
-
 cat <<'EOF'
 Outpost CAC Helpers
 -------------------
 
+Primary command:
+  cac-check
+    Run CAC readiness checks and diagnostics
+
 Common commands:
-  cac-check         Run CAC readiness checks
-  scan              Run smart card scanner (pcsc_scan)
-  reader-list       List smart card readers (opensc-tool -l)
-  trust-dod         Show DoD entries in trust store
-  nss-modules       List NSS PKCS#11 modules in your profile
+  scan
+    Monitor smart card reader and card events
 
-MOTD toggle:
-  cac-help motd off   Disable MOTD in terminals
-  cac-help motd on    Enable MOTD in terminals
+  reader-list
+    List detected smart card readers
 
+  nss-modules
+    List NSS PKCS#11 modules used by Firefox
+
+Useful manual commands:
+  trust list
+    Inspect the system trust store (includes DoD anchors)
 EOF
-
-case "${1:-}" in
-  motd)
-    case "${2:-}" in
-      off)
-        mkdir -p "$STATE_DIR"
-        : > "$DISABLE_FILE"
-        echo "MOTD disabled for this user."
-        ;;
-      on)
-        rm -f "$DISABLE_FILE"
-        echo "MOTD enabled for this user."
-        ;;
-      *)
-        echo "Usage: cac-help motd {on|off}"
-        exit 2
-        ;;
-    esac
-    ;;
-esac

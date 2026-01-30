@@ -23,3 +23,4 @@ From this directory:
 
 ``` sh
 sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256
+```

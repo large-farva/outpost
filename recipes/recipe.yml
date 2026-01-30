@@ -36,9 +36,8 @@ modules:
         - distrobox
         - fastfetch
         - firefox
-        - gettext
+        - gcc
         - git
-        - jq
         - nss-tools
         - okular
         - opensc

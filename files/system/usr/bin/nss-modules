@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec modutil -list -dbdir "sql:${HOME}/.pki/nssdb"

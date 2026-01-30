@@ -68,15 +68,6 @@ else
   fail=1
 fi
 
-# 5) Trust store contains DoD roots
-if have trust; then
-  if trust list 2>/dev/null | grep -qi -m 1 'dod '; then
-    ok "System trust contains DoD entries"
-  else
-    warn "No obvious DoD entries found in trust list"
-  fi
-fi
-
 printf '\n%s\n' "Tips:"
 printf '%s\n' "  - Insert CAC and run: pcsc_scan"
 printf '%s\n' "  - OpenSC reader list: opensc-tool -l"

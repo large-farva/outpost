@@ -2,8 +2,8 @@
 set -euo pipefail
 umask 077
 
-# p11-kit-proxy is taking over for some reason, so we can't add CAC Module.
-# If p11-kit-proxy is present, we're good, but it's still annoying. Working on it.
+# Fedora often uses p11-kit-proxy in Firefox/NSS. If that exists, CAC works through it.
+# Only add OpenSC directly if the proxy is not present.
 
 MODULE_NAME="CAC Module"
 OPENSC_MODULE_PATH="/usr/lib64/pkcs11/opensc-pkcs11.so"
@@ -23,26 +23,27 @@ command -v modutil  >/dev/null 2>&1 || { log "modutil not found"; exit 0; }
 
 mkdir -p "$NSSDB_DIR" "$MARKER_DIR"
 
+# Make sure the NSS DB exists.
 if [[ ! -f "${NSSDB_DIR}/cert9.db" ]]; then
   certutil -N -d "$NSSDB" --empty-password >/dev/null 2>&1 || { log "certutil init failed"; exit 0; }
 fi
 
-if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "p11-kit-proxy"; then
+# One modutil list call, reused below.
+LIST="$(modutil -list -dbdir "$NSSDB" 2>/dev/null || true)"
+
+# If p11-kit-proxy is present, we're done. It will expose OpenSC via p11-kit.
+if grep -Fq "p11-kit-proxy" <<<"$LIST"; then
   : > "$MARKER_FILE"
   exit 0
 fi
 
-if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "p11-kit-proxy"; then
-  : > "$MARKER_FILE"
-  exit 0
-fi
-
+# Otherwise, fall back to loading OpenSC directly.
 if [[ ! -f "$OPENSC_MODULE_PATH" ]]; then
   log "OpenSC module missing at $OPENSC_MODULE_PATH"
   exit 0
 fi
 
-if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "$OPENSC_MODULE_PATH"; then
+if grep -Fq "$OPENSC_MODULE_PATH" <<<"$LIST"; then
   : > "$MARKER_FILE"
   exit 0
 fi
@@ -51,10 +52,7 @@ if ! modutil -add "$MODULE_NAME" \
   -libfile "$OPENSC_MODULE_PATH" \
   -dbdir "$NSSDB" \
   -force >/dev/null 2>&1; then
-  log "modutil add failed (OpenSC direct). If p11-kit-proxy is present, this is OK."
-  if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Fq "p11-kit-proxy"; then
-    : > "$MARKER_FILE"
-  fi
+  log "modutil add failed (OpenSC direct)."
   exit 0
 fi
 

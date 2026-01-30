@@ -8,4 +8,4 @@ ExecStart=/usr/bin/firefox-module
 SuccessExitStatus=0
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
