@@ -10,8 +10,8 @@ Theme=breeze-dark
 [plasmarc][Theme]
 name=default
 
-[Wallpaper]
-Image=Outpost
+[Wallpaper][org.kde.image][General]
+Image=/usr/share/wallpapers/Outpost/contents/images/1920x1080.png
 
 [kcminputrc][Mouse]
 cursorTheme=breeze_cursors
