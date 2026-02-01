@@ -18,7 +18,7 @@ Outpost is designed for environments where **Common Access Card (CAC)** authenti
 
 ## Features
 
-### DoD CAC support (out of the box)
+### DoD CAC support
 - `opensc`
 - `pcsc-lite`, `pcsc-lite-ccid`
 - `pcsc-tools`
@@ -30,14 +30,14 @@ Outpost does **not** ship CACKey, CoolKey, or proprietary vendor middleware.
 
 ---
 
-### DoD trust anchors (vendored, auditable)
+### DoD trust anchors
 - Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
 - ZIP filename is unchanged from the official distribution
 - Certificates are extracted, converted to PEM, and installed into the system trust store at build time
 
 ---
 
-### Firefox (RPM)
+### Firefox
 - Firefox is installed as an **RPM**, not a Flatpak
 - Uses system NSS, PKCS#11, and CA trust integration
 - CAC works without per-user manual setup in normal cases
@@ -53,7 +53,7 @@ Outpost does **not** ship CACKey, CoolKey, or proprietary vendor middleware.
 
 ⚠️ You must rebase from **Fedora Kinoite** or a Kinoite-based image.  
 
-### 1. Bootstrap (unsigned image)
+### 1. Bootstrap
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
 sudo systemctl reboot
