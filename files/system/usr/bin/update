@@ -48,11 +48,14 @@ rpm-ostree upgrade
 # Flatpak
 if have flatpak; then
   msg "Updating system Flatpaks..."
-  flatpak --system update -y
+  XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
+    flatpak --system update -y
 
   if [[ -n "$TARGET_USER" ]]; then
     msg "Updating user Flatpaks for $TARGET_USER..."
-    sudo -u "$TARGET_USER" flatpak --user update -y
+    sudo -u "$TARGET_USER" \
+      XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
+      flatpak --user update -y
   fi
 fi
 

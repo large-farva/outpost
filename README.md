@@ -8,8 +8,6 @@
 
 # Outpost
 
-### ⚠️ Work in progress!
-
 Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.
 
 It is based on the **official upstream Fedora Kinoite image** and provides a **CAC-ready Fedora workstation** with curated defaults and **no post-install configuration required**.

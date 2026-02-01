@@ -3,7 +3,12 @@
     "logo": {
         "type": "auto",
         "source": "/usr/share/outpost/logo.png",
-        "width": 32
+        "width": 32,
+        "padding": {
+            "top": 1,
+            "left": 1,
+            "right": 1
+        }
     },
     "display": {
         "separator": "  "

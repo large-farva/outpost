@@ -38,6 +38,7 @@ modules:
         - firefox
         - gcc
         - git
+        - gum
         - nss-tools
         - okular
         - opensc
@@ -56,6 +57,7 @@ modules:
         - fedora-bookmarks
         - kcharselect
         - khelpcenter
+        - plasma-discover
         - toolbox
         - vim*
       
