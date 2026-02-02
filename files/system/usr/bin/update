@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Simple helper for updating an rpm-ostree based system.
-# Handles OS updates, Flatpaks, and Homebrew (if present).
-
-VERSION="1.0"
+VERSION="1.1"
 
 usage() {
   cat <<'EOF'
@@ -21,7 +18,6 @@ EOF
 }
 
 err() { printf 'Error: %s\n' "$*" >&2; }
-msg() { printf '%s\n' "$*"; }
 
 case "${1:-}" in
   -h|--help) usage; exit 0 ;;
@@ -30,43 +26,68 @@ esac
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
-# rpm-ostree requires root. If we're not root, re-exec via sudo.
-if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-  if have sudo; then
-    exec sudo -E "$0" "$@"
-  fi
-  err "sudo is required to update the OS (rpm-ostree)."
-  exit 1
-fi
+TARGET_USER="${SUDO_USER:-$USER}"
 
-TARGET_USER="${SUDO_USER:-}"
+hdr() {
+  gum style --bold --foreground 212 "Outpost update"
+}
+
+step() {
+  gum style --bold --foreground 75 "$1"
+}
+
+run() {
+  local title="$1"; shift
+  gum spin --spinner dot --title "$title" -- "$@"
+}
+
+ok() {
+  gum style --foreground 42 "Done"
+}
+
+note() {
+  gum style --foreground 244 "$*"
+}
+
+hdr
+note "This will stage an OS update if available. Reboot required to apply."
 
 # OS updates
-msg "Updating OS (rpm-ostree)..."
-rpm-ostree upgrade
+step "OS (rpm-ostree)"
+run "Running rpm-ostree upgrade..." rpm-ostree upgrade
+ok
 
 # Flatpak
 if have flatpak; then
-  msg "Updating system Flatpaks..."
-  XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
-    flatpak --system update -y
+  step "Flatpaks"
 
+  # system
+  run "Updating system Flatpaks..." \
+    env XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
+    flatpak --system update -y
+  ok
+
+  # user
   if [[ -n "$TARGET_USER" ]]; then
-    msg "Updating user Flatpaks for $TARGET_USER..."
-    sudo -u "$TARGET_USER" \
-      XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
+    run "Updating user Flatpaks for $TARGET_USER..." \
+      sudo -u "$TARGET_USER" \
+      env XDG_DATA_DIRS="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}" \
       flatpak --user update -y
+    ok
   fi
 fi
 
 # Homebrew
-if [[ -n "$TARGET_USER" ]]; then
-  BREW="/var/home/$TARGET_USER/.linuxbrew/bin/brew"
-  if [[ -x "$BREW" ]]; then
-    msg "Updating Homebrew packages for $TARGET_USER..."
-    sudo -u "$TARGET_USER" "$BREW" upgrade || true
+BREW="/var/home/$TARGET_USER/.linuxbrew/bin/brew"
+if [[ -x "$BREW" ]]; then
+  step "Homebrew"
+  if ! run "Updating Homebrew packages for $TARGET_USER..." sudo -u "$TARGET_USER" "$BREW" upgrade; then
+    gum style --foreground 214 "Homebrew upgrade returned non-zero (continuing)."
+  else
+    ok
   fi
 fi
 
-msg ""
-msg "Update staged. Reboot to apply: systemctl reboot"
+printf '\n'
+gum style --bold --foreground 212 "Update staged."
+note "Reboot to apply: systemctl reboot"

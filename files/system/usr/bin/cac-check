@@ -1,77 +1,153 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ok()   { printf ' %s\n' "$*"; }
-bad()  { printf ' %s\n' "$*"; }
-warn() { printf ' %s\n' "$*"; }
+VERSION="1.1"
+
+usage() {
+  cat <<'EOF'
+Usage: cac-check [--help] [--version]
+
+Checks:
+  - pcscd.socket status
+  - OpenSC PKCS#11 module presence
+  - p11-kit visibility (if available)
+  - DoD trust anchor presence
+  - Trust store entries (best effort)
+
+EOF
+}
+
+err() { printf 'Error: %s\n' "$*" >&2; }
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
-title() {
-  printf '%s\n' "CAC readiness check"
-  printf '%s\n' "-------------------------"
+hdr() {
+  gum style --bold --foreground 212 "CAC readiness check"
+}
+
+step() {
+  gum style --bold --foreground 75 "$1"
+}
+
+ok() {
+  gum style --foreground 42 "Done"
+}
+
+note() {
+  gum style --foreground 244 "$*"
+}
+
+warn() {
+  gum style --foreground 214 "$*"
+}
+
+bad() {
+  gum style --foreground 196 "$*"
 }
 
 fail=0
-title
+hdr
 
-# 1) pcscd
+# pcscd
+step "PC/SC (pcscd)"
+
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
-  ok "pcscd.socket enabled"
+  note "pcscd.socket enabled"
 else
-  bad "pcscd.socket NOT enabled"
+  bad "pcscd.socket not enabled"
   fail=1
 fi
 
 if systemctl is-active pcscd.socket >/dev/null 2>&1; then
-  ok "pcscd.socket active"
+  note "pcscd.socket active"
 else
-  warn "pcscd.socket not active (may activate on demand)"
+  warn "pcscd.socket not active (socket activation may be used)"
 fi
 
 if systemctl list-unit-files pcscd.service >/dev/null 2>&1; then
   if systemctl is-active pcscd.service >/dev/null 2>&1; then
-    ok "pcscd.service active"
+    note "pcscd.service active"
   else
-    warn "pcscd.service not active (socket activation may be used instead)"
+    warn "pcscd.service not active (socket activation may be used)"
   fi
 fi
 
-# 2) OpenSC PKCS#11 library path
+ok
+
+# opensc
+step "OpenSC"
+
 OPENSC_LIB=""
 for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
-  if [[ -f "$p" ]]; then OPENSC_LIB="$p"; break; fi
+  if [[ -f "$p" ]]; then
+    OPENSC_LIB="$p"
+    break
+  fi
 done
 
 if [[ -n "$OPENSC_LIB" ]]; then
-  ok "OpenSC PKCS#11 present: $OPENSC_LIB"
+  note "PKCS#11 module: $OPENSC_LIB"
 else
-  bad "OpenSC PKCS#11 library not found"
+  bad "OpenSC PKCS#11 module not found"
   fail=1
 fi
 
-# 3) p11-kit visibility
-if have p11-kit && [[ -n "$OPENSC_LIB" ]]; then
-  if p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
-    ok "p11-kit sees OpenSC module"
-  else
-    warn "p11-kit does NOT list OpenSC (may still work via NSS direct load)"
-  fi
+if have opensc-tool; then
+  note "opensc-tool: present"
+else
+  warn "opensc-tool: not found"
 fi
 
-# 4) DoD trust bundle anchor
+ok
+
+# p11-kit
+step "p11-kit"
+
+if have p11-kit && [[ -n "$OPENSC_LIB" ]]; then
+  if p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
+    note "p11-kit sees OpenSC"
+  else
+    warn "p11-kit does not list OpenSC (may still work via proxy)"
+  fi
+else
+  warn "p11-kit not available"
+fi
+
+ok
+
+# trust bundle
+step "Trust"
+
 ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
 if [[ -f "$ANCHOR" ]]; then
-  ok "DoD trust anchor installed: $ANCHOR"
+  note "DoD trust anchor: present"
 else
   bad "DoD trust anchor missing: $ANCHOR"
   fail=1
 fi
 
-printf '\n%s\n' "Tips:"
-printf '%s\n' "  - Insert CAC and run: pcsc_scan"
-printf '%s\n' "  - OpenSC reader list: opensc-tool -l"
-printf '%s\n' "  - In Firefox: Settings → Privacy & Security → Certificates → Security Devices"
-printf '%s\n' "    If needed, load OpenSC module from: ${OPENSC_LIB:-/usr/lib64/pkcs11/opensc-pkcs11.so}"
+if have trust; then
+  if trust list 2>/dev/null | grep -qi -m 1 'dod '; then
+    note "Trust store contains DoD entries"
+  else
+    warn "No obvious DoD entries found in trust list"
+  fi
+else
+  warn "'trust' command not available"
+fi
+
+ok
+
+printf '\n'
+step "Tips"
+note "Insert CAC and run: pcsc_scan"
+note "Reader list: opensc-tool -l"
+note "NSS modules: modutil -list -dbdir sql:$HOME/.pki/nssdb"
+note "OpenSC module path: ${OPENSC_LIB:-/usr/lib64/pkcs11/opensc-pkcs11.so}"
 
 exit "$fail"
