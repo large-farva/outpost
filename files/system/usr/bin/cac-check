@@ -10,14 +10,12 @@ Usage: cac-check [--help] [--version]
 Checks:
   - pcscd.socket status
   - OpenSC PKCS#11 module presence
-  - p11-kit visibility (if available)
+  - p11-kit visibility (best effort)
   - DoD trust anchor presence
-  - Trust store entries (best effort)
+  - Trust store contains DoD-related CAs (best effort)
 
 EOF
 }
-
-err() { printf 'Error: %s\n' "$*" >&2; }
 
 case "${1:-}" in
   -h|--help) usage; exit 0 ;;
@@ -27,127 +25,109 @@ esac
 have() { command -v "$1" >/dev/null 2>&1; }
 
 hdr() {
-  gum style --bold --foreground 212 "CAC readiness check"
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 212 --foreground 212 --bold "CAC readiness check"
 }
 
-step() {
-  gum style --bold --foreground 75 "$1"
-}
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
 
-ok() {
-  gum style --foreground 42 "Done"
-}
-
-note() {
-  gum style --foreground 244 "$*"
-}
-
-warn() {
-  gum style --foreground 214 "$*"
-}
-
-bad() {
-  gum style --foreground 196 "$*"
+line() {
+  local icon="$1"; shift
+  printf '%s %s\n' "$icon" "$*"
 }
 
 fail=0
 hdr
 
-# pcscd
-step "PC/SC (pcscd)"
-
+# PC/SC
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
-  note "pcscd.socket enabled"
+  line "$(ok)" "pcscd.socket enabled"
 else
-  bad "pcscd.socket not enabled"
+  line "$(bad)" "pcscd.socket not enabled"
   fail=1
 fi
 
 if systemctl is-active pcscd.socket >/dev/null 2>&1; then
-  note "pcscd.socket active"
+  line "$(ok)" "pcscd.socket active"
 else
-  warn "pcscd.socket not active (socket activation may be used)"
+  line "$(warn)" "pcscd.socket not active (socket activation may be used)"
 fi
 
 if systemctl list-unit-files pcscd.service >/dev/null 2>&1; then
   if systemctl is-active pcscd.service >/dev/null 2>&1; then
-    note "pcscd.service active"
+    line "$(ok)" "pcscd.service active"
   else
-    warn "pcscd.service not active (socket activation may be used)"
+    line "$(warn)" "pcscd.service not active (socket activation may be used)"
   fi
 fi
 
-ok
+printf '\n'
 
-# opensc
-step "OpenSC"
-
+# OpenSC
 OPENSC_LIB=""
 for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
-  if [[ -f "$p" ]]; then
-    OPENSC_LIB="$p"
-    break
-  fi
+  [[ -f "$p" ]] && OPENSC_LIB="$p" && break
 done
 
 if [[ -n "$OPENSC_LIB" ]]; then
-  note "PKCS#11 module: $OPENSC_LIB"
+  line "$(ok)" "OpenSC PKCS#11 module: $OPENSC_LIB"
 else
-  bad "OpenSC PKCS#11 module not found"
+  line "$(bad)" "OpenSC PKCS#11 module not found"
   fail=1
 fi
 
 if have opensc-tool; then
-  note "opensc-tool: present"
+  line "$(ok)" "opensc-tool present"
 else
-  warn "opensc-tool: not found"
+  line "$(warn)" "opensc-tool not found"
 fi
 
-ok
+printf '\n'
 
 # p11-kit
-step "p11-kit"
-
-if have p11-kit && [[ -n "$OPENSC_LIB" ]]; then
-  if p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
-    note "p11-kit sees OpenSC"
+if have p11-kit; then
+  if [[ -n "$OPENSC_LIB" ]] && p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
+    line "$(ok)" "p11-kit sees OpenSC"
   else
-    warn "p11-kit does not list OpenSC (may still work via proxy)"
+    line "$(warn)" "p11-kit did not list OpenSC (may still work via proxy)"
   fi
 else
-  warn "p11-kit not available"
+  line "$(warn)" "p11-kit not available"
 fi
 
-ok
+printf '\n'
 
-# trust bundle
-step "Trust"
-
+# Trust
 ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
 if [[ -f "$ANCHOR" ]]; then
-  note "DoD trust anchor: present"
+  line "$(ok)" "DoD trust anchor installed"
 else
-  bad "DoD trust anchor missing: $ANCHOR"
+  line "$(bad)" "DoD trust anchor missing: $ANCHOR"
   fail=1
 fi
 
 if have trust; then
-  if trust list 2>/dev/null | grep -qi -m 1 'dod '; then
-    note "Trust store contains DoD entries"
+  if trust list --filter=ca-anchors 2>/dev/null | grep -Eqi -m 1 '(DoD|DOD|Department of Defense|U\.S\..*DoD|DISA|Defense Information Systems|IdenTrust|Federal Common Policy|FCPCA|PKE)'; then
+    line "$(ok)" "Trust store contains DoD-related CA entries"
   else
-    warn "No obvious DoD entries found in trust list"
+    line "$(warn)" "No obvious DoD-related CA strings found (anchor may still be present)"
+    dim "Tip: trust list --filter=ca-anchors | less"
   fi
 else
-  warn "'trust' command not available"
+  line "$(warn)" "'trust' command not available"
 fi
 
-ok
-
 printf '\n'
-step "Tips"
-note "Insert CAC and run: pcsc_scan"
-note "Reader list: opensc-tool -l"
-note "NSS modules: modutil -list -dbdir sql:$HOME/.pki/nssdb"
-note "OpenSC module path: ${OPENSC_LIB:-/usr/lib64/pkcs11/opensc-pkcs11.so}"
+
+# Tips
+gum style --bold --foreground 75 "Tips"
+dim "scan        (or: pcsc_scan)"
+dim "reader-list  (or: opensc-tool -l)"
+dim "trust-dod    (or: trust list --filter=ca-anchors | grep -Ei '(dod|disa|pke|fcpca)')"
+dim "nss-modules  (or: modutil -list -dbdir sql:$HOME/.pki/nssdb)"
+dim "OpenSC module path: ${OPENSC_LIB:-/usr/lib64/pkcs11/opensc-pkcs11.so}"
 
 exit "$fail"

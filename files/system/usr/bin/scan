@@ -1,4 +1,58 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exec pcsc_scan "$@"
+hdr() {
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 212 --foreground 212 --bold "CAC scan"
+}
+
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
+
+line() {
+  local icon="$1"; shift
+  printf '%s %s\n' "$icon" "$*"
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if ! have pcsc_scan; then
+  line "$(bad)" "pcsc_scan not found"
+  exit 1
+fi
+
+hdr
+dim "Connect your CAC reader and insert your CAC."
+dim "If nothing appears, the reader may not be detected."
+dim "Press Enter to stop the scan."
+printf '\n'
+
+if ! gum confirm "Start pcsc_scan now?"; then
+  line "$(warn)" "Canceled"
+  exit 0
+fi
+
+printf '\n'
+line "$(ok)" "Starting scan..."
+
+pcsc_scan "$@" &
+pid=$!
+
+cleanup() {
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -INT "$pid" 2>/dev/null || true
+    sleep 0.2
+    kill -TERM "$pid" 2>/dev/null || true
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+read -r _ || true
+line "$(warn)" "Stopping scan..."
+cleanup
+
+wait "$pid" 2>/dev/null || true
+exit 0

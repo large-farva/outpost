@@ -32,8 +32,8 @@ Rectangle {
             asynchronous: true
             source: "images/logo.svg"
 
-            sourceSize.width: 675
-            sourceSize.height: 450
+            sourceSize.width: 405
+            sourceSize.height: 270
         }
 
         Image {

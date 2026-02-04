@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Comment=Update Outpost, Flatpaks, and Homebrew
+Icon=outpost-update
+Categories=ConsoleOnly;System;
+Terminal=true
+Exec=/usr/bin/update
