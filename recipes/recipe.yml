@@ -39,6 +39,7 @@ modules:
         - gcc
         - git
         - gum
+        - jq
         - nss-tools
         - okular
         - opensc

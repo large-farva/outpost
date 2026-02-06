@@ -3,7 +3,7 @@ set -euo pipefail
 
 hdr() {
   gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 212 --foreground 212 --bold "CAC scan"
+    --border-foreground 68 --foreground 68 --bold "CAC scan"
 }
 
 dim()  { gum style --foreground 244 "$*"; }
@@ -29,7 +29,7 @@ dim "If nothing appears, the reader may not be detected."
 dim "Press Enter to stop the scan."
 printf '\n'
 
-if ! gum confirm "Start pcsc_scan now?"; then
+if ! gum confirm --selected.background="68" "Start pcsc_scan now?"; then
   line "$(warn)" "Canceled"
   exit 0
 fi

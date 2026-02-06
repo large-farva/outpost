@@ -1,4 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exec opensc-tool -l "$@"
+hdr() {
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 68 --foreground 68 --bold "CAC readers"
+}
+
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if ! have opensc-tool; then
+  printf '%s %s\n' "$(bad)" "opensc-tool not found"
+  exit 1
+fi
+
+hdr
+dim "Listing detected smart card readers."
+printf '\n'
+
+output="$(opensc-tool -l 2>/dev/null || true)"
+
+if echo "$output" | grep -qi "no smart card readers"; then
+  printf '%s %s\n' "$(warn)" "No smart card readers detected"
+  exit 1
+fi
+
+gum style --border rounded --padding "0 1" --border-foreground 244 <<<"$output"
+printf '\n'
+printf '%s %s\n' "$(ok)" "Smart card reader(s) detected"
+exit 0

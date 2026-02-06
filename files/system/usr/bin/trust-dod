@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+hdr() {
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 68 --foreground 68 --bold "DoD trust anchors"
+}
+
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if ! have trust; then
+  printf '%s %s\n' "$(bad)" "trust command not found"
+  exit 1
+fi
+
+hdr
+dim "Listing CA anchors related to DoD PKI."
+printf '\n'
+
+matches="$(trust list --filter=ca-anchors 2>/dev/null | grep -Ei '(dod)' || true)"
+
+if [[ -n "$matches" ]]; then
+  gum style --border rounded --padding "0 1" --border-foreground 244 <<<"$matches"
+  printf '\n'
+  printf '%s %s\n' "$(ok)" "Matching trust anchors found"
+  exit 0
+fi
+
+printf '%s %s\n' "$(warn)" "No DoD-related trust anchors found"
+exit 1

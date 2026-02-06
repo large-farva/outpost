@@ -1,4 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-exec modutil -list -dbdir "sql:${HOME}/.pki/nssdb"
+hdr() {
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 68 --foreground 68 --bold "NSS modules"
+}
+
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+NSSDB_DIR="${HOME}/.pki/nssdb"
+NSSDB="sql:${NSSDB_DIR}"
+
+if ! have modutil; then
+  printf '%s %s\n' "$(bad)" "modutil not found"
+  exit 1
+fi
+
+hdr
+dim "Listing PKCS#11 modules in your NSS database."
+printf '\n'
+
+if [[ ! -f "${NSSDB_DIR}/cert9.db" ]]; then
+  printf '%s %s\n' "$(warn)" "NSS database not initialized: ${NSSDB_DIR}"
+  dim "Run Firefox once and try again."
+  exit 1
+fi
+
+output="$(
+  modutil -list -dbdir "$NSSDB" 2>&1 \
+    | grep -v '^[[:space:]]*uri:' \
+    | grep -v '^[[:space:]]*Listing' \
+    | grep -v '^[[:space:]]*-' \
+    || true
+)"
+
+if [[ -z "$output" ]]; then
+  printf '%s %s\n' "$(warn)" "No NSS modules found"
+  exit 1
+fi
+
+gum style --border rounded --padding "0 1" --border-foreground 244 <<<"$output"
+printf '\n'
+printf '%s %s\n' "$(ok)" "NSS modules listed"
+exit 0

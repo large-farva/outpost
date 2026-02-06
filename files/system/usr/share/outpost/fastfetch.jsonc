@@ -13,13 +13,16 @@
     "display": {
         "separator": "  "
     },
+    "general": {
+        "dsForceDrm": true
+    },
     "modules": [
         {
             "type": "title",
             "key": "",
             "color": {
                 "user": "#c17c4a",
-                "at": "#7a6fd6",
+                "at": "#c0c0c0",
                 "host": "#4f83cc"
             }
         },
@@ -49,33 +52,33 @@
         {
             "type": "cpu",
             "key": "󰻠",
-            "keyColor": "#7a6fd6"
+            "keyColor": "#4f83cc"
         },
         {
             "type": "gpu",
             "key": "󰍛",
-            "keyColor": "#7a6fd6"
+            "keyColor": "#4f83cc"
         },
         {
             "type": "memory",
             "key": "󰧑",
-            "keyColor": "#7a6fd6"
+            "keyColor": "#4f83cc"
         },
         {
             "type": "disk",
             "key": "",
-            "keyColor": "#7a6fd6",
+            "keyColor": "#4f83cc",
             "hideFS": "overlay"
         },
         {
             "type": "display",
-            "key": "󰍹",
-            "keyColor": "#7a6fd6"
+            "key": "",
+            "keyColor": "#4f83cc"
         },
         {
             "type": "battery",
-            "key": "",
-            "keyColor": "#7a6fd6"
+            "key": "",
+            "keyColor": "#4f83cc"
         },
         "break",
         {
@@ -89,8 +92,19 @@
             "keyColor": "#4f83cc"
         },
         {
+            "type": "terminal",
+            "key": "",
+            "keyColor": "#4f83cc"
+        },
+        {
+            "type": "shell",
+            "key": "",
+            "keyColor": "#4f83cc"
+        },
+        "break",
+        {
             "type": "packages",
-            "key": "",
+            "key": "",
             "keyColor": "#c17c4a",
             "disabled": [
                 "rpm",
@@ -105,17 +119,6 @@
                 "rpm",
                 "flatpak"
             ]
-        },
-        "break",
-        {
-            "type": "shell",
-            "key": "",
-            "keyColor": "#4f83cc"
-        },
-        {
-            "type": "terminal",
-            "key": "",
-            "keyColor": "#4f83cc"
         },
         "break",
         {

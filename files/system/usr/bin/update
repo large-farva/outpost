@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.1"
+VERSION="1.2"
 
 usage() {
   cat <<'EOF'
@@ -28,13 +28,13 @@ TARGET_USER="${SUDO_USER:-$USER}"
 
 hdr() {
   gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 212 --foreground 212 --bold "Outpost update"
+    --border-foreground 68 --foreground 68 --bold "Outpost update"
 }
 
-dim()   { gum style --foreground 244 "$*"; }
-ok()    { gum style --foreground 42  --bold "✓"; }
-warn()  { gum style --foreground 214 --bold "!"; }
-bad()   { gum style --foreground 196 --bold "✗"; }
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
 
 line() {
   local icon="$1"; shift
@@ -43,18 +43,26 @@ line() {
 
 spin() {
   local title="$1"; shift
-  gum spin --spinner dot --title "$title" -- "$@"
+  gum spin --spinner points --spinner.foreground="68" --title "$title" -- "$@"
 }
 
 xdg_data_dirs="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+
+os_update_staged() {
+  /usr/bin/rpm-ostree status --json | /usr/bin/jq -e ".deployments[0].booted == false" >/dev/null 2>&1
+}
 
 hdr
 dim "Stages updates. Reboot required to apply OS changes."
 printf '\n'
 
 # OS
-if spin "OS: rpm-ostree upgrade (this can take a while)" rpm-ostree upgrade; then
-  line "$(ok)" "OS update staged"
+if spin "OS: rpm-ostree upgrade (may take a while)" rpm-ostree upgrade; then
+  if os_update_staged; then
+    line "$(ok)" "OS update staged"
+  else
+    line "$(warn)" "No OS update available"
+  fi
 else
   line "$(bad)" "OS update failed"
   exit 1
@@ -90,5 +98,10 @@ if [[ -x "$BREW" ]]; then
 fi
 
 printf '\n'
-gum style --foreground 212 --bold "Update staged."
-dim "Reboot to apply: systemctl reboot"
+
+if os_update_staged; then
+  gum style --foreground 212 --bold "Update staged."
+  dim "Reboot to apply: systemctl reboot"
+else
+  gum style --foreground 212 --bold "No OS update staged."
+fi

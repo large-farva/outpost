@@ -106,7 +106,7 @@ Please review the wiki before opening an issue.
 
 ### Longer-term
 - Okular support for CAC based PDF signing
-- Optional NVIDIA-compatibile image variant
+- NVIDIA-compatibile image variant
 
 ## Issues
 
