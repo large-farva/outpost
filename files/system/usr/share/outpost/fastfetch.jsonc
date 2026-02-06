@@ -72,12 +72,12 @@
         },
         {
             "type": "display",
-            "key": "",
+            "key": "󰍹",
             "keyColor": "#4f83cc"
         },
         {
             "type": "battery",
-            "key": "",
+            "key": "",
             "keyColor": "#4f83cc"
         },
         "break",
@@ -98,13 +98,13 @@
         },
         {
             "type": "shell",
-            "key": "",
+            "key": "",
             "keyColor": "#4f83cc"
         },
         "break",
         {
             "type": "packages",
-            "key": "",
+            "key": "",
             "keyColor": "#c17c4a",
             "disabled": [
                 "rpm",

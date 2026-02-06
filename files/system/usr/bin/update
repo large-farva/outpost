@@ -100,8 +100,8 @@ fi
 printf '\n'
 
 if os_update_staged; then
-  gum style --foreground 212 --bold "Update staged."
+  gum style --foreground 68 --bold "Update staged."
   dim "Reboot to apply: systemctl reboot"
 else
-  gum style --foreground 212 --bold "No OS update staged."
+  gum style --foreground 68 --bold "No OS update staged."
 fi
