@@ -2,7 +2,7 @@ name: Outpost
 
 on:
   schedule:
-    - cron: "00 06 * * *"
+    - cron: "15 0 * * 0"
   push:
     paths-ignore:
       - "**.md"

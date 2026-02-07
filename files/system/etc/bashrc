@@ -78,5 +78,3 @@ if [ -z "$BASHRCSOURCED" ]; then
   fi
 
 fi
-
-eval "$(starship init bash)"
