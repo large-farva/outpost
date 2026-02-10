@@ -90,8 +90,8 @@ fi
 # Homebrew
 BREW="/var/home/linuxbrew/.linuxbrew/bin/brew"
 if [[ -x "$BREW" ]]; then
-  if spin "Homebrew: upgrade ($TARGET_USER)" sudo -u "$TARGET_USER" "$BREW" upgrade; then
-    line "$(ok)" "Homebrew packages updated ($TARGET_USER)"
+  if spin "Homebrew: upgrade" sudo -u "$TARGET_USER" "$BREW" upgrade; then
+    line "$(ok)" "Homebrew packages updated"
   else
     line "$(warn)" "Homebrew upgrade returned non-zero (continuing)"
   fi
