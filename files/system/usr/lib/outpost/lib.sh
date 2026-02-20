@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Shared UI and utility functions for Outpost commands.
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+dim()  { gum style --foreground 244 "$*"; }
+ok()   { gum style --foreground 42  --bold "✓"; }
+warn() { gum style --foreground 214 --bold "!"; }
+bad()  { gum style --foreground 196 --bold "✗"; }
+
+line() {
+  local icon="$1"; shift
+  printf '%s %s\n' "$icon" "$*"
+}
+
+hdr() {
+  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
+    --border-foreground 68 --foreground 68 --bold "$1"
+}
+
+spin() {
+  local title="$1"; shift
+  gum spin --spinner points --spinner.foreground="68" --title "$title" -- "$@"
+}

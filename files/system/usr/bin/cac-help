@@ -17,22 +17,8 @@ case "${1:-}" in
   --version) printf '%s\n' "$VERSION"; exit 0 ;;
 esac
 
-have() { command -v "$1" >/dev/null 2>&1; }
-
-hdr() {
-  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 68 --foreground 68 --bold "Outpost CAC helpers"
-}
-
-dim()  { gum style --foreground 244 "$*"; }
-ok()   { gum style --foreground 42  --bold "✓"; }
-warn() { gum style --foreground 214 --bold "!"; }
-bad()  { gum style --foreground 196 --bold "✗"; }
-
-line() {
-  local icon="$1"; shift
-  printf '%s %s\n' "$icon" "$*"
-}
+# shellcheck source=/usr/lib/outpost/lib.sh
+source /usr/lib/outpost/lib.sh
 
 pause() {
   printf '\n'
@@ -63,22 +49,30 @@ run_cmd() {
   return 0
 }
 
+declare -A COMMANDS=(
+  [cac-check]="CAC readiness checks and diagnostics"
+  [scan]="Monitor reader and card events"
+  [reader-list]="List detected smart card readers"
+  [nss-modules]="List NSS PKCS#11 modules (Firefox)"
+  [trust-dod]="Show DoD-related trust anchors"
+)
+
+COMMAND_ORDER=(cac-check scan reader-list nss-modules trust-dod)
+
 rows=()
-add_row() { rows+=("$1|$2"); }
-
 menu_items=()
-add_item() { menu_items+=("$1"); }
 
-if have cac-check;    then add_row "cac-check"    "CAC readiness checks and diagnostics"; add_item "cac-check"; fi
-if have scan;         then add_row "scan"         "Monitor reader and card events";        add_item "scan"; fi
-if have reader-list;  then add_row "reader-list"  "List detected smart card readers";      add_item "reader-list"; fi
-if have nss-modules;  then add_row "nss-modules"  "List NSS PKCS#11 modules (Firefox)";    add_item "nss-modules"; fi
-if have trust-dod;    then add_row "trust-dod"    "Show DoD-related trust anchors";        add_item "trust-dod"; fi
+for cmd in "${COMMAND_ORDER[@]}"; do
+  if have "$cmd"; then
+    rows+=("$cmd|${COMMANDS[$cmd]}")
+    menu_items+=("$cmd")
+  fi
+done
 
-add_item "Quit"
+menu_items+=("Quit")
 
 while true; do
-  hdr
+  hdr "Outpost CAC helpers"
 
   if ((${#rows[@]})); then
     {
@@ -99,37 +93,13 @@ while true; do
       --selected.foreground="68"
   )"
 
-  case "$choice" in
-    "Quit") exit 0 ;;
-
-    "cac-check")
-      run_cmd "Running cac-check" cac-check
-      pause
-      ;;
-
-    "scan")
-      run_cmd "Starting scan" scan
-      pause
-      ;;
-
-    "reader-list")
-      run_cmd "Listing readers" reader-list
-      pause
-      ;;
-
-    "nss-modules")
-      run_cmd "Listing NSS modules" nss-modules
-      pause
-      ;;
-
-    "trust-dod")
-      run_cmd "Showing DoD trust anchors" trust-dod
-      pause
-      ;;
-
-    *)
-      line "$(warn)" "Unknown selection: $choice"
-      pause
-      ;;
-  esac
+  if [[ "$choice" == "Quit" ]]; then
+    exit 0
+  elif have "$choice"; then
+    run_cmd "Running $choice" "$choice"
+    pause
+  else
+    line "$(warn)" "Unknown selection: $choice"
+    pause
+  fi
 done

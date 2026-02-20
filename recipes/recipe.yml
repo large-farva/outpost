@@ -1,7 +1,7 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-# TODO: offer multiple images for hardware compatability
+# TODO: offer multiple images for hardware compatibility
 
 name: outpost
 description: "Fedora Kinoite based image with built-in DoD CAC support."
@@ -60,7 +60,7 @@ modules:
         - khelpcenter
         - plasma-discover
         - toolbox
-        - vim*
+        - vim-minimal
       
   - type: default-flatpaks
     configurations:
@@ -77,6 +77,9 @@ modules:
           - org.signal.Signal
         remove:
           - org.kde.okular
+        remove-remotes:
+          - fedora
+          - fedora-testing
   
   - type: fonts
     fonts:
@@ -94,6 +97,7 @@ modules:
   - type: script
     scripts:
       - dod-trust.sh
+      - cleanup.sh
 
   - type: os-release
     properties:

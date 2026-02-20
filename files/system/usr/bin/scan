@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-hdr() {
-  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 68 --foreground 68 --bold "CAC scan"
+VERSION="1.2"
+
+usage() {
+  cat <<'EOF'
+Usage: scan [--help] [--version] [-- pcsc_scan args...]
+
+Runs pcsc_scan interactively to monitor smart card reader events.
+Press Enter to stop the scan.
+
+EOF
 }
 
-dim()  { gum style --foreground 244 "$*"; }
-ok()   { gum style --foreground 42  --bold "✓"; }
-warn() { gum style --foreground 214 --bold "!"; }
-bad()  { gum style --foreground 196 --bold "✗"; }
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
 
-line() {
-  local icon="$1"; shift
-  printf '%s %s\n' "$icon" "$*"
-}
-
-have() { command -v "$1" >/dev/null 2>&1; }
+# shellcheck source=/usr/lib/outpost/lib.sh
+source /usr/lib/outpost/lib.sh
 
 if ! have pcsc_scan; then
   line "$(bad)" "pcsc_scan not found"
   exit 1
 fi
 
-hdr
+hdr "CAC scan"
 dim "Connect your CAC reader and insert your CAC."
 dim "If nothing appears, the reader may not be detected."
 dim "Press Enter to stop the scan."

@@ -23,25 +23,11 @@ case "${1:-}" in
   --version) printf '%s\n' "$VERSION"; exit 0 ;;
 esac
 
-have() { command -v "$1" >/dev/null 2>&1; }
-
-hdr() {
-  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 68 --foreground 68 --bold "CAC readiness check"
-}
-
-dim()  { gum style --foreground 244 "$*"; }
-ok()   { gum style --foreground 42  --bold "✓"; }
-warn() { gum style --foreground 214 --bold "!"; }
-bad()  { gum style --foreground 196 --bold "✗"; }
-
-line() {
-  local icon="$1"; shift
-  printf '%s %s\n' "$icon" "$*"
-}
+# shellcheck source=/usr/lib/outpost/lib.sh
+source /usr/lib/outpost/lib.sh
 
 fail=0
-hdr
+hdr "CAC readiness check"
 
 # PC/SC
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then

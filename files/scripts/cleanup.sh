@@ -2,76 +2,50 @@
 set -euo pipefail
 umask 022
 
-# Temporary solution for cleaning up branding from base image.
+# Remove base image branding.
 
 shopt -s nullglob
 
-# Remove backgrounds
-rm -rf /usr/share/backgrounds/f43/ \
-       /usr/share/backgrounds/fedora-workstation/ \
-       /usr/share/backgrounds/images/ || true
+# --- Plasma ---
 
-# Remove watermark in Spinner plymouth theme.
-rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
+# Remove Fedora global themes from System Settings > Appearance
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
+       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
+       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
 
-# Remove avatars
+# Remove stock avatars
 rm -f /usr/share/plasma/avatars/*.png || true
 
-# Remove look-and-feel package (base theme)
-# rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
-#        /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
-#        /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
+# --- Wallpapers and backgrounds ---
 
-# Remove SDDM theme
+rm -rf /usr/share/backgrounds/f*/ \
+       /usr/share/backgrounds/images/ || true
+
+for d in /usr/share/wallpapers/*/; do
+  [[ "$(basename "$d")" == "Outpost" ]] && continue
+  rm -rf "$d"
+done
+
+# --- SDDM ---
+
 rm -rf /usr/share/sddm/themes/01-breeze-fedora/ || true
 
-# Remove wallpapers
-rm -rf /usr/share/wallpapers/Altai/ \
-       /usr/share/wallpapers/Autumn/ \
-       /usr/share/wallpapers/BytheWater/ \
-       /usr/share/wallpapers/Canopee/ \
-       /usr/share/wallpapers/Cascade/ \
-       /usr/share/wallpapers/Cluster/ \
-       /usr/share/wallpapers/Coast/ \
-       /usr/share/wallpapers/ColdRipple/ \
-       /usr/share/wallpapers/ColorfulCups/ \
-       /usr/share/wallpapers/DarkestHour/ \
-       /usr/share/wallpapers/Dynamic/ \
-       /usr/share/wallpapers/Elarun/ \
-       /usr/share/wallpapers/EveningGlow/ \
-       /usr/share/wallpapers/F43/ \
-       /usr/share/wallpapers/Fallenleaf/ \
-       /usr/share/wallpapers/Fedora/ \
-       /usr/share/wallpapers/FLow/ \
-       /usr/share/wallpapers/FlyingKonqui/ \
-       /usr/share/wallpapers/Grey/ \
-       /usr/share/wallpapers/Honeywave/ \
-       /usr/share/wallpapers/IceCold/ \
-       /usr/share/wallpapers/Kay/ \
-       /usr/share/wallpapers/Kite/ \
-       /usr/share/wallpapers/Kokkini/ \
-       /usr/share/wallpapers/MilkyWay/ \
-       /usr/share/wallpapers/Mountain/ \
-       /usr/share/wallpapers/Next/ \
-       /usr/share/wallpapers/Nexus/ \
-       /usr/share/wallpapers/Nuvole/ \
-       /usr/share/wallpapers/OneStandsOut/ \
-       /usr/share/wallpapers/Opal/ \
-       /usr/share/wallpapers/PastelHills/ \
-       /usr/share/wallpapers/Patak/ \
-       /usr/share/wallpapers/Path/ \
-       /usr/share/wallpapers/SafeLanding/ \
-       /usr/share/wallpapers/ScarletTree/ \
-       /usr/share/wallpapers/Shell/ \
-       /usr/share/wallpapers/summer_1am/ \
-       /usr/share/wallpapers/Volna/ || true
+# --- Plymouth ---
 
-# Remove background symlinks
-ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
-       /usr/share/backgrounds/default.jxl
+rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
 
-ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
-       /usr/share/backgrounds/default-dark.jxl
+# --- Fedora logos and branding ---
 
-ln -sf /usr/share/backgrounds/outpost/outpost-background.jxl \
-       /usr/share/backgrounds/default-light.jxl
+rm -rf /usr/share/fedora-logos/ || true
+rm -rf /usr/share/anaconda/ || true
+rm -f /usr/share/pixmaps/fedora* || true
+rm -f /etc/favicon.png || true
+
+# --- Legacy icon themes with Fedora branding ---
+
+rm -rf /usr/share/icons/Bluecurve/ || true
+rm -rf /usr/share/icewm/ || true # Why is IceWM even here?
+
+# --- Software identification ---
+
+rm -rf /usr/lib/swidtag/fedoraproject.org/ || true

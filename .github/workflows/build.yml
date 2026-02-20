@@ -6,7 +6,7 @@ on:
   push:
     paths-ignore:
       - "**.md"
-  
+
   pull_request:
   workflow_dispatch:
 
@@ -15,9 +15,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Lint scripts
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: files/system/usr/bin
+          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh
+
   bluebuild:
     name: Build Outpost
     runs-on: ubuntu-latest
+    needs: lint
     permissions:
       contents: read
       packages: write
@@ -31,10 +45,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Build Image
-        uses: blue-build/github-action@v1.10
+        uses: blue-build/github-action@9ba737d93ffa82d7cd6826162c7bc3a2648ae73d # v1.10
         with:
           recipe: ${{ matrix.recipe }}
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}

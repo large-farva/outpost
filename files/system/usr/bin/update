@@ -22,29 +22,10 @@ case "${1:-}" in
   --version) printf '%s\n' "$VERSION"; exit 0 ;;
 esac
 
-have() { command -v "$1" >/dev/null 2>&1; }
+# shellcheck source=/usr/lib/outpost/lib.sh
+source /usr/lib/outpost/lib.sh
 
 TARGET_USER="${SUDO_USER:-$USER}"
-
-hdr() {
-  gum style --border rounded --padding "0 1" --margin "0 0 1 0" \
-    --border-foreground 68 --foreground 68 --bold "Outpost update"
-}
-
-dim()  { gum style --foreground 244 "$*"; }
-ok()   { gum style --foreground 42  --bold "✓"; }
-warn() { gum style --foreground 214 --bold "!"; }
-bad()  { gum style --foreground 196 --bold "✗"; }
-
-line() {
-  local icon="$1"; shift
-  printf '%s %s\n' "$icon" "$*"
-}
-
-spin() {
-  local title="$1"; shift
-  gum spin --spinner points --spinner.foreground="68" --title "$title" -- "$@"
-}
 
 xdg_data_dirs="/var/lib/flatpak/exports/share:/usr/local/share:/usr/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
 
@@ -52,7 +33,9 @@ os_update_staged() {
   /usr/bin/rpm-ostree status --json | /usr/bin/jq -e ".deployments[0].booted == false" >/dev/null 2>&1
 }
 
-hdr
+errors=0
+
+hdr "Outpost update"
 dim "Stages updates. Reboot required to apply OS changes."
 printf '\n'
 
@@ -65,7 +48,7 @@ if spin "OS: rpm-ostree upgrade (may take a while)" rpm-ostree upgrade; then
   fi
 else
   line "$(bad)" "OS update failed"
-  exit 1
+  ((errors++))
 fi
 
 # Flatpak
@@ -74,7 +57,7 @@ if have flatpak; then
     line "$(ok)" "System Flatpaks updated"
   else
     line "$(bad)" "System Flatpak update failed"
-    exit 1
+    ((errors++))
   fi
 
   if [[ -n "$TARGET_USER" ]]; then
@@ -82,15 +65,14 @@ if have flatpak; then
       line "$(ok)" "User Flatpaks updated ($TARGET_USER)"
     else
       line "$(bad)" "User Flatpak update failed ($TARGET_USER)"
-      exit 1
+      ((errors++))
     fi
   fi
 fi
 
 # Homebrew
-BREW="/var/home/linuxbrew/.linuxbrew/bin/brew"
-if [[ -x "$BREW" ]]; then
-  if spin "Homebrew: upgrade" sudo -u "$TARGET_USER" "$BREW" upgrade; then
+if have brew; then
+  if spin "Homebrew: upgrade" sudo -u "$TARGET_USER" brew upgrade; then
     line "$(ok)" "Homebrew packages updated"
   else
     line "$(warn)" "Homebrew upgrade returned non-zero (continuing)"
@@ -105,3 +87,10 @@ if os_update_staged; then
 else
   gum style --foreground 68 --bold "No OS update staged."
 fi
+
+if ((errors > 0)); then
+  printf '\n'
+  line "$(warn)" "$errors update(s) failed (see above)"
+fi
+
+exit "$((errors > 0 ? 1 : 0))"
