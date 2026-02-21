@@ -27,6 +27,7 @@ fi
 LIST="$(modutil -list -dbdir "$NSSDB" 2>/dev/null || true)"
 
 if grep -Fq "p11-kit-proxy" <<<"$LIST"; then
+  log "p11-kit-proxy already configured"
   : > "$MARKER_FILE"
   exit 0
 fi
@@ -37,6 +38,7 @@ if [[ ! -f "$OPENSC_MODULE_PATH" ]]; then
 fi
 
 if grep -Fq "$OPENSC_MODULE_PATH" <<<"$LIST"; then
+  log "OpenSC module already configured"
   : > "$MARKER_FILE"
   exit 0
 fi
@@ -49,5 +51,6 @@ if ! modutil -add "$MODULE_NAME" \
   exit 0
 fi
 
+log "OpenSC module added to NSS database"
 : > "$MARKER_FILE"
 exit 0

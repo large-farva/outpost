@@ -48,7 +48,7 @@ if spin "OS: rpm-ostree upgrade (may take a while)" rpm-ostree upgrade; then
   fi
 else
   line "$(bad)" "OS update failed"
-  ((errors++))
+  ((++errors))
 fi
 
 # Flatpak
@@ -57,7 +57,7 @@ if have flatpak; then
     line "$(ok)" "System Flatpaks updated"
   else
     line "$(bad)" "System Flatpak update failed"
-    ((errors++))
+    ((++errors))
   fi
 
   if [[ -n "$TARGET_USER" ]]; then
@@ -65,14 +65,17 @@ if have flatpak; then
       line "$(ok)" "User Flatpaks updated ($TARGET_USER)"
     else
       line "$(bad)" "User Flatpak update failed ($TARGET_USER)"
-      ((errors++))
+      ((++errors))
     fi
   fi
 fi
 
 # Homebrew
-if have brew; then
-  if spin "Homebrew: upgrade" sudo -u "$TARGET_USER" brew upgrade; then
+BREW="/var/home/linuxbrew/.linuxbrew/bin/brew"
+have brew && BREW="brew"
+
+if [[ -x "$BREW" ]]; then
+  if spin "Homebrew: upgrade" sudo -u "$TARGET_USER" "$BREW" upgrade; then
     line "$(ok)" "Homebrew packages updated"
   else
     line "$(warn)" "Homebrew upgrade returned non-zero (continuing)"

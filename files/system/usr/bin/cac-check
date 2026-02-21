@@ -43,7 +43,7 @@ else
   line "$(warn)" "pcscd.socket not active (socket activation may be used)"
 fi
 
-if systemctl list-unit-files pcscd.service >/dev/null 2>&1; then
+if systemctl list-unit-files pcscd.service 2>/dev/null | grep -q pcscd.service; then
   if systemctl is-active pcscd.service >/dev/null 2>&1; then
     line "$(ok)" "pcscd.service active"
   else
@@ -96,14 +96,8 @@ else
   fail=1
 fi
 
-if have trust-dod; then
-  if trust-dod >/dev/null 2>&1; then
-    line "$(ok)" "Trust store contains DoD-related CA entries"
-  else
-    line "$(warn)" "No DoD-related trust anchors found"
-  fi
-elif have trust; then
-  if trust list --filter=ca-anchors 2>/dev/null | grep -Ei '(dod)' >/dev/null 2>&1; then
+if have trust; then
+  if trust list --filter=ca-anchors 2>/dev/null | grep -Eqi 'dod'; then
     line "$(ok)" "Trust store contains DoD-related CA entries"
   else
     line "$(warn)" "No DoD-related trust anchors found"
