@@ -32,7 +32,7 @@ section() {
 }
 
 box() {
-  gum style --border rounded --padding "0 1" --border-foreground 244 "$@"
+  gum style --border rounded --padding "0 1" --border-foreground 244
 }
 
 accent() {

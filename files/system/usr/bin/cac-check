@@ -156,6 +156,6 @@ summary="$(ok) $passes passed"
 ((warnings > 0)) && summary="$summary  $(warn) $warnings warning(s)"
 ((failures > 0)) && summary="$summary  $(bad) $failures failed"
 
-box "$summary"
+box <<< "$summary"
 
 exit "$((failures > 0 ? 1 : 0))"
