@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0"
+
+usage() {
+  cat <<'EOF'
+Usage: brew-setup [--help] [--version]
+
+Installs Homebrew (Linuxbrew) for package management.
+
+Do not run as root.
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+
+BREW_PREFIX="/var/home/linuxbrew/.linuxbrew"
+BREW="$BREW_PREFIX/bin/brew"
+
+hdr "Homebrew setup"
+
+if [[ $EUID -eq 0 ]]; then
+  line "$(bad)" "Do not run as root"
+  exit 1
+fi
+
+if [[ -x "$BREW" ]]; then
+  line "$(ok)" "Homebrew already installed at $BREW_PREFIX"
+
+  if [[ -f /etc/profile.d/outpost-brew.sh ]]; then
+    line "$(ok)" "Shell integration present"
+  else
+    line "$(warn)" "Shell integration missing (/etc/profile.d/outpost-brew.sh)"
+  fi
+
+  exit 0
+fi
+
+for cmd in curl git; do
+  if ! have "$cmd"; then
+    line "$(bad)" "$cmd is required but not found"
+    exit 1
+  fi
+done
+
+line "$(ok)" "Prerequisites met"
+printf '\n'
+
+dim "This will install Homebrew to $BREW_PREFIX."
+dim "The installer may prompt for your password."
+printf '\n'
+
+if ! confirm "Install Homebrew?"; then
+  line "$(warn)" "Canceled"
+  exit 0
+fi
+
+printf '\n'
+
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+printf '\n'
+
+if [[ -x "$BREW" ]]; then
+  line "$(ok)" "Homebrew installed successfully"
+
+  if [[ -f /etc/profile.d/outpost-brew.sh ]]; then
+    line "$(ok)" "Shell integration ready — restart your shell"
+  fi
+else
+  line "$(bad)" "Homebrew binary not found after install"
+  exit 1
+fi

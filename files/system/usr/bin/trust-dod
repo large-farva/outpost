@@ -20,11 +20,6 @@ esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
 
-if ! have trust; then
-  line "$(bad)" "trust command not found"
-  exit 1
-fi
-
 hdr "DoD trust anchors"
 dim "Listing CA anchors related to DoD PKI."
 printf '\n'
@@ -32,7 +27,7 @@ printf '\n'
 matches="$(trust list --filter=ca-anchors 2>/dev/null | grep -Ei 'dod' || true)"
 
 if [[ -n "$matches" ]]; then
-  gum style --border rounded --padding "0 1" --border-foreground 244 <<< "$matches"
+  box <<< "$matches"
   printf '\n'
   line "$(ok)" "Matching trust anchors found"
   exit 0

@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.2"
+VERSION="2.0"
 
 usage() {
   cat <<'EOF'
 Usage: cac-check [--help] [--version]
 
-Checks:
-  - pcscd.socket status
-  - OpenSC PKCS#11 module presence
-  - p11-kit visibility
-  - DoD trust anchor presence
-  - Trust store contains DoD-related CAs
-  - NSS module list
+Checks CAC readiness across five areas:
+
+  - PC/SC daemon status
+  - PKCS#11 stack (OpenSC, p11-kit)
+  - DoD trust store
+  - Firefox / NSS database
+  - Smart card reader detection
 
 EOF
 }
@@ -26,104 +26,136 @@ esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
 
-fail=0
+passes=0
+warnings=0
+failures=0
+
+check_ok() {
+  ((++passes))
+  line "$(ok)" "$*"
+}
+
+check_warn() {
+  ((++warnings))
+  line "$(warn)" "$*"
+}
+
+check_fail() {
+  ((++failures))
+  line "$(bad)" "$*"
+}
+
 hdr "CAC readiness check"
 
-# PC/SC
+# ── PC/SC Daemon ──────────────────────────────────────────────
+section "PC/SC Daemon"
+
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
-  line "$(ok)" "pcscd.socket enabled"
+  check_ok "pcscd.socket enabled"
 else
-  line "$(bad)" "pcscd.socket not enabled"
-  fail=1
+  check_fail "pcscd.socket not enabled"
 fi
 
 if systemctl is-active pcscd.socket >/dev/null 2>&1; then
-  line "$(ok)" "pcscd.socket active"
+  check_ok "pcscd.socket active"
 else
-  line "$(warn)" "pcscd.socket not active (socket activation may be used)"
+  check_warn "pcscd.socket not active (socket activation may be used)"
 fi
 
 if systemctl list-unit-files pcscd.service 2>/dev/null | grep -q pcscd.service; then
   if systemctl is-active pcscd.service >/dev/null 2>&1; then
-    line "$(ok)" "pcscd.service active"
+    check_ok "pcscd.service active"
   else
-    line "$(warn)" "pcscd.service not active (socket activation may be used)"
+    check_warn "pcscd.service not active (socket activation may be used)"
   fi
 fi
 
 printf '\n'
 
-# OpenSC
+# ── PKCS#11 Stack ─────────────────────────────────────────────
+section "PKCS#11 Stack"
+
 OPENSC_LIB=""
 for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
   [[ -f "$p" ]] && OPENSC_LIB="$p" && break
 done
 
 if [[ -n "$OPENSC_LIB" ]]; then
-  line "$(ok)" "OpenSC PKCS#11 module: $OPENSC_LIB"
+  check_ok "OpenSC module: $OPENSC_LIB"
 else
-  line "$(bad)" "OpenSC PKCS#11 module not found"
-  fail=1
+  check_fail "OpenSC PKCS#11 module not found"
 fi
 
-if have opensc-tool; then
-  line "$(ok)" "opensc-tool present"
+if [[ -n "$OPENSC_LIB" ]] && p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
+  check_ok "p11-kit sees OpenSC"
 else
-  line "$(warn)" "opensc-tool not found"
-fi
-
-printf '\n'
-
-# p11-kit
-if have p11-kit; then
-  if [[ -n "$OPENSC_LIB" ]] && p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
-    line "$(ok)" "p11-kit sees OpenSC"
-  else
-    line "$(warn)" "p11-kit did not list OpenSC (may still work via proxy)"
-  fi
-else
-  line "$(warn)" "p11-kit not available"
+  check_warn "p11-kit did not list OpenSC (may still work via proxy)"
 fi
 
 printf '\n'
 
-# Trust
+# ── DoD Trust Store ───────────────────────────────────────────
+section "DoD Trust Store"
+
 ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
 if [[ -f "$ANCHOR" ]]; then
-  line "$(ok)" "DoD trust anchor installed"
+  check_ok "Trust anchor installed"
 else
-  line "$(bad)" "DoD trust anchor missing: $ANCHOR"
-  fail=1
+  check_fail "Trust anchor missing: $ANCHOR"
 fi
 
-if have trust; then
-  if trust list --filter=ca-anchors 2>/dev/null | grep -Eqi 'dod'; then
-    line "$(ok)" "Trust store contains DoD-related CA entries"
-  else
-    line "$(warn)" "No DoD-related trust anchors found"
-  fi
+dod_cas="$(trust list --filter=ca-anchors 2>/dev/null | grep -Eci 'dod' || true)"
+if ((dod_cas > 0)); then
+  check_ok "$dod_cas DoD CA entries in trust store"
 else
-  line "$(warn)" "'trust' command not available"
+  check_warn "No DoD-related CA entries found in trust store"
 fi
 
 printf '\n'
 
-# NSS
+# ── Firefox / NSS ─────────────────────────────────────────────
+section "Firefox / NSS"
+
 NSSDB_DIR="$HOME/.pki/nssdb"
 NSSDB="sql:$NSSDB_DIR"
 
-if have modutil; then
-  if [[ -f "$NSSDB_DIR/cert9.db" ]]; then
-    if modutil -list -dbdir "$NSSDB" 2>/dev/null | grep -Eqi '(p11-kit-proxy|opensc-pkcs11\.so)'; then
-      line "$(ok)" "NSS has a PKCS#11 provider configured"
-    else
-      line "$(warn)" "NSS did not list a CAC PKCS#11 provider"
-    fi
+if [[ -f "$NSSDB_DIR/cert9.db" ]]; then
+  check_ok "NSS database initialized"
+
+  nss_list="$(modutil -list -dbdir "$NSSDB" 2>/dev/null || true)"
+
+  if grep -Fq "p11-kit-proxy" <<< "$nss_list"; then
+    check_ok "NSS provider: p11-kit-proxy"
+  elif grep -Fq "opensc-pkcs11.so" <<< "$nss_list"; then
+    check_ok "NSS provider: opensc-pkcs11.so"
   else
-    line "$(warn)" "NSS database not initialized (~/.pki/nssdb)"
+    check_warn "No CAC PKCS#11 provider in NSS"
   fi
 else
-  line "$(warn)" "modutil not available"
+  check_warn "NSS database not initialized (~/.pki/nssdb)"
 fi
 
-exit "$fail"
+printf '\n'
+
+# ── Reader ────────────────────────────────────────────────────
+section "Reader"
+
+reader_output="$(opensc-tool -l 2>/dev/null || true)"
+
+if [[ -n "$reader_output" ]] && ! grep -qi "no smart card readers" <<< "$reader_output"; then
+  reader_count="$(wc -l <<< "$reader_output")"
+  check_ok "$reader_count reader(s) detected"
+else
+  check_warn "No smart card readers detected"
+fi
+
+printf '\n'
+
+# ── Summary ───────────────────────────────────────────────────
+summary="$(ok) $passes passed"
+((warnings > 0)) && summary="$summary  $(warn) $warnings warning(s)"
+((failures > 0)) && summary="$summary  $(bad) $failures failed"
+
+box "$summary"
+
+exit "$((failures > 0 ? 1 : 0))"

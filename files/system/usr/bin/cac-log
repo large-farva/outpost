@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0"
+
+usage() {
+  cat <<'EOF'
+Usage: cac-log [--help] [--version] [--since TIME]
+
+Shows smartcard and CAC-related journal entries.
+
+Options:
+  --since TIME   Show entries since TIME (default: current boot)
+
+Sources: pcscd, firefox-module, opensc, p11-kit
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+
+hdr "CAC logs"
+
+journal_args=(--no-pager --output=short-iso)
+
+if [[ "${1:-}" == "--since" ]] && [[ -n "${2:-}" ]]; then
+  journal_args+=("--since=$2")
+  dim "Showing entries since $2"
+else
+  journal_args+=(-b)
+  dim "Showing entries from current boot"
+fi
+
+printf '\n'
+
+output="$(
+  {
+    journalctl "${journal_args[@]}" -u pcscd.service -u pcscd.socket -t firefox-module 2>/dev/null || true
+    journalctl "${journal_args[@]}" --grep='opensc|p11.kit|pkcs11|smart.card' 2>/dev/null || true
+  } | sort -u
+)"
+
+if [[ -n "$output" ]]; then
+  box <<< "$output"
+  printf '\n'
+  count="$(wc -l <<< "$output")"
+  line "$(ok)" "$count log entries"
+else
+  line "$(warn)" "No CAC-related log entries found"
+fi

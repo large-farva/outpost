@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0"
+
+usage() {
+  cat <<'EOF'
+Usage: outpost [--help] [--version]
+
+Shows Outpost system status at a glance.
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+
+hdr "Outpost"
+
+# Image
+pretty="Outpost"
+codename=""
+if [[ -f /etc/os-release ]]; then
+  # shellcheck source=/dev/null
+  source /etc/os-release
+  pretty="${PRETTY_NAME:-Outpost}"
+  codename="${VERSION_CODENAME:-}"
+fi
+
+label="$pretty"
+[[ -n "$codename" ]] && label="$label ($codename)"
+line "$(ok)" "Image      $label"
+
+# Kernel
+line "$(ok)" "Kernel     $(uname -r)"
+
+# Uptime
+if have uptime; then
+  up="$(uptime -p 2>/dev/null || true)"
+  up="${up#up }"
+  [[ -n "$up" ]] && line "$(ok)" "Uptime     $up"
+fi
+
+printf '\n'
+
+# CAC quick check
+cac_issues=()
+if ! systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
+  cac_issues+=("pcscd")
+fi
+
+opensc_found=false
+for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
+  [[ -f "$p" ]] && opensc_found=true && break
+done
+$opensc_found || cac_issues+=("OpenSC")
+
+[[ -f /etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem ]] || cac_issues+=("trust anchor")
+
+if [[ ${#cac_issues[@]} -eq 0 ]]; then
+  line "$(ok)" "CAC        Ready"
+else
+  line "$(warn)" "CAC        Issues: ${cac_issues[*]} (run cac-check)"
+fi
+
+# OS update
+if have rpm-ostree && have jq; then
+  if rpm-ostree status --json 2>/dev/null | jq -e '.deployments[0].booted == false' >/dev/null 2>&1; then
+    line "$(warn)" "OS         Update staged — reboot to apply"
+  else
+    line "$(ok)" "OS         Current"
+  fi
+fi
+
+# Flatpaks
+if have flatpak; then
+  sys_count="$(flatpak list --system --app --columns=application 2>/dev/null | wc -l)"
+  user_count="$(flatpak list --user --app --columns=application 2>/dev/null | wc -l)"
+  line "$(ok)" "Flatpaks   ${sys_count} system, ${user_count} user"
+fi
+
+# Homebrew
+BREW="/var/home/linuxbrew/.linuxbrew/bin/brew"
+have brew && BREW="brew"
+
+if [[ -x "$BREW" ]]; then
+  line "$(ok)" "Homebrew   Installed"
+else
+  dim "           Homebrew not installed (run brew-setup)"
+fi

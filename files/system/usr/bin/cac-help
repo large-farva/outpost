@@ -51,13 +51,15 @@ run_cmd() {
 
 declare -A COMMANDS=(
   [cac-check]="CAC readiness checks and diagnostics"
+  [cac-certs]="List certificates on inserted smart card"
+  [cac-log]="Show smartcard and CAC-related logs"
   [scan]="Monitor reader and card events"
   [reader-list]="List detected smart card readers"
   [nss-modules]="List NSS PKCS#11 modules (Firefox)"
   [trust-dod]="Show DoD-related trust anchors"
 )
 
-COMMAND_ORDER=(cac-check scan reader-list nss-modules trust-dod)
+COMMAND_ORDER=(cac-check cac-certs cac-log scan reader-list nss-modules trust-dod)
 
 rows=()
 menu_items=()
@@ -86,11 +88,9 @@ while true; do
   fi
 
   choice="$(
-    printf '%s\n' "${menu_items[@]}" | gum choose --height 10 \
+    printf '%s\n' "${menu_items[@]}" | choose --height 10 \
       --header "Select a command" \
-      --header.foreground="15" \
-      --cursor.foreground="75" \
-      --selected.foreground="68"
+      --header.foreground="15"
   )"
 
   if [[ "$choice" == "Quit" ]]; then

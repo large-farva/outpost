@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0"
+
+usage() {
+  cat <<'EOF'
+Usage: rebase [--help] [--version] [TAG]
+
+Rebases Outpost to a different image tag.
+
+If TAG is not provided, defaults to "latest".
+A reboot is required after rebasing.
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+
+IMAGE_REF=""
+if [[ -f /usr/share/outpost/image-info.json ]] && have jq; then
+  IMAGE_REF="$(jq -r '.["image-ref"] // empty' /usr/share/outpost/image-info.json)"
+fi
+
+if [[ -z "$IMAGE_REF" ]]; then
+  line "$(bad)" "Could not determine image ref from /usr/share/outpost/image-info.json"
+  exit 1
+fi
+
+TAG="${1:-latest}"
+TARGET="ostree-image-signed:docker://${IMAGE_REF}:${TAG}"
+
+hdr "Outpost rebase"
+
+dim "Image: $IMAGE_REF"
+dim "Tag:   $TAG"
+printf '\n'
+
+if ! confirm "Rebase to ${IMAGE_REF}:${TAG}?"; then
+  line "$(warn)" "Canceled"
+  exit 0
+fi
+
+printf '\n'
+
+if spin "Rebasing (this may take a while)" rpm-ostree rebase "$TARGET"; then
+  printf '\n'
+  line "$(ok)" "Rebase complete"
+  dim "Reboot to apply: systemctl reboot"
+else
+  printf '\n'
+  line "$(bad)" "Rebase failed"
+  exit 1
+fi

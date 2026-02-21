@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0"
+
+usage() {
+  cat <<'EOF'
+Usage: cac-certs [--help] [--version]
+
+Lists certificates on an inserted smart card.
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+esac
+
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+
+hdr "CAC certificates"
+dim "Reading certificates from inserted smart card."
+printf '\n'
+
+output="$(pkcs15-tool --list-certificates 2>&1)" || {
+  line "$(bad)" "Failed to read card (is a CAC inserted?)"
+  exit 1
+}
+
+if [[ -z "$output" ]]; then
+  line "$(warn)" "No certificates found on card"
+  exit 1
+fi
+
+box <<< "$output"
+printf '\n'
+line "$(ok)" "Certificates listed"

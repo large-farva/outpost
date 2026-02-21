@@ -23,11 +23,6 @@ source /usr/lib/outpost/lib.sh
 NSSDB_DIR="${HOME}/.pki/nssdb"
 NSSDB="sql:${NSSDB_DIR}"
 
-if ! have modutil; then
-  line "$(bad)" "modutil not found"
-  exit 1
-fi
-
 hdr "NSS modules"
 dim "Listing PKCS#11 modules in your NSS database."
 printf '\n'
@@ -51,7 +46,7 @@ if [[ -z "$output" ]]; then
   exit 1
 fi
 
-gum style --border rounded --padding "0 1" --border-foreground 244 <<< "$output"
+box <<< "$output"
 printf '\n'
 line "$(ok)" "NSS modules listed"
 exit 0

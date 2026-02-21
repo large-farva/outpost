@@ -18,8 +18,7 @@ rm -f /usr/share/plasma/avatars/*.png || true
 
 # --- Wallpapers and backgrounds ---
 
-rm -rf /usr/share/backgrounds/f*/ \
-       /usr/share/backgrounds/images/ || true
+rm -rf /usr/share/backgrounds/f*/ || true
 
 for d in /usr/share/wallpapers/*/; do
   [[ "$(basename "$d")" == "Outpost" ]] && continue

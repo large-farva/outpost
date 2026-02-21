@@ -21,18 +21,13 @@ esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
 
-if ! have pcsc_scan; then
-  line "$(bad)" "pcsc_scan not found"
-  exit 1
-fi
-
 hdr "CAC scan"
 dim "Connect your CAC reader and insert your CAC."
 dim "If nothing appears, the reader may not be detected."
 dim "Press Enter to stop the scan."
 printf '\n'
 
-if ! gum confirm --selected.background="68" "Start pcsc_scan now?"; then
+if ! confirm "Start pcsc_scan now?"; then
   line "$(warn)" "Canceled"
   exit 0
 fi

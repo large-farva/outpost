@@ -20,11 +20,6 @@ esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
 
-if ! have opensc-tool; then
-  line "$(bad)" "opensc-tool not found"
-  exit 1
-fi
-
 hdr "CAC readers"
 dim "Listing detected smart card readers."
 printf '\n'
@@ -36,7 +31,7 @@ if grep -qi "no smart card readers" <<< "$output"; then
   exit 1
 fi
 
-gum style --border rounded --padding "0 1" --border-foreground 244 <<< "$output"
+box <<< "$output"
 printf '\n'
 line "$(ok)" "Smart card reader(s) detected"
 exit 0
