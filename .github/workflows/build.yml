@@ -25,7 +25,7 @@ jobs:
       - name: Lint scripts
         uses: ludeeus/action-shellcheck@2.0.0
         env:
-          SHELLCHECK_OPTS: -x
+          SHELLCHECK_OPTS: -x -P files/system/usr/lib/outpost
         with:
           scandir: files/system/usr/bin
           additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh
