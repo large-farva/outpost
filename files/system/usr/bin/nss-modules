@@ -17,7 +17,7 @@ case "${1:-}" in
   --version) printf '%s\n' "$VERSION"; exit 0 ;;
 esac
 
-# shellcheck source=/usr/lib/outpost/lib.sh
+# shellcheck source=../lib/outpost/lib.sh
 source /usr/lib/outpost/lib.sh
 
 NSSDB_DIR="${HOME}/.pki/nssdb"
