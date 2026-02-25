@@ -19,10 +19,17 @@ rm -f /usr/share/plasma/avatars/*.png || true
 # --- Wallpapers and backgrounds ---
 
 rm -rf /usr/share/backgrounds/f*/ || true
+rm -rf /usr/share/backgrounds/images/ || true
+rm -f /usr/share/backgrounds/default.xml || true
 
 for d in /usr/share/wallpapers/*/; do
   [[ "$(basename "$d")" == "Outpost" ]] && continue
   rm -rf "$d"
+done
+
+# Remove broken symlinks left after directory cleanup (e.g., Default, Fedora)
+for f in /usr/share/wallpapers/*; do
+  [[ -L "$f" ]] && rm -f "$f"
 done
 
 # --- SDDM ---
