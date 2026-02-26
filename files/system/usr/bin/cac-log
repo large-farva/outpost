@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.0"
+VERSION="1.1"
 
 usage() {
   cat <<'EOF'
@@ -27,7 +27,7 @@ source /usr/lib/outpost/lib.sh
 
 hdr "CAC logs"
 
-journal_args=(--no-pager --output=short-iso)
+journal_args=(--no-pager --output=short)
 
 if [[ "${1:-}" == "--since" ]] && [[ -n "${2:-}" ]]; then
   journal_args+=("--since=$2")
@@ -43,11 +43,16 @@ output="$(
   {
     journalctl "${journal_args[@]}" -u pcscd.service -u pcscd.socket -t firefox-module 2>/dev/null || true
     journalctl "${journal_args[@]}" --grep='opensc|p11.kit|pkcs11|smart.card' 2>/dev/null || true
-  } | sort -u
+  } | grep -v '^-- ' | sort -u
 )"
 
 if [[ -n "$output" ]]; then
-  box <<< "$output"
+  hostname="$(hostnamectl hostname 2>/dev/null || hostname)"
+  while IFS= read -r entry; do
+    ts="${entry%% "$hostname" *}"
+    msg="${entry#* "$hostname" }"
+    printf '%s %s\n' "$(dim "$ts")" "$msg"
+  done <<< "$output"
   printf '\n'
   count="$(wc -l <<< "$output")"
   line "$(ok)" "$count log entries"

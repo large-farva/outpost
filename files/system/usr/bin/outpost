@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.0"
+VERSION="1.1"
 
 usage() {
   cat <<'EOF'
@@ -85,10 +85,7 @@ if have flatpak; then
 fi
 
 # Homebrew
-BREW="/var/home/linuxbrew/.linuxbrew/bin/brew"
-have brew && BREW="brew"
-
-if [[ -x "$BREW" ]]; then
+if have brew || [[ -x /var/home/linuxbrew/.linuxbrew/bin/brew ]]; then
   line "$(ok)" "Homebrew   Installed"
 else
   dim "           Homebrew not installed (run brew-setup)"
