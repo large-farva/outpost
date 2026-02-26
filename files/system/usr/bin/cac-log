@@ -11,6 +11,16 @@ Shows smartcard and CAC-related journal entries.
 
 Options:
   --since TIME   Show entries since TIME (default: current boot)
+  
+  Accepts any valid journalctl --since argument:
+    "2 hours ago"
+    "today"
+    "yesterday"
+    "2026-01-01"
+    "2026-01-01 12:00:00"
+
+Example:
+  cac-log --since "1 hour ago"
 
 Sources: pcscd, firefox-module, opensc, p11-kit
 
