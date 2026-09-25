@@ -5,9 +5,10 @@ VERSION="1.1"
 
 usage() {
   cat <<'EOF'
-Usage: outpost [--help] [--version]
+Usage: outpost [--status] [--help] [--version]
 
-Shows Outpost system status at a glance.
+Opens the Outpost menu in a terminal; otherwise prints system status.
+Use --status to print status without opening the menu.
 
 EOF
 }
@@ -20,9 +21,25 @@ esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
 
+if [[ "${1:-}" != --status ]] && interactive && [[ -t 1 ]]; then
+    while true; do
+        hdr "Outpost"
+        choice=$(choose 'System status' 'Update' 'CAC tools' 'PDF signing setup' 'PDF signing help' 'Homebrew setup' 'Rebase' 'Quit') || exit 0
+        case "$choice" in
+            'System status') run_cmd outpost --status ;;
+            Update) run_cmd update ;;
+            'CAC tools') cac-help ;;
+            'PDF signing setup') run_cmd cac-pdf-setup ;;
+            'PDF signing help') run_cmd cac-pdf-setup --help ;;
+            'Homebrew setup') run_cmd brew-setup ;;
+            Rebase) run_cmd rebase ;;
+            Quit) exit 0 ;;
+        esac
+    done
+fi
+
 hdr "Outpost"
 
-# Image
 pretty="Outpost"
 codename=""
 if [[ -f /etc/os-release ]]; then
@@ -36,10 +53,8 @@ label="$pretty"
 [[ -n "$codename" ]] && label="$label ($codename)"
 line "$(ok)" "Image      $label"
 
-# Kernel
 line "$(ok)" "Kernel     $(uname -r)"
 
-# Uptime
 if have uptime; then
   up="$(uptime -p 2>/dev/null || true)"
   up="${up#up }"
@@ -48,7 +63,6 @@ fi
 
 printf '\n'
 
-# CAC quick check
 cac_issues=()
 if ! systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
   cac_issues+=("pcscd")
@@ -63,28 +77,21 @@ $opensc_found || cac_issues+=("OpenSC")
 [[ -f /etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem ]] || cac_issues+=("trust anchor")
 
 if [[ ${#cac_issues[@]} -eq 0 ]]; then
-  line "$(ok)" "CAC        Ready"
+  line "$(ok)" "CAC        Middleware installed (run cac-check for diagnostics)"
 else
   line "$(warn)" "CAC        Issues: ${cac_issues[*]} (run cac-check)"
 fi
 
-# OS update
 if have rpm-ostree && have jq; then
-  if rpm-ostree status --json 2>/dev/null | jq -e '.deployments[0].booted == false' >/dev/null 2>&1; then
-    line "$(warn)" "OS         Update staged — reboot to apply"
-  else
-    line "$(ok)" "OS         Current"
-  fi
+    deployment_status || log_warn "Unable to read deployment status"
 fi
 
-# Flatpaks
 if have flatpak; then
   sys_count="$(flatpak list --system --app --columns=application 2>/dev/null | wc -l)"
   user_count="$(flatpak list --user --app --columns=application 2>/dev/null | wc -l)"
   line "$(ok)" "Flatpaks   ${sys_count} system, ${user_count} user"
 fi
 
-# Homebrew
 if have brew || [[ -x /var/home/linuxbrew/.linuxbrew/bin/brew ]]; then
   line "$(ok)" "Homebrew   Installed"
 else

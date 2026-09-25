@@ -18,7 +18,7 @@ import org.kde.breeze.components
 Item {
     id: root
 
-    // If we're using software rendering, draw outlines instead of shadows
+    // Software rendering uses outlines instead of shadows.
     // See https://bugs.kde.org/show_bug.cgi?id=398317
     readonly property bool softwareRendering: GraphicsInfo.api === GraphicsInfo.Software
 
@@ -90,7 +90,6 @@ Item {
             event.accepted = false;
         }
 
-        //takes one full minute for the ui to disappear
         Timer {
             id: fadeoutTimer
             running: true
@@ -148,23 +147,17 @@ Item {
             }
             height: root.height + Kirigami.Units.gridUnit * 3
 
-            // this isn't implicit, otherwise items still get processed for the scenegraph
+            // Invisible items must leave the scene graph, not just become transparent.
             visible: opacity > 0
 
-            // If true (depends on the style and environment variables), hover events are always accepted
-            // and propagation stopped. This means the parent MouseArea won't get them and the UI won't be shown.
-            // Disable capturing those events while the UI is hidden to avoid that, while still passing events otherwise.
-            // One issue is that while the UI is visible, mouse activity won't keep resetting the timer, but when it
-            // finally expires, the next event should immediately set uiVisible = true again.
+            // While hidden, pass hover events to the parent so mouse movement reveals the UI.
             hoverEnabled: loginScreenRoot.uiVisible ? undefined : false
 
-            focus: true //StackView is an implicit focus scope, so we need to give this focus so the item inside will have it
+            focus: true // Child controls need focus on the StackView scope.
 
             Timer {
-                //SDDM has a bug in 0.13 where even though we set the focus on the right item within the window, the window doesn't have focus
-                //it is fixed in 6d5b36b28907b16280ff78995fef764bb0c573db which will be 0.14
-                //we need to call "window->activate()" *After* it's been shown. We can't control that in QML so we use a shoddy timer
-                //it's been this way for all Plasma 5.x without a huge problem
+                // Delay focus until the greeter is visible. This works around the SDDM 0.13
+                // activation bug fixed in 6d5b36b28907b16280ff78995fef764bb0c573db (0.14).
                 running: true
                 repeat: false
                 interval: 200
@@ -332,14 +325,14 @@ Item {
                 loginScreenUiVisible: loginScreenRoot.uiVisible
                 fontSize: Kirigami.Theme.defaultFont.pointSize + 2
 
-                // using a model rather than a QObject list to avoid QTBUG-75900
+                // A QObject list triggers QTBUG-75900; a model avoids it.
                 userListModel: ListModel {
                     ListElement {
                         name: ""
                         icon: ""
                     }
                     Component.onCompleted: {
-                        // as we can't bind inside ListElement
+                        // ListElement does not support property bindings.
                         setProperty(0, "name", i18nd("plasma-desktop-sddm-theme", "Type in Username and Password"));
                         setProperty(0, "icon", Qt.resolvedUrl("faces/.face.icon"))
                     }
@@ -392,7 +385,7 @@ Item {
             color : "black" // shadows should always be black
             opacity: loginScreenRoot.uiVisible ? 0 : 1
             Behavior on opacity {
-                //OpacityAnimator when starting from 0 is buggy (it shows one frame with opacity 1)"
+                // OpacityAnimator can flash an opaque frame when starting at zero.
                 NumberAnimation {
                     duration: Kirigami.Units.longDuration
                     easing.type: Easing.InOutQuad
@@ -413,7 +406,7 @@ Item {
             fillMode: Image.PreserveAspectFit
             height: Math.round(Kirigami.Units.gridUnit * 3.5)
             Behavior on opacity {
-                // OpacityAnimator when starting from 0 is buggy (it shows one frame with opacity 1)"
+                // OpacityAnimator can flash an opaque frame when starting at zero.
                 NumberAnimation {
                     duration: Kirigami.Units.longDuration
                     easing.type: Easing.InOutQuad
@@ -421,12 +414,8 @@ Item {
             }
         }
 
-        // Note: Containment masks stretch clickable area of their buttons to
-        // the screen edges, essentially making them adhere to Fitts's law.
-        // Due to virtual keyboard button having an icon, buttons may have
-        // different heights, so fillHeight is required.
-        //
-        // Note for contributors: Keep this in sync with LockScreenUi.qml footer.
+        // Containment masks extend button hit areas to the screen edges.
+        // fillHeight keeps those areas aligned when icon and text heights differ.
         RowLayout {
             id: footer
             anchors {
@@ -449,8 +438,7 @@ Item {
                 text: i18ndc("plasma-desktop-sddm-theme", "Button to show/hide virtual keyboard", "Virtual Keyboard")
                 icon.name: inputPanel.keyboardActive ? "input-keyboard-virtual-on" : "input-keyboard-virtual-off"
                 onClicked: {
-                    // Otherwise the password field loses focus and virtual keyboard
-                    // keystrokes get eaten
+                    // Keep focus on the password field so virtual keyboard input reaches it.
                     userListComponent.mainPasswordBox.forceActiveFocus();
                     inputPanel.showHide()
                 }
@@ -469,8 +457,7 @@ Item {
                 id: keyboardButton
 
                 onKeyboardLayoutChanged: {
-                    // Otherwise the password field loses focus and virtual keyboard
-                    // keystrokes get eaten
+                    // Keep focus on the password field so virtual keyboard input reaches it.
                     userListComponent.mainPasswordBox.forceActiveFocus();
                 }
 
@@ -487,8 +474,7 @@ Item {
                 id: sessionButton
 
                 onSessionChanged: {
-                    // Otherwise the password field loses focus and virtual keyboard
-                    // keystrokes get eaten
+                    // Keep focus on the password field so virtual keyboard input reaches it.
                     userListComponent.mainPasswordBox.forceActiveFocus();
                 }
 
@@ -520,9 +506,7 @@ Item {
             rejectPasswordAnimation.start()
         }
         function onLoginSucceeded() {
-            //note SDDM will kill the greeter at some random point after this
-            //there is no certainty any transition will finish, it depends on the time it
-            //takes to complete the init
+            // SDDM may stop the greeter before this transition finishes.
             mainStack.opacity = 0
             footer.opacity = 0
         }

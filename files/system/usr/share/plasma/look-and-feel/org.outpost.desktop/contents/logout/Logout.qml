@@ -65,7 +65,7 @@ Item {
         id: kuser
     }
 
-    // For showing an "other users are logged in" hint
+    // Other active sessions need a warning before shutdown.
     SessionsModel {
         id: otherSessionsModel
         includeUnusedSessions: false
@@ -102,7 +102,7 @@ Item {
     Rectangle {
         id: backgroundRect
         anchors.fill: parent
-        //use "black" because this is intended to look like a general darkening of the scene. a dark gray as normal background would just look too "washed out"
+        // Black darkens the background without washing out its colors.
         color: isLightColor(Kirigami.Theme.backgroundColor) ? Kirigami.Theme.backgroundColor : "black"
         opacity: 0.5
     }
@@ -139,7 +139,7 @@ Item {
         PlasmaComponents.Label {
             font.pointSize: Kirigami.Theme.defaultFont.pointSize + 1
             Layout.alignment: Qt.AlignHCenter
-            //opacity, as visible would re-layout
+            // Changing visibility would trigger a layout change.
             opacity: countDownTimer.running ? 1 : 0
             Behavior on opacity {
                 OpacityAnimator {

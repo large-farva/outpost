@@ -7,12 +7,13 @@ usage() {
   cat <<'EOF'
 Usage: cac-check [--help] [--version]
 
-Checks CAC readiness across five areas:
+Checks CAC readiness across these areas:
 
   - PC/SC daemon status
   - PKCS#11 stack (OpenSC, p11-kit)
   - DoD trust store
   - Firefox / NSS database
+  - Okular PDF signing configuration
   - Smart card reader detection
 
 EOF
@@ -47,7 +48,6 @@ check_fail() {
 
 hdr "CAC readiness check"
 
-# ── PC/SC Daemon ──────────────────────────────────────────────
 section "PC/SC Daemon"
 
 if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
@@ -72,7 +72,6 @@ fi
 
 printf '\n'
 
-# ── PKCS#11 Stack ─────────────────────────────────────────────
 section "PKCS#11 Stack"
 
 OPENSC_LIB=""
@@ -94,7 +93,6 @@ fi
 
 printf '\n'
 
-# ── DoD Trust Store ───────────────────────────────────────────
 section "DoD Trust Store"
 
 ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
@@ -113,8 +111,7 @@ fi
 
 printf '\n'
 
-# ── Firefox / NSS ─────────────────────────────────────────────
-section "Firefox / NSS"
+section "CAC / NSS"
 
 NSSDB_DIR="$HOME/.pki/nssdb"
 NSSDB="sql:$NSSDB_DIR"
@@ -122,7 +119,10 @@ NSSDB="sql:$NSSDB_DIR"
 if [[ -f "$NSSDB_DIR/cert9.db" ]]; then
   check_ok "NSS database initialized"
 
-  nss_list="$(modutil -list -dbdir "$NSSDB" 2>/dev/null || true)"
+  nss_list="$(modutil -list -dbdir "$NSSDB" 2>&1)" || {
+    check_fail "Cannot read NSS modules: $nss_list"
+    nss_list=""
+  }
 
   if grep -Fq "p11-kit-proxy" <<< "$nss_list"; then
     check_ok "NSS provider: p11-kit-proxy"
@@ -137,13 +137,32 @@ fi
 
 printf '\n'
 
-# ── Reader ────────────────────────────────────────────────────
+section "Okular PDF signing"
+if have okular; then check_ok "Okular installed"; else check_fail "Okular missing"; fi
+if have kreadconfig6; then
+    config="${XDG_CONFIG_HOME:-$HOME/.config}/okular-generator-popplerrc"
+    pdf_db=$(kreadconfig6 --file "$config" --group Signatures --key DBCertificatePath)
+    pdf_default=$(kreadconfig6 --file "$config" --group Signatures --key UseDefaultCertDB --default true)
+    if [[ "$pdf_default" == false && "$pdf_db" == "$NSSDB_DIR" ]]; then
+        check_ok "Okular uses the CAC NSS database"
+    else
+        check_warn "Okular database differs from CAC setup; run cac-pdf-setup"
+    fi
+else
+    check_warn "Cannot inspect Okular configuration (kreadconfig6 missing)"
+fi
+dim "Configuration checks do not verify a card, PIN, or PDF signature."
+printf '\n'
+
 section "Reader"
 
-reader_output="$(opensc-tool -l 2>/dev/null || true)"
+reader_output="$(opensc-tool -l 2>&1)" || {
+    check_fail "Reader query failed: $reader_output"
+    reader_output=""
+}
 
-if [[ -n "$reader_output" ]] && ! grep -qi "no smart card readers" <<< "$reader_output"; then
-  reader_count="$(wc -l <<< "$reader_output")"
+if grep -Eq '^[[:space:]]*[0-9]+[[:space:]]' <<< "$reader_output"; then
+  reader_count="$(grep -Ec '^[[:space:]]*[0-9]+[[:space:]]' <<< "$reader_output")"
   check_ok "$reader_count reader(s) detected"
 else
   check_warn "No smart card readers detected"
@@ -151,7 +170,6 @@ fi
 
 printf '\n'
 
-# ── Summary ───────────────────────────────────────────────────
 summary="$(ok) $passes passed"
 ((warnings > 0)) && summary="$summary  $(warn) $warnings warning(s)"
 ((failures > 0)) && summary="$summary  $(bad) $failures failed"

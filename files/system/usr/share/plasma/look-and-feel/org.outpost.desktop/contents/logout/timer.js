@@ -6,8 +6,7 @@
 
 .pragma library
 
-//written as a library to share knowledge of when a key was pressed
-//between the multiple views, so pressing a key on one cancels all timers
+// Shared key state lets a keypress in any view cancel every logout timer.
 
 var callbacks = [];
 

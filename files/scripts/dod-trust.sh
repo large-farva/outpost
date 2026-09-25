@@ -13,12 +13,11 @@ CERTS_SHA256_FILE="${CERTS_DIR}/unclass-certificates_pkcs7_DoD.zip.sha256"
 
 [[ -s "$CERTS_ZIP" ]] || die "DoD certificate ZIP not found or empty: $CERTS_ZIP"
 
-if [[ -s "$CERTS_SHA256_FILE" ]]; then
-  (
+[[ -s "$CERTS_SHA256_FILE" ]] || die "DoD certificate checksum missing: $CERTS_SHA256_FILE"
+(
     cd "$CERTS_DIR"
     sha256sum -c "$(basename "$CERTS_SHA256_FILE")" >/dev/null
-  ) || die "SHA256 verification failed for vendored DoD certificate ZIP"
-fi
+) || die "SHA256 verification failed for vendored DoD certificate ZIP"
 
 command -v unzip >/dev/null || die "'unzip' not found"
 command -v openssl >/dev/null || die "'openssl' not found"

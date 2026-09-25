@@ -2,56 +2,54 @@
 set -euo pipefail
 umask 022
 
-# Remove base image branding.
+# Branding cleanup is restricted to image builds.
+if [[ ${IMAGE_NAME:-} != outpost || ! -d ${CONFIG_DIRECTORY:-/nonexistent}/system ]]; then
+    printf 'cleanup.sh must run in the Outpost image build.\n' >&2
+    exit 1
+fi
+
+# Missing replacements would leave the desktop without its theme or wallpaper.
+for asset in \
+    /usr/share/plasma/look-and-feel/org.outpost.desktop/metadata.json \
+    /usr/share/wallpapers/Outpost/contents/images/1920x1080.png \
+    /usr/share/sddm/themes/outpost/Main.qml \
+    /usr/share/plymouth/themes/spinner/watermark.png; do
+    [[ -s "$asset" ]] || { printf 'Missing Outpost asset: %s\n' "$asset" >&2; exit 1; }
+done
 
 shopt -s nullglob
 
-# --- Plasma ---
-
-# Remove Fedora global themes from System Settings > Appearance
-rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop/ \
-       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop/ \
-       /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop/ || true
-
-# Remove stock avatars
-rm -f /usr/share/plasma/avatars/*.png || true
-
-# --- Wallpapers and backgrounds ---
-
-rm -rf /usr/share/backgrounds/f*/ || true
-rm -rf /usr/share/backgrounds/images/ || true
-rm -f /usr/share/backgrounds/default.xml || true
-
-for d in /usr/share/wallpapers/*/; do
-  [[ "$(basename "$d")" == "Outpost" ]] && continue
-  rm -rf "$d"
+paths=(
+    /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
+    /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop
+    /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop
+    /usr/share/plasma/avatars/*.png
+    /usr/share/backgrounds/f*/
+    /usr/share/backgrounds/images
+    /usr/share/backgrounds/default.xml
+    /usr/share/sddm/themes/01-breeze-fedora
+    /usr/share/plymouth/themes/spinner/kinoite-watermark.png
+    /usr/share/fedora-logos
+    /usr/share/anaconda
+    /usr/share/pixmaps/fedora*
+    /etc/favicon.png
+    /usr/share/icons/Bluecurve
+    /usr/share/icewm
+    /usr/lib/swidtag/fedoraproject.org
+)
+# Trailing slashes can cause removal tools to follow directory symlinks.
+for path in "${paths[@]}"; do
+    rm -rf -- "${path%/}"
 done
 
-# Remove broken symlinks left after directory cleanup (e.g., Default, Fedora)
-for f in /usr/share/wallpapers/*; do
-  [[ -L "$f" ]] && rm -f "$f"
+for path in /usr/share/wallpapers/*; do
+    [[ ${path##*/} == Outpost || -L "$path" ]] && continue
+    [[ -d "$path" ]] && rm -rf -- "$path"
 done
-
-# --- SDDM ---
-
-rm -rf /usr/share/sddm/themes/01-breeze-fedora/ || true
-
-# --- Plymouth ---
-
-rm -f /usr/share/plymouth/themes/spinner/kinoite-watermark.png || true
-
-# --- Fedora logos and branding ---
-
-rm -rf /usr/share/fedora-logos/ || true
-rm -rf /usr/share/anaconda/ || true
-rm -f /usr/share/pixmaps/fedora* || true
-rm -f /etc/favicon.png || true
-
-# --- Legacy icon themes with Fedora branding ---
-
-rm -rf /usr/share/icons/Bluecurve/ || true
-rm -rf /usr/share/icewm/ || true # Why is IceWM even here?
-
-# --- Software identification ---
-
-rm -rf /usr/lib/swidtag/fedoraproject.org/ || true
+# Working wallpaper aliases may point to the Outpost wallpaper.
+for path in /usr/share/wallpapers/*; do
+    if [[ -L "$path" && ! -e "$path" ]]; then
+        rm -- "$path"
+    fi
+done
+printf 'Outpost branding cleanup complete.\n'

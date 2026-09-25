@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+case "${1:-}" in
+    -h|--help) printf 'Usage: cac-nss-setup\nRegister OpenSC in your NSS database without replacing existing certificates.\n'; exit 0 ;;
+    --version) printf '1.0\n'; exit 0 ;;
+    '') ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
+esac
+[[ $EUID -ne 0 ]] || { printf 'Run CAC setup as your desktop user, without sudo.\n' >&2; exit 1; }
+for cmd in certutil modutil flock; do
+    command -v "$cmd" >/dev/null || { printf '%s is required\n' "$cmd" >&2; exit 1; }
+done
+nss_dir="$HOME/.pki/nssdb"
+mkdir -p "$nss_dir"
+# The login service and manual setup can run at the same time.
+exec 9>"$nss_dir/.outpost-setup.lock"
+flock 9
+if [[ ! -f "$nss_dir/cert9.db" ]]; then
+    if [[ -f "$nss_dir/cert8.db" || -f "$nss_dir/key4.db" || -f "$nss_dir/key3.db" ]]; then
+        printf 'Existing incomplete or legacy NSS database; leaving it unchanged: %s\n' "$nss_dir" >&2
+        exit 1
+    fi
+    certutil -N -d "sql:$nss_dir" --empty-password
+fi
+modules=$(modutil -list -dbdir "sql:$nss_dir")
+if [[ "$modules" == *p11-kit-proxy.so* || "$modules" == *opensc-pkcs11.so* ]]; then
+    printf 'CAC provider already registered in %s\n' "$nss_dir"
+    exit 0
+fi
+module=''
+for path in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
+    [[ -f "$path" ]] && { module=$path; break; }
+done
+[[ -n "$module" ]] || { printf 'OpenSC PKCS#11 module not found\n' >&2; exit 1; }
+modutil -add 'CAC Module' -libfile "$module" -dbdir "sql:$nss_dir" -force
+printf 'Registered OpenSC in %s\n' "$nss_dir"

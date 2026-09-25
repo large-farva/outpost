@@ -7,7 +7,7 @@ usage() {
   cat <<'EOF'
 Usage: nss-modules [--help] [--version]
 
-Lists PKCS#11 modules configured in the NSS database used by Firefox.
+Lists PKCS#11 modules configured in the NSS database used by CAC applications.
 
 EOF
 }
@@ -29,17 +29,14 @@ printf '\n'
 
 if [[ ! -f "${NSSDB_DIR}/cert9.db" ]]; then
   line "$(warn)" "NSS database not initialized: ${NSSDB_DIR}"
-  dim "Run Firefox once and try again."
+  dim "Run cac-nss-setup and try again."
   exit 1
 fi
 
-output="$(
-  modutil -list -dbdir "$NSSDB" 2>&1 \
-    | grep -v '^[[:space:]]*uri:' \
-    | grep -v '^[[:space:]]*Listing' \
-    | grep -v '^[[:space:]]*-' \
-    || true
-)"
+output="$(modutil -list -dbdir "$NSSDB" 2>&1)" || {
+    printf '%s\n' "$output" >&2
+    exit 1
+}
 
 if [[ -z "$output" ]]; then
   line "$(warn)" "No NSS modules found"

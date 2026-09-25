@@ -28,7 +28,18 @@ jobs:
           SHELLCHECK_OPTS: -x -P files/system/usr/lib/outpost
         with:
           scandir: files/system/usr/bin
-          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh
+          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh files/system/usr/lib/outpost/lib.sh files/system/etc/bashrc files/system/etc/profile.d/outpost-starship.sh
+
+      - name: Check helper behavior
+        run: |
+          python3 tests/helpers.py
+          python3 tests/customization.py
+
+      - name: Verify certificate bundles
+        run: |
+          (cd certificates && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
+          (cd files/system/usr/share/outpost/certs && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
+          cmp certificates/unclass-certificates_pkcs7_DoD.zip files/system/usr/share/outpost/certs/unclass-certificates_pkcs7_DoD.zip
 
   bluebuild:
     name: Build Outpost
@@ -53,7 +64,9 @@ jobs:
         uses: blue-build/github-action@3cd0c2835e691b87a7eb19261a6aee77a56169e2 # v1.11
         with:
           recipe: ${{ matrix.recipe }}
-          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
-          registry_token: ${{ github.token }}
+          # Testing builds must not publish or receive signing credentials.
+          push: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          cosign_private_key: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.SIGNING_SECRET || '' }}
+          registry_token: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.token || '' }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: false

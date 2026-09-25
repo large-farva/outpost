@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+    -h|--help)
+        cat <<'HELP'
+Usage: cac-pdf-setup [--help] [--version]
+Configure RPM Okular to use your CAC provider in ~/.pki/nssdb.
+Run as your desktop user, without sudo. Close Okular before setup.
+
+Signing a PDF:
+  1. Insert your CAC and open the PDF in RPM Okular.
+  2. Choose Tools > Digitally Sign, then draw the signature rectangle.
+  3. Select your CAC signing certificate (not its encryption certificate).
+  4. Enter your PIN in Okular and save a new signed copy.
+  5. Open the Signatures panel to inspect the signature and certificate.
+A missing card or canceled PIN prevents signing; setup does not test your PIN.
+Use cac-check for diagnostics. No PINs or private keys are handled by this helper.
+HELP
+        exit 0 ;;
+    --version) printf '1.0\n'; exit 0 ;;
+    '') ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
+esac
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+[[ $EUID -ne 0 ]] || { log_error 'Run as your desktop user, without sudo.'; exit 1; }
+for cmd in okular kreadconfig6 kwriteconfig6; do
+    have "$cmd" || { log_error "$cmd is required"; exit 1; }
+done
+if pgrep -u "$(id -u)" -x okular >/dev/null; then
+    log_error 'Close Okular before configuring its certificate database.'
+    exit 1
+fi
+config="${XDG_CONFIG_HOME:-$HOME/.config}/okular-generator-popplerrc"
+db="$HOME/.pki/nssdb"
+existing=$(kreadconfig6 --file "$config" --group Signatures --key DBCertificatePath)
+use_default=$(kreadconfig6 --file "$config" --group Signatures --key UseDefaultCertDB --default true)
+if [[ -n "$existing" && "$existing" != "$db" ]] || [[ "$use_default" == false && -z "$existing" ]]; then
+    printf 'Current certificate database: %s\n' "${existing:-not set}"
+    confirm "Replace this choice with $db?" || exit 1
+fi
+cac-nss-setup
+if [[ "$existing" == "$db" && "$use_default" == false ]]; then
+    printf 'Okular already uses %s\nRun cac-pdf-setup --help for signing instructions.\n' "$db"
+    exit 0
+fi
+mkdir -p "$(dirname "$config")"
+if [[ -f "$config" ]]; then
+    backup=$(mktemp "$config.outpost-backup.XXXXXX")
+    cp -p -- "$config" "$backup"
+    printf 'Saved previous settings: %s\n' "$backup"
+fi
+kwriteconfig6 --file "$config" --group Signatures --key DBCertificatePath "$db"
+kwriteconfig6 --file "$config" --group Signatures --key UseDefaultCertDB --type bool false
+printf 'Okular certificate database: %s\nRun cac-pdf-setup --help for signing instructions.\n' "$db"

@@ -1,16 +1,14 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 
-# TODO: offer multiple images for hardware compatibility
-
-# Base image locked to 43 until I figure out Plasma Login Manager.
+# Fedora 43 is pinned pending Plasma Login Manager compatibility testing.
 
 name: outpost
 description: "Fedora Kinoite based image with built-in DoD CAC support."
 base-image: quay.io/fedora/fedora-kinoite
 image-version: 43
 blue-build-tag: none
-platforms: 
+platforms:
   - linux/amd64
 
 modules:
@@ -21,11 +19,6 @@ modules:
         LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
         LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
         LABEL org.opencontainers.image.licenses="Apache-2.0"
-
-  - type: files
-    files:
-      - source: system
-        destination: /
 
   - type: dnf
     repos:
@@ -63,7 +56,7 @@ modules:
         - plasma-discover
         - toolbox
         - vim-minimal
-      
+
   - type: default-flatpaks
     configurations:
       - notify: true
@@ -82,11 +75,16 @@ modules:
         remove-remotes:
           - fedora
           - fedora-testing
-  
+
   - type: fonts
     fonts:
       nerd-fonts:
         - NerdFontsSymbolsOnly
+
+  - type: files
+    files:
+      - source: system
+        destination: /
 
   - type: systemd
     system:
@@ -114,12 +112,12 @@ modules:
       VARIANT_ID: outpost
       IMAGE_ID: outpost
       IMAGE_VERSION: latest-43
-      
+
       HOME_URL: https://github.com/large-farva/outpost
       DOCUMENTATION_URL: https://github.com/large-farva/outpost
       SUPPORT_URL: https://github.com/large-farva/outpost/issues
       BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
-  
+
   - type: initramfs
-  
+
   - type: signing
