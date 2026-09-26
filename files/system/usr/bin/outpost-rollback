@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cat <<'HELP'
+Return to the previous OS deployment
+
+1. Run rpm-ostree status and find the booted and rollback deployments.
+2. If a pending update is listed, cancel it first with:
+       sudo rpm-ostree cleanup --pending
+   Check rpm-ostree status again before continuing.
+3. If a previous deployment is available, stage it with:
+       sudo rpm-ostree rollback
+4. Save your work, then reboot:
+       systemctl reboot
+
+If the desktop will not start, select the previous deployment from the boot menu.
+Rollback does not restore your home directory, Flatpaks, or Homebrew packages.
+
+Before testing an image, keep a working deployment with:
+    sudo ostree admin pin booted
+
+This command only prints instructions. It does not change the system.
+HELP

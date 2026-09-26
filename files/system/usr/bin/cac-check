@@ -1,179 +1,139 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-VERSION="2.0"
-
-usage() {
-  cat <<'EOF'
-Usage: cac-check [--help] [--version]
-
-Checks CAC readiness across these areas:
-
-  - PC/SC daemon status
-  - PKCS#11 stack (OpenSC, p11-kit)
-  - DoD trust store
-  - Firefox / NSS database
-  - Okular PDF signing configuration
-  - Smart card reader detection
-
-EOF
-}
-
-case "${1:-}" in
-  -h|--help) usage; exit 0 ;;
-  --version) printf '%s\n' "$VERSION"; exit 0 ;;
-esac
-
+export LC_ALL=C
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
-
-passes=0
-warnings=0
-failures=0
-
-check_ok() {
-  ((++passes))
-  line "$(ok)" "$*"
-}
-
-check_warn() {
-  ((++warnings))
-  line "$(warn)" "$*"
-}
-
-check_fail() {
-  ((++failures))
-  line "$(bad)" "$*"
-}
-
-hdr "CAC readiness check"
-
-section "PC/SC Daemon"
-
-if systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
-  check_ok "pcscd.socket enabled"
-else
-  check_fail "pcscd.socket not enabled"
-fi
-
-if systemctl is-active pcscd.socket >/dev/null 2>&1; then
-  check_ok "pcscd.socket active"
-else
-  check_warn "pcscd.socket not active (socket activation may be used)"
-fi
-
-if systemctl list-unit-files pcscd.service 2>/dev/null | grep -q pcscd.service; then
-  if systemctl is-active pcscd.service >/dev/null 2>&1; then
-    check_ok "pcscd.service active"
-  else
-    check_warn "pcscd.service not active (socket activation may be used)"
-  fi
-fi
-
-printf '\n'
-
-section "PKCS#11 Stack"
-
-OPENSC_LIB=""
-for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
-  [[ -f "$p" ]] && OPENSC_LIB="$p" && break
-done
-
-if [[ -n "$OPENSC_LIB" ]]; then
-  check_ok "OpenSC module: $OPENSC_LIB"
-else
-  check_fail "OpenSC PKCS#11 module not found"
-fi
-
-if [[ -n "$OPENSC_LIB" ]] && p11-kit list-modules 2>/dev/null | grep -Fq "$OPENSC_LIB"; then
-  check_ok "p11-kit sees OpenSC"
-else
-  check_warn "p11-kit did not list OpenSC (may still work via proxy)"
-fi
-
-printf '\n'
-
-section "DoD Trust Store"
-
-ANCHOR="/etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem"
-if [[ -f "$ANCHOR" ]]; then
-  check_ok "Trust anchor installed"
-else
-  check_fail "Trust anchor missing: $ANCHOR"
-fi
-
-dod_cas="$(trust list --filter=ca-anchors 2>/dev/null | grep -Eci 'dod' || true)"
-if ((dod_cas > 0)); then
-  check_ok "$dod_cas DoD CA entries in trust store"
-else
-  check_warn "No DoD-related CA entries found in trust store"
-fi
-
-printf '\n'
-
-section "CAC / NSS"
-
-NSSDB_DIR="$HOME/.pki/nssdb"
-NSSDB="sql:$NSSDB_DIR"
-
-if [[ -f "$NSSDB_DIR/cert9.db" ]]; then
-  check_ok "NSS database initialized"
-
-  nss_list="$(modutil -list -dbdir "$NSSDB" 2>&1)" || {
-    check_fail "Cannot read NSS modules: $nss_list"
-    nss_list=""
-  }
-
-  if grep -Fq "p11-kit-proxy" <<< "$nss_list"; then
-    check_ok "NSS provider: p11-kit-proxy"
-  elif grep -Fq "opensc-pkcs11.so" <<< "$nss_list"; then
-    check_ok "NSS provider: opensc-pkcs11.so"
-  else
-    check_warn "No CAC PKCS#11 provider in NSS"
-  fi
-else
-  check_warn "NSS database not initialized (~/.pki/nssdb)"
-fi
-
-printf '\n'
-
-section "Okular PDF signing"
-if have okular; then check_ok "Okular installed"; else check_fail "Okular missing"; fi
-if have kreadconfig6; then
-    config="${XDG_CONFIG_HOME:-$HOME/.config}/okular-generator-popplerrc"
-    pdf_db=$(kreadconfig6 --file "$config" --group Signatures --key DBCertificatePath)
-    pdf_default=$(kreadconfig6 --file "$config" --group Signatures --key UseDefaultCertDB --default true)
-    if [[ "$pdf_default" == false && "$pdf_db" == "$NSSDB_DIR" ]]; then
-        check_ok "Okular uses the CAC NSS database"
-    else
-        check_warn "Okular database differs from CAC setup; run cac-pdf-setup"
+report=false
+case "${1:-}" in
+    -h|--help)
+        printf '%s\n' 'Usage: cac-check [--report] [--help] [--version]' \
+            'Checks services, middleware, trust, Firefox policy, NSS, Okular, and card detection.' \
+            '--report omits raw errors and identifying device data. Use cac-report to save it.' \
+            'No PIN is requested. A successful check does not prove website authentication.'
+        exit 0 ;;
+    --version) printf '3.0\n'; exit 0 ;;
+    --report) report=true; OUTPOST_COLOR=0 ;;
+    '') ;;
+    *) log_error 'Unknown option. Use cac-check --help.'; exit 2 ;;
+esac
+[[ $EUID != 0 ]] || { log_error 'Run cac-check without sudo to check your own configuration.'; exit 1; }
+trap 'exit 130' INT
+trap 'exit 143' TERM
+passes=0 warnings=0 failures=0
+check_ok() { ((++passes)); line "$(ok)" "$*"; }
+check_warn() { ((++warnings)); line "$(warn)" "$*"; }
+check_fail() { ((++failures)); line "$(bad)" "$*"; }
+# Capture first: grep -q on a live pipe can give a successful probe SIGPIPE.
+probe() {
+    local rc
+    if ! have "$1"; then
+        check_fail "Missing command: $1"
+        return 1
     fi
-else
-    check_warn "Cannot inspect Okular configuration (kreadconfig6 missing)"
-fi
-dim "Configuration checks do not verify a card, PIN, or PDF signature."
-printf '\n'
-
-section "Reader"
-
-reader_output="$(opensc-tool -l 2>&1)" || {
-    check_fail "Reader query failed: $reader_output"
-    reader_output=""
+    if output=$(timeout --kill-after=2s 12s "$@" </dev/null 2>&1); then return 0; else rc=$?; fi
+    check_fail "$1 probe failed (exit $rc; 124 or 137 means timeout)."
+    if ! $report; then printf '%s\n' "$output" >&2; fi
+    return 1
 }
-
-if grep -Eq '^[[:space:]]*[0-9]+[[:space:]]' <<< "$reader_output"; then
-  reader_count="$(grep -Ec '^[[:space:]]*[0-9]+[[:space:]]' <<< "$reader_output")"
-  check_ok "$reader_count reader(s) detected"
+have timeout || { log_error 'Missing timeout command; hardware checks cannot run safely.'; exit 1; }
+hdr 'CAC connection check'
+section 'Reader service'
+if systemctl is-active --quiet pcscd.socket; then
+    check_ok 'Reader socket is active (the service can start on demand).'
 else
-  check_warn "No smart card readers detected"
+    check_fail 'Reader socket is inactive. Run cac-recover.'
 fi
-
-printf '\n'
-
-summary="$(ok) $passes passed"
-((warnings > 0)) && summary="$summary  $(warn) $warnings warning(s)"
-((failures > 0)) && summary="$summary  $(bad) $failures failed"
-
-box <<< "$summary"
-
+if systemctl is-failed --quiet pcscd.service; then
+    check_fail 'Reader service has failed. Run cac-recover; cac-log shows service logs.'
+fi
+if ! systemctl is-enabled --quiet pcscd.socket; then
+    check_warn 'Reader socket is not enabled at boot. Enable it with sudo systemctl enable --now pcscd.socket.'
+fi
+if probe timedatectl show --property=NTPSynchronized --value; then
+    if [[ "$output" == yes ]]; then check_ok 'System clock is synchronized.'
+    else check_warn 'Clock synchronization is unconfirmed. Check the date and time; certificates depend on it.'; fi
+fi
+section 'Middleware and trust'
+OPENSC_LIB=''
+for path in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
+    [[ ! -f "$path" ]] || { OPENSC_LIB="$path"; break; }
+done
+if [[ -n "$OPENSC_LIB" ]]; then check_ok 'OpenSC module is installed.'
+else check_fail 'OpenSC module is missing.'; fi
+if probe p11-kit list-modules; then
+    if [[ "$output" == *opensc-pkcs11.so* ]]; then check_ok 'p11-kit exposes OpenSC.'
+    else check_fail 'p11-kit does not expose OpenSC. Firefox policy uses this provider.'; fi
+fi
+if [[ -s /etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem ]]; then
+    check_ok 'DoD trust bundle is installed.'
+else check_fail 'DoD trust bundle is missing or empty.'; fi
+if probe trust list --filter=ca-anchors; then
+    count=$(grep -Eci 'label:.*DoD' <<< "$output" || true)
+    if ((count)); then check_ok "$count DoD CA labels in the active trust store."
+    else check_warn 'No DoD CA labels found in the active trust store.'; fi
+fi
+section 'Firefox'
+if have firefox; then check_ok 'Firefox is installed; use the RPM browser for CAC sites.'
+else check_fail 'RPM Firefox is missing.'; fi
+policy=/usr/lib64/firefox/distribution/policies.json
+if have jq && jq -e '.policies.SecurityDevices.Add | to_entries | any(.value == "p11-kit-proxy.so" or .value == "/usr/lib64/p11-kit-proxy.so")' "$policy" >/dev/null 2>&1; then
+    if [[ -f /usr/lib64/p11-kit-proxy.so ]]; then check_ok 'Firefox policy requests the system CAC provider at startup.'
+    else check_fail 'Firefox policy provider library is missing.'; fi
+else
+    check_warn 'Firefox CAC policy is absent or unreadable. Check about:policies after restarting Firefox.'
+fi
+if have pgrep && pgrep -u "$UID" -x 'firefox|firefox-bin' >/dev/null; then
+    check_warn 'Firefox is running. Fully quit and reopen it after recovery or provider changes.'
+fi
+dim 'Policy files do not prove the running browser loaded them. Check about:policies for errors.'
+section 'Shared NSS and PDF signing'
+NSSDB_DIR="$HOME/.pki/nssdb"
+if [[ -f "$NSSDB_DIR/cert9.db" ]]; then
+    if probe modutil -list -dbdir "sql:$NSSDB_DIR"; then
+        if [[ "$output" == *p11-kit-proxy* || "$output" == *opensc-pkcs11.so* ]]; then
+            check_ok 'Shared NSS database has a CAC provider.'
+        else check_warn 'Shared NSS provider is missing. Run cac-nss-setup.'; fi
+    fi
+else check_warn 'Shared NSS database is absent. Run cac-nss-setup (or cac-pdf-setup for signing).'; fi
+if have okular && have kreadconfig6; then
+    config="${XDG_CONFIG_HOME:-$HOME/.config}/okular-generator-popplerrc"
+    if probe kreadconfig6 --file "$config" --group Signatures --key DBCertificatePath; then
+        pdf_db="$output"
+        if probe kreadconfig6 --file "$config" --group Signatures --key UseDefaultCertDB --default true; then
+            if [[ "$output" == false && "$pdf_db" == "$NSSDB_DIR" ]]; then check_ok 'Okular selects the shared NSS database.'
+            else check_warn 'Okular uses another certificate store. Run cac-pdf-setup if signing is needed.'; fi
+        fi
+    fi
+else check_warn 'Okular or KConfig tools are missing; PDF setup was not checked.'; fi
+section 'Reader and card'
+if probe opensc-tool --list-readers; then
+    readers=$(grep -Ec '^[[:space:]]*[0-9]+[[:space:]]' <<< "$output" || true)
+    cards=$(grep -Ec '^[[:space:]]*[0-9]+[[:space:]]+Yes([[:space:]]|$)' <<< "$output" || true)
+    if ((readers == 0)); then check_warn 'No reader detected. Reconnect it; try another USB port.'
+    elif ((cards == 0)); then check_warn "$readers reader(s), no inserted card detected. Remove and reinsert the CAC."
+    else
+        check_ok "$readers reader(s), $cards inserted card(s) detected."
+        if [[ -n "$OPENSC_LIB" ]] && probe pkcs11-tool --module "$OPENSC_LIB" --list-token-slots; then
+            if grep -Eqi 'user PIN (locked|count low|final try)' <<< "$output"; then
+                check_warn 'The token reports a locked PIN or few attempts remaining. Stop retrying and contact card support.'
+            fi
+            tokens=$(grep -Ec '^[[:space:]]*token label[[:space:]]*:' <<< "$output" || true)
+            if ((tokens)); then check_ok "$tokens PKCS#11 token(s) visible without a PIN."
+            else check_fail 'Card detected, but OpenSC exposes no token. Run cac-recover.'; fi
+        fi
+    fi
+fi
+section 'Installed versions'
+if probe rpm -q firefox opensc pcsc-lite pcsc-lite-ccid nss nss-tools p11-kit okular poppler; then
+    printf '%s\n' "$output"
+fi
+if have rpm-ostree && have jq && probe rpm-ostree status --json; then
+    # Origins and commit metadata can contain private registry information.
+    if digest=$(jq -er '.deployments[] | select(.booted) | .checksum | select(test("^[0-9a-f]{64}$"))' <<< "$output"); then
+        printf 'Booted deployment: %s\n' "$digest"
+    else check_warn 'Booted deployment checksum is unavailable.'; fi
+fi
+printf '\n%s passed, %s warning(s), %s failed.\n' "$passes" "$warnings" "$failures"
+printf '%s\n' 'These checks do not test your PIN, certificate validity, or access to a website.' \
+    'For connection trouble, run cac-recover. To save a local report, run cac-report.'
 exit "$((failures > 0 ? 1 : 0))"

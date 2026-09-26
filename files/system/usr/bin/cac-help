@@ -6,14 +6,15 @@ case "${1:-}" in
 esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
-commands=(cac-check cac-certs cac-log scan reader-list nss-modules trust-dod cac-pdf-setup)
+commands=(cac-check cac-recover cac-report cac-certs cac-log scan reader-list nss-modules trust-dod cac-pdf-setup)
 if ! interactive || [[ ! -t 1 ]]; then
     printf '%s\n' "${commands[@]}"
     exit 0
 fi
 while true; do
     hdr 'CAC tools'
-    choice=$(choose 'cac-check — Readiness checks' 'cac-certs — Card certificates' \
+    choice=$(choose 'cac-check — Check CAC connection' 'cac-recover — Fix CAC connection' \
+        'cac-report — Save diagnostic report' 'cac-certs — Card certificates' \
         'cac-log — Diagnostic logs' 'scan — Monitor card events' \
         'reader-list — Connected readers' 'nss-modules — Certificate providers' \
         'trust-dod — DoD trust anchors' 'cac-pdf-setup — Configure PDF signing' Back) || exit 0
