@@ -1,8 +1,19 @@
 # Contributing to Outpost
 
 Use a branch and open a pull request for changes to the image. The testing branch
-is `testing/cac-and-desktop`. Its builds do not publish images; only `main` can
+is `testing`. Its builds do not publish images; only `main` can
 publish. A Git branch is not an installable image channel.
+
+Use `main` for production and `testing` to collect changes awaiting validation.
+The current CAC and desktop work is also kept on `test/cac-desktop`. Create focused
+work branches with names such as `feat/cac-recovery`, `fix/reader-detection`,
+`docs/recovery-guide`, or `ci/build-checks`. Use `test/` for testing work or
+experiments, followed by a short description.
+
+Open work-branch PRs against `testing` when they need image or hardware testing.
+Merge `testing` into `main` only when all included changes are ready. To release
+only selected changes, prepare a separate PR from `main` and review its dependencies.
+Branch names alone do not configure publishing or require reviews.
 
 Keep documentation, build-tool updates, and CAC behavior changes in separate
 commits where possible. Test each proposed change before promoting it to `main`;

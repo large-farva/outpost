@@ -65,7 +65,7 @@ signing can use different certificates on the same card.
 
 ## Testing versions
 
-The `testing/cac-and-desktop` Git branch holds changes under development. Pushing
+The `testing` Git branch holds changes under development. Pushing
 to that branch does not publish an installable testing image. Do not use a Git
 branch name as an image tag unless a release explicitly provides that tag and
 its installation instructions.

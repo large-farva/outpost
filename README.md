@@ -66,7 +66,7 @@ signing still needs verification on the testing branch.
 
 ## Testing and help
 
-Changes on `testing/cac-and-desktop` build without publishing. Only `main` publishes
+Changes on `testing` build without publishing. Only `main` publishes
 the production image. See [contributor guide](CONTRIBUTING.md) for test commands and
 checks required before merging CAC changes.
 
