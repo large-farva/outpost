@@ -23,9 +23,10 @@ bash -n files/system/usr/bin/cac-check
 (cd certificates && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 ```
 
-Run `python3 tests/helpers.py` and `python3 tests/customization.py` for helper,
-cleanup, and shell-startup checks. The tests use temporary files and command
-stubs. There is no coverage threshold.
+Run `python3 tests/helpers.py`, `python3 tests/customization.py`, and
+`python3 tests/cac.py`. They use temporary files and command stubs; no host
+services or CACs are touched. See [contributor guide](CONTRIBUTING.md) for image and
+hardware checks.
 
 GitHub Actions builds pull requests, eligible pushes, weekly schedules, and manual
 runs after lint and tests pass. Testing branches and pull requests do not publish
@@ -51,7 +52,7 @@ Discuss feature removals and changes to shipped customizations before making the
 Run lint and syntax checks for shell changes, then test the affected behavior in
 a built image. CAC changes need `cac-check`, reader detection, and Firefox RPM
 authentication tests with hardware. Okular changes also need a signed PDF test.
-Record any hardware limitations in the pull request.
+Record the tested image digest and any hardware limitations in the pull request.
 
 Use a conventional commit prefix: `feat:`, `fix:`, `refactor:`, `chore:`, or `docs:`.
 Keep commits focused. Pull requests should describe the behavior change, link

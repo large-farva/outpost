@@ -1,28 +1,18 @@
-# DoD certificate bundle
+# DoD certificates
 
-Outpost uses this DoD PKI certificate archive for CAC and PIV authentication.
-The ZIP is stored with its official filename and contents unchanged.
+The unmodified [official DoD PKCS#7 bundle](https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_DoD.zip)
+is stored as `unclass-certificates_pkcs7_DoD.zip`. The image build converts its
+certificates to PEM and installs them in the system trust store.
 
-- `unclass-certificates_pkcs7_DoD.zip` contains the PKCS#7 certificate bundle.
-- `unclass-certificates_pkcs7_DoD.zip.sha256` contains the checksum used by
-  `sha256sum -c`.
+From this directory, verify it with:
 
-## Sources
-
-The archive comes from the [DoD Cyber Exchange](https://public.cyber.mil/pki-pke/):
-
-- [Download the unclassified PKCS#7 bundle](https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_DoD.zip)
-- [PKI/PKE getting-started guide](https://public.cyber.mil/pki-pke/end-users/getting-started/)
-- [DISA PKE distribution page](https://crl.gds.disa.mil/pke)
-
-## Verify the archive
-
-Run this command from the `certificates` directory:
-
-``` sh
+```bash
 sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256
 ```
 
-The image build uses a second copy under `files/system/usr/share/outpost/certs/`.
-When updating the bundle, update both copies and their checksums together. Keep
-the official ZIP filename. CI verifies both checksums and compares the archives.
+When updating the bundle, replace both the archive and checksum here and under
+`files/system/usr/share/outpost/certs/`. Keep the official filename. CI checks both
+checksums and compares the archives. A matching checksum verifies the stored
+copy; it does not establish that the bundle is current.
+
+Source: [DoD Cyber Exchange PKI/PKE](https://public.cyber.mil/pki-pke/).
