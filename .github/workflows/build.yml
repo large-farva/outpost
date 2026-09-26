@@ -10,6 +10,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
@@ -23,17 +26,18 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Lint scripts
-        uses: ludeeus/action-shellcheck@2.0.0
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         env:
           SHELLCHECK_OPTS: -x -P files/system/usr/lib/outpost
         with:
           scandir: files/system/usr/bin
-          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh files/system/usr/lib/outpost/lib.sh files/system/etc/bashrc files/system/etc/profile.d/outpost-starship.sh
+          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh files/system/usr/lib/outpost/lib.sh files/system/etc/bashrc files/system/etc/profile.d/outpost-starship.sh tests/cac-image.sh
 
       - name: Check helper behavior
         run: |
           python3 tests/helpers.py
           python3 tests/customization.py
+          python3 tests/cac.py
 
       - name: Verify certificate bundles
         run: |
@@ -64,6 +68,7 @@ jobs:
         uses: blue-build/github-action@3cd0c2835e691b87a7eb19261a6aee77a56169e2 # v1.11
         with:
           recipe: ${{ matrix.recipe }}
+          cli_version: v0.9.37
           # Testing builds must not publish or receive signing credentials.
           push: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
           cosign_private_key: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.SIGNING_SECRET || '' }}
