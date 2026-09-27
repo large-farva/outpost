@@ -46,7 +46,8 @@ def main():
         outside.mkdir()
         (outside / 'keep').write_text('keep')
         (fixture / 'usr/share/backgrounds/f-link').symlink_to(outside, target_is_directory=True)
-        for _ in range(2):
+        for image_name in ('outpost', 'outpost-testing'):
+            env['IMAGE_NAME'] = image_name
             subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
         assert (wallpapers / 'Default').is_dir()
         assert not (wallpapers / 'Broken').is_symlink()

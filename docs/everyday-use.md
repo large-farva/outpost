@@ -96,5 +96,7 @@ rebase TAG
 ```
 
 The helper shows the target and asks for confirmation. Reboot after a successful
-rebase. With no tag, it selects `latest`. If it cannot determine the image
+rebase. With no tag, it selects `latest` within the installed image channel. Changing
+a tag does not switch between the production and testing packages. Use the
+[channel-switching instructions](testing.md) for that. If it cannot determine the image
 reference, stop and report that error instead of guessing a registry address.

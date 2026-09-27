@@ -4,7 +4,8 @@ Outpost is a Fedora Kinoite image built with BlueBuild and pinned to Fedora 43.
 
 ## Repository layout
 
-- `recipes/recipe.yml` defines packages, Flatpaks, services, branding, and build steps.
+- `recipes/recipe.yml` and `recipes/testing.yml` define the production and testing
+  images. Both use the packages, services, and build steps in `recipes/common.yml`.
 - `files/system/` mirrors the installed filesystem. Commands live in `usr/bin/`,
   shared Bash helpers in `usr/lib/outpost/lib.sh`, and desktop assets in `usr/share/`.
 - `files/scripts/` contains image-build scripts for DoD trust and branding cleanup.
@@ -23,14 +24,14 @@ bash -n files/system/usr/bin/cac-check
 (cd certificates && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 ```
 
-Run `python3 tests/helpers.py`, `python3 tests/customization.py`, and
-`python3 tests/cac.py`. They use temporary files and command stubs; no host
-services or CACs are touched. See [contributor guide](CONTRIBUTING.md) for image and
+Run `python3 tests/helpers.py`, `python3 tests/customization.py`,
+`python3 tests/cac.py`, and `python3 tests/channels.py`. They use temporary files
+and command stubs; no host services or CACs are touched. See [contributor guide](CONTRIBUTING.md) for image and
 hardware checks.
 
 GitHub Actions builds pull requests, eligible pushes, weekly schedules, and manual
-runs after lint and tests pass. Testing branches and pull requests do not publish
-images. Publication is limited to `main`.
+runs after lint and tests pass. `main` publishes Outpost. Pushes and manual runs
+on `testing` publish Outpost Testing. Pull requests and other branches do not publish images.
 
 Test installed commands in an Outpost VM. Build scripts modify system paths and
 must not be used as local development launchers.

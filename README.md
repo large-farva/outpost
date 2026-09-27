@@ -66,8 +66,8 @@ signing still needs verification on the testing branch.
 
 ## Testing and help
 
-Changes on `testing` build without publishing. Only `main` publishes
-the production image. See [contributor guide](CONTRIBUTING.md) for test commands and
+The `testing` branch publishes a separate signed `outpost-testing` image.
+The production image follows `main`. See [contributor guide](CONTRIBUTING.md) for test commands and
 checks required before merging CAC changes.
 
 [Report a problem](https://github.com/large-farva/outpost/issues) with the steps

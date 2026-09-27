@@ -1,8 +1,10 @@
 # Contributing to Outpost
 
 Use a branch and open a pull request for changes to the image. The testing branch
-is `testing`. Its builds do not publish images; only `main` can
-publish. A Git branch is not an installable image channel.
+is `testing`. Successful pushes and manual runs publish the signed
+`ghcr.io/large-farva/outpost-testing:latest` image. `main` publishes
+`ghcr.io/large-farva/outpost:latest` and retains its weekly build schedule.
+Pull requests and other branches build without publishing.
 
 Use `main` for production and `testing` to collect changes awaiting validation.
 The current CAC and desktop work is also kept on `test/cac-desktop`. Create focused
@@ -23,15 +25,32 @@ GitHub Actions are pinned to commits, and Dependabot proposes updates weekly.
 Update the pinned BlueBuild CLI version through a PR with a successful image
 build. Fedora packages and BlueBuild modules still follow upstream repositories.
 
+## Image channels
+
+Both recipes use `recipes/common.yml`. Keep base-image versions aligned in
+`recipe.yml` and `testing.yml`. The channel build script sets the rebase target
+and signature policy after the signing module runs. Both channels use
+`SIGNING_SECRET` and the repository's `cosign.pub`.
+
+The pinned BlueBuild CLI gives non-main branches commit tags. The workflow verifies
+the testing signature, runs the offline container smoke test, copies the same manifest to `latest`, and checks that the
+digest is unchanged. It never retags testing into the production repository.
+
+After the first publication, check the `outpost-testing` package's visibility and
+repository access in GitHub settings. Public installation instructions require
+public read access. Confirm the workflow's signature verification step succeeds
+before sharing a testing image.
+
 ## Local checks
 
 Run from the repository root:
 
 ```bash
-shellcheck -x -P files/system/usr/lib/outpost files/system/usr/bin/* files/scripts/*.sh files/system/usr/lib/outpost/lib.sh tests/cac-image.sh
+shellcheck -x -P files/system/usr/lib/outpost files/system/usr/bin/* files/scripts/*.sh files/system/usr/lib/outpost/lib.sh tests/cac-image.sh .github/scripts/*.sh
 python3 tests/helpers.py
 python3 tests/customization.py
 python3 tests/cac.py
+python3 tests/channels.py
 (cd certificates && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 (cd files/system/usr/share/outpost/certs && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 bluebuild build recipes/recipe.yml --build-driver podman --run-driver podman --no-sign
@@ -67,16 +86,16 @@ Record the image digest, package versions, reader model, and results in the PR.
 
 ## Validation status
 
-ShellCheck, Bash syntax, Actionlint, all three Python checks, and both certificate
-checksums passed. The final local image built with BlueBuild 0.9.37 and rootless
-Podman:
+ShellCheck, Bash syntax, Actionlint, helper regression tests, and certificate
+checksums have passed locally. The testing recipe built with BlueBuild 0.9.37 and
+rootless Podman without publishing or signing the local image:
 
-`c3581d09f26b34fb0de350a647a5cef44fae57c1adea66dd202c2ec6d7b0a457`
+`1285f06d861fdaff94efcb9aea82512d056a20e852ab04e0c6b10dbc56997c24`
 
-The offline container test passed repeated NSS/Okular setup and two Firefox
-starts with one system CAC provider. The policy uses Fedora's registered library
-name to avoid loading the same provider twice.
+Container checks confirmed testing-channel metadata, both signature-policy entries,
+and the shared public-key path. Repeated NSS/Okular setup and two Firefox starts
+passed with one system CAC provider. Publishing tests use command stubs; actual
+registry publication and signature verification still need a GitHub run.
 
 Physical-card authentication, JKO access, PDF signing, and booted-VM recovery remain
 untested. The build reported dracut xattr warnings, so boot validation is required.
-Nothing was published. No build-speed improvement has been measured.

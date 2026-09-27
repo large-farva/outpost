@@ -4,8 +4,6 @@ on:
   schedule:
     - cron: "15 0 * * 0"
   push:
-    paths-ignore:
-      - "**.md"
 
   pull_request:
   workflow_dispatch:
@@ -31,13 +29,14 @@ jobs:
           SHELLCHECK_OPTS: -x -P files/system/usr/lib/outpost
         with:
           scandir: files/system/usr/bin
-          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh files/system/usr/lib/outpost/lib.sh files/system/etc/bashrc files/system/etc/profile.d/outpost-starship.sh tests/cac-image.sh
+          additional_files: files/scripts/dod-trust.sh files/scripts/cleanup.sh files/scripts/image-channel.sh .github/scripts/select-channel.sh .github/scripts/publish-testing-tag.sh files/system/usr/lib/outpost/lib.sh files/system/etc/bashrc files/system/etc/profile.d/outpost-starship.sh tests/cac-image.sh
 
       - name: Check helper behavior
         run: |
           python3 tests/helpers.py
           python3 tests/customization.py
           python3 tests/cac.py
+          python3 tests/channels.py
 
       - name: Verify certificate bundles
         run: |
@@ -54,24 +53,34 @@ jobs:
       packages: write
       id-token: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        recipe:
-          - recipe.yml
-
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - name: Select image channel
+        id: channel
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: bash .github/scripts/select-channel.sh >> "$GITHUB_OUTPUT"
+
       - name: Build Image
         uses: blue-build/github-action@3cd0c2835e691b87a7eb19261a6aee77a56169e2 # v1.11
         with:
-          recipe: ${{ matrix.recipe }}
+          recipe: ${{ steps.channel.outputs.recipe }}
           cli_version: v0.9.37
-          # Testing builds must not publish or receive signing credentials.
-          push: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
-          cosign_private_key: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && secrets.SIGNING_SECRET || '' }}
-          registry_token: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.token || '' }}
+          registry: ghcr.io
+          registry_namespace: large-farva
+          # Only main/testing pushes and manual runs may publish; schedules publish main only.
+          push: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) }}
+          cosign_private_key: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && secrets.SIGNING_SECRET || '' }}
+          registry_token: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && github.token || '' }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: false
+
+      - name: Publish signed testing latest tag
+        if: ${{ github.repository == 'large-farva/outpost' && github.ref == 'refs/heads/testing' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/publish-testing-tag.sh

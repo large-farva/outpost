@@ -3,7 +3,7 @@ set -euo pipefail
 umask 022
 
 # Branding cleanup is restricted to image builds.
-if [[ ${IMAGE_NAME:-} != outpost || ! -d ${CONFIG_DIRECTORY:-/nonexistent}/system ]]; then
+if [[ ( ${IMAGE_NAME:-} != outpost && ${IMAGE_NAME:-} != outpost-testing ) || ! -d ${CONFIG_DIRECTORY:-/nonexistent}/system ]]; then
     printf 'cleanup.sh must run in the Outpost image build.\n' >&2
     exit 1
 fi

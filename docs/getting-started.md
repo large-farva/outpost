@@ -65,7 +65,19 @@ signing can use different certificates on the same card.
 
 ## Testing versions
 
-The `testing` Git branch holds changes under development. Pushing
-to that branch does not publish an installable testing image. Do not use a Git
-branch name as an image tag unless a release explicitly provides that tag and
-its installation instructions.
+The `testing` branch publishes `ghcr.io/large-farva/outpost-testing:latest` after
+its build checks pass. This is separate from the production image at
+`ghcr.io/large-farva/outpost:latest`. Work branches and pull requests do not publish
+installable images.
+
+Testing images can contain changes that have not passed physical CAC or VM tests.
+Start in a VM and keep a known-good deployment before trying one on your working
+machine. Follow the [recovery instructions](recovery.md) to pin that deployment.
+
+Both channels use Outpost's signing key. New images include trust entries for
+both addresses. An older production installation may need a trust entry for the
+testing address before a signed rebase will work. Do not bypass a signature error
+or treat a successful build as proof that CAC login works.
+
+Follow [Try the testing image](testing.md) for signed switching commands and the
+one-time trust setup needed by older installations.

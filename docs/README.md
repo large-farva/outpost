@@ -12,6 +12,8 @@ menu, or run `outpost` in a terminal, to find the system and CAC tools.
   and save a diagnostic report.
 - [Sign a PDF](pdf-signing.md): configure Okular, choose a certificate, and check
   the saved signature.
+- [Try the testing image](testing.md): switch channels with signature verification
+  and return to production.
 - [Recover from an update](recovery.md): use the previous OS deployment and keep
   a working deployment available.
 
