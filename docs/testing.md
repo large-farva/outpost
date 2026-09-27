@@ -89,6 +89,10 @@ rebase fails, retain the error and ask for help rather than disabling verificati
 
 ## Switch to testing
 
+Choose **Rebase** in `outpost`, or run `rebase`, to switch from production to
+testing with confirmation. The helper chooses the opposite of the booted channel.
+On older images without this menu behavior, use the signed command below.
+
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost-testing:latest
 ```
@@ -100,9 +104,7 @@ systemctl reboot
 ```
 
 After logging in, run `rpm-ostree status` and confirm the booted deployment points
-to `outpost-testing`. Future `update` runs will follow that image. The `rebase`
-helper changes tags within the current package; `rebase testing` does not switch
-channels.
+to `outpost-testing`. Future `update` runs will follow that image. The `rebase` helper will then offer production as the return destination.
 
 Run `cac-check`, try the CAC websites you use, and test PDF signing if you need it.
 Check card removal/reinsertion and recovery as well. Keep the image digest and a
@@ -110,6 +112,8 @@ reviewed `cac-report` with any problem report. A successful build does not prove
 that your reader, card, or website works.
 
 ## Return to production
+
+Choose **Rebase** again while booted into testing, or run:
 
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:latest

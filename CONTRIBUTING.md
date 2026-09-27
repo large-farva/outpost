@@ -51,6 +51,7 @@ python3 tests/helpers.py
 python3 tests/customization.py
 python3 tests/cac.py
 python3 tests/channels.py
+python3 tests/tui.py
 (cd certificates && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 (cd files/system/usr/share/outpost/certs && sha256sum -c unclass-certificates_pkcs7_DoD.zip.sha256)
 bluebuild build recipes/recipe.yml --build-driver podman --run-driver podman --no-sign

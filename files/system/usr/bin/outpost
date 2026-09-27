@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.1"
+VERSION="1.2"
 
 usage() {
   cat <<'EOF'
@@ -23,15 +23,16 @@ source /usr/lib/outpost/lib.sh
 
 if [[ "${1:-}" != --status ]] && interactive && [[ -t 1 ]]; then
     while true; do
+        menu_screen
         hdr "Outpost"
-        choice=$(choose 'System status' 'Update' 'CAC tools' 'Fix CAC connection' 'Save diagnostic report' 'Rollback help' 'PDF signing setup' 'PDF signing help' 'Homebrew setup' 'Rebase' 'Quit') || exit 0
+        choice=$(choose 'System status' 'Update' 'CAC tools' 'Fix CAC connection' 'Save diagnostic report' Rollback 'PDF signing setup' 'PDF signing help' 'Homebrew setup' 'Rebase' 'Quit') || exit 0
         case "$choice" in
             'System status') run_cmd outpost --status ;;
             Update) run_cmd update ;;
             'CAC tools') cac-help ;;
             'Fix CAC connection') run_cmd cac-recover ;;
             'Save diagnostic report') run_cmd cac-report ;;
-            'Rollback help') run_cmd outpost-rollback --help ;;
+            Rollback) run_cmd outpost-rollback ;;
             'PDF signing setup') run_cmd cac-pdf-setup ;;
             'PDF signing help') run_cmd cac-pdf-setup --help ;;
             'Homebrew setup') run_cmd brew-setup ;;
@@ -89,9 +90,11 @@ if have rpm-ostree && have jq; then
     deployment_status || log_warn "Unable to read deployment status"
 fi
 
+user_context
+
 if have flatpak; then
   sys_count="$(flatpak list --system --app --columns=application 2>/dev/null | wc -l)"
-  user_count="$(flatpak list --user --app --columns=application 2>/dev/null | wc -l)"
+  user_count="$("${user_cmd[@]}" flatpak list --user --app --columns=application 2>/dev/null | wc -l)"
   line "$(ok)" "Flatpaks   ${sys_count} system, ${user_count} user"
 fi
 
@@ -99,4 +102,16 @@ if have brew || [[ -x /var/home/linuxbrew/.linuxbrew/bin/brew ]]; then
   line "$(ok)" "Homebrew   Installed"
 else
   dim "           Homebrew not installed (run brew-setup)"
+fi
+
+section 'Distrobox'
+if ! have distrobox; then
+    dim 'Distrobox is not installed.'
+elif [[ "$target_uid" == 0 ]]; then
+    dim 'Run as a desktop user to see their containers.'
+elif distrobox_list; then
+    printf '%s container(s)\n' "$distrobox_count"
+    ((distrobox_count == 0)) || printf '%s\n' "$distrobox_output"
+else
+    log_warn 'Unable to list Distrobox containers.'
 fi

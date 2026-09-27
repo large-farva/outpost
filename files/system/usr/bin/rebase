@@ -1,60 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-VERSION="1.1"
-
-usage() {
-  cat <<'EOF'
-Usage: rebase [--help] [--version] [TAG]
-
-Rebases Outpost to a different image tag.
-
-If TAG is not provided, defaults to "latest".
-A reboot is required after rebasing.
-
-EOF
-}
-
-case "${1:-}" in
-  -h|--help) usage; exit 0 ;;
-  --version) printf '%s\n' "$VERSION"; exit 0 ;;
-esac
-
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh
-
-IMAGE_REF=""
-if [[ -f /usr/share/outpost/image-info.json ]] && have jq; then
-  IMAGE_REF="$(jq -r '.["image-ref"] // empty' /usr/share/outpost/image-info.json)"
+case "${1:-}" in
+    -h|--help)
+        printf 'Usage: rebase [--help] [--version]\nSwitch between Outpost production and testing, with confirmation. Reboot manually afterward.\n'
+        exit 0 ;;
+    --version) printf '2.0\n'; exit 0 ;;
+    '') ;;
+    *) log_error "Unknown argument: $1"; exit 2 ;;
+esac
+interactive && [[ -t 1 ]] || { log_error 'Channel switching requires a terminal.'; exit 1; }
+snapshot=$(deployment_snapshot) || exit 1
+origin=$(jq -r '.[] | select(.booted) | .["container-image-reference"] // .origin // ""' <<< "$snapshot")
+case "$origin" in
+    ostree-image-signed:docker://*|ostree-unverified-registry:*|ostree-unverified-image:docker://*) ;;
+    *) log_error 'The booted deployment is not a recognized Outpost container image.'; exit 1 ;;
+esac
+image=${origin#ostree-image-signed:docker://}
+image=${image#ostree-unverified-registry:}
+image=${image#ostree-unverified-image:docker://}
+image=${image%%@*}
+image=${image%%:*}
+case "$image" in
+    ghcr.io/large-farva/outpost) target=ghcr.io/large-farva/outpost-testing; channel=testing ;;
+    ghcr.io/large-farva/outpost-testing) target=ghcr.io/large-farva/outpost; channel=production ;;
+    *) log_error 'The booted image is not an Outpost production or testing image.'; exit 1 ;;
+esac
+hdr 'Switch Outpost channel'
+printf 'Current: %s\nTarget:  %s:latest\n\n' "$image" "$target"
+if [[ "$channel" == testing ]]; then
+    log_warn 'Testing images may contain unfinished changes, including changes affecting CAC access.'
 fi
-
-if [[ -z "$IMAGE_REF" ]]; then
-  line "$(bad)" "Could not determine image ref from /usr/share/outpost/image-info.json"
-  exit 1
-fi
-
-TAG="${1:-latest}"
-TARGET="ostree-image-signed:docker://${IMAGE_REF}:${TAG}"
-
-hdr "Outpost rebase"
-
-dim "Image: $IMAGE_REF"
-dim "Tag:   $TAG"
-printf '\n'
-
-if ! confirm "Rebase to ${IMAGE_REF}:${TAG}?"; then
-  line "$(warn)" "Canceled"
-  exit 0
-fi
-
-printf '\n'
-
-if spin "Rebasing (this may take a while)" rpm-ostree rebase "$TARGET"; then
-  printf '\n'
-  line "$(ok)" "Rebase complete"
-  dim "Reboot to apply: systemctl reboot"
-else
-  printf '\n'
-  line "$(bad)" "Rebase failed"
-  exit 1
-fi
+printf 'This changes the OS used after the next reboot. Personal files and installed user applications remain shared.\n'
+printf 'Keep a working deployment before switching: sudo ostree admin pin booted\n'
+printf 'The target must pass the installed image signature policy. No automatic reboot.\n'
+confirm "Switch to $channel?" || exit 0
+current=$(deployment_snapshot) || exit 1
+[[ "$current" == "$snapshot" ]] || { log_error 'Deployments changed. Run rebase again.'; exit 1; }
+rpm-ostree rebase "ostree-image-signed:docker://$target:latest"
+printf '\nRebase complete. Save your work, then reboot: systemctl reboot\n'

@@ -4,7 +4,8 @@ case "${1:-}" in
     -h|--help)
         cat <<'HELP'
 Usage: update [--help] [--version]
-Update the OS, system and user Flatpaks, and optional Homebrew in sequence.
+Update the OS, system and user Flatpaks, optional Homebrew, and Distrobox in sequence.
+If containers exist, asks before updating all of them; skips them without a terminal.
 Shows native progress and a final summary. Failures do not skip other stages.
 Run as your desktop user; sudo invocation preserves the original user context.
 Reboot manually if a pending OS deployment is reported.
@@ -34,21 +35,7 @@ run_stage() {
 }
 skip() { results+=("$1: skipped ($2)"); }
 
-# Under sudo, inherited HOME may belong to root.
-target_user=${SUDO_USER:-$(id -un)}
-account=$(getent passwd "$target_user") || { log_error "Unknown user: $target_user"; exit 1; }
-IFS=: read -r target_user _ target_uid _ _ target_home _ <<< "$account"
-user_env=(env "HOME=$target_home" "USER=$target_user" "LOGNAME=$target_user"
-    "XDG_CONFIG_HOME=$target_home/.config" "XDG_DATA_HOME=$target_home/.local/share"
-    "XDG_CACHE_HOME=$target_home/.cache" "XDG_RUNTIME_DIR=/run/user/$target_uid"
-    "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$target_uid/bus"
-    'XDG_DATA_DIRS=/var/lib/flatpak/exports/share:/usr/local/share:/usr/share')
-if [[ $(id -u) == "$target_uid" ]]; then
-    # Direct invocations keep the user's XDG settings.
-    user_cmd=()
-else
-    user_cmd=(sudo -H -u "$target_user" "${user_env[@]}")
-fi
+user_context
 
 hdr 'Outpost update'
 section 'Before update'
@@ -78,6 +65,34 @@ if [[ "$target_uid" != 0 ]]; then
         run_stage Homebrew "${user_cmd[@]}" "$brew_path" upgrade
     else skip Homebrew 'not installed'; fi
 else skip Homebrew 'run as a desktop user'; fi
+
+if ! have distrobox; then
+    skip Distrobox 'not installed'
+elif [[ "$target_uid" == 0 ]]; then
+    skip Distrobox 'run as a desktop user'
+elif distrobox_list; then
+    if ((distrobox_count == 0)); then
+        skip Distrobox 'no containers'
+    elif ! interactive || [[ ! -t 1 ]]; then
+        skip Distrobox 'confirmation requires a terminal'
+    else
+        section 'Distrobox containers'
+        printf '%s\n' "$distrobox_output"
+        printf 'Updating all containers may start stopped containers and request package-manager confirmation.\n'
+        rc=0
+        confirm "Update all $distrobox_count Distrobox containers?" || rc=$?
+        case "$rc" in
+            0) run_stage Distrobox "${user_cmd[@]}" distrobox upgrade --all ;;
+            130|143) exit "$rc" ;;
+            *) skip Distrobox 'declined' ;;
+        esac
+    fi
+else
+    rc=$?
+    case "$rc" in 130|143) exit "$rc" ;; esac
+    results+=("Distrobox: failed to list containers (exit $rc)")
+    ((++errors))
+fi
 
 section 'Results'
 printf '%s\n' "${results[@]}"

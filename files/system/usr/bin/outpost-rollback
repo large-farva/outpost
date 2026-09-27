@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cat <<'HELP'
+help() {
+    cat <<'HELP'
 Return to the previous OS deployment
 
 1. Run rpm-ostree status and find the booted and rollback deployments.
@@ -13,10 +14,47 @@ Return to the previous OS deployment
        systemctl reboot
 
 If the desktop will not start, select the previous deployment from the boot menu.
-Rollback does not restore your home directory, Flatpaks, or Homebrew packages.
+Rollback does not restore personal files, Flatpaks, Homebrew, or Distrobox containers.
 
 Before testing an image, keep a working deployment with:
     sudo ostree admin pin booted
 
-This command only prints instructions. It does not change the system.
+Use outpost-rollback in a terminal to select a saved deployment.
+Use outpost-rollback --help to print these instructions.
 HELP
+}
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+case "${1:-}" in
+    -h|--help) help; exit 0 ;;
+    --version) printf '2.0\n'; exit 0 ;;
+    '') ;;
+    *) log_error "Unknown argument: $1"; exit 2 ;;
+esac
+if ! interactive || [[ ! -t 1 ]]; then help; exit 0; fi
+snapshot=$(deployment_snapshot) || exit 1
+options_text=$(jq -r 'to_entries[] | select(.value.booted != true) |
+    "\(.key): \(.value.version // .value.checksum) | \(.value.checksum[0:12]) | \(.value.osname) | serial \(.value.serial)\(if .value.pinned then " | pinned" else "" end)"' <<< "$snapshot")
+if [[ -z "$options_text" ]]; then
+    printf 'No saved rollback deployments are available.\n'
+    exit 0
+fi
+mapfile -t options <<< "$options_text"
+hdr 'Roll back Outpost'
+printf 'Select a locally installed OS deployment for the next boot.\n'
+choice=$(choose "${options[@]}" Help Back) || exit 0
+case "$choice" in Help) help; exit 0 ;; Back) exit 0 ;; esac
+index=${choice%%:*}
+[[ "$index" =~ ^[0-9]+$ ]] || { log_error 'Invalid deployment selection.'; exit 1; }
+jq -e --argjson index "$index" '.[$index] != null and .[$index].booted != true' <<< "$snapshot" >/dev/null || exit 1
+section 'Selected deployment'
+jq -r --argjson index "$index" '.[$index] |
+    "Version: \(.version // "unknown")\nChecksum: \(.checksum)\nOrigin: \(.["container-image-reference"] // .origin // "unknown")"' <<< "$snapshot"
+log_warn 'This changes the default OS deployment for the next boot.'
+printf 'Personal files, Flatpaks, Homebrew packages, and Distrobox containers will not be restored.\n'
+printf 'Save your work before rebooting. No automatic reboot.\n'
+confirm 'Use this deployment on the next boot?' || exit 0
+current=$(deployment_snapshot) || exit 1
+[[ "$current" == "$snapshot" ]] || { log_error 'Deployments changed. Run outpost-rollback again.'; exit 1; }
+sudo ostree admin set-default "$index"
+printf '\nDeployment selected. Reboot when ready: systemctl reboot\n'

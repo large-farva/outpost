@@ -12,6 +12,7 @@ if ! interactive || [[ ! -t 1 ]]; then
     exit 0
 fi
 while true; do
+    menu_screen
     hdr 'CAC tools'
     choice=$(choose 'cac-check — Check CAC connection' 'cac-recover — Fix CAC connection' \
         'cac-report — Save diagnostic report' 'cac-certs — Card certificates' \

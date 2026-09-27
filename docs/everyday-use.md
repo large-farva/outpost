@@ -4,10 +4,11 @@
 
 Launch **Outpost** from the application menu or run `outpost` in a terminal. Use
 the menu to check system status, update, troubleshoot a CAC, configure PDF signing,
-set up Homebrew, or read rollback instructions.
+set up Homebrew, switch image channels, or select a saved OS deployment.
 
 The terminal menu uses Gum when available and a numbered menu otherwise. After a
-command finishes, press Enter to return. Choose **Back** in the CAC menu or
+command finishes, press Enter to return. Each screen replaces the previous menu;
+existing terminal scrollback is preserved. Choose **Back** in the CAC menu or
 **Quit** in the main menu to leave.
 
 Each helper also works as a separate command. `outpost --status` prints status
@@ -29,7 +30,7 @@ update
 ```
 
 Updates run in this order: OS, system Flatpaks, user Flatpaks, then Homebrew if
-installed. Download and installation progress remains visible. The final summary
+installed, followed by optional Distrobox updates. Download and installation progress remains visible. The final summary
 lists each stage's result and how long it took.
 
 A failed stage does not stop independent stages. Read the error above the summary,
@@ -39,7 +40,7 @@ applied.
 
 Run updates as your desktop user. If launched through sudo, the helper runs user
 updates for the invoking account. A direct root login skips user Flatpaks and
-Homebrew.
+Homebrew and Distrobox.
 
 ### When to reboot
 
@@ -85,18 +86,30 @@ The `update` command upgrades installed Homebrew packages when it finds Homebrew
 If setup reports that Homebrew is installed but `brew` is not found, try a new
 login session and keep the setup output when asking for help.
 
-## Change image tags
+## Distrobox containers
 
-Rebasing selects another published image tag. It is different from rolling back
-to a deployment already on the machine. Use this only with a tag supplied by an
-Outpost release:
+System status lists your Distrobox containers with their names, states, and images.
+If containers are found during an update, Outpost asks whether to update all of
+them. Choose **No** to skip them. Choosing **Yes** runs `distrobox upgrade --all`
+with native package-manager output; stopped containers may be started.
+
+Only the invoking user's containers are included. Rootful containers are not
+included. Redirected or unattended updates skip this stage because there is no
+visible confirmation prompt. To update containers separately:
 
 ```bash
-rebase TAG
+distrobox list --no-color
+distrobox upgrade --all
 ```
 
-The helper shows the target and asks for confirmation. Reboot after a successful
-rebase. With no tag, it selects `latest` within the installed image channel. Changing
-a tag does not switch between the production and testing packages. Use the
-[channel-switching instructions](testing.md) for that. If it cannot determine the image
-reference, stop and report that error instead of guessing a registry address.
+## Switch image channels
+
+Choose **Rebase** in Outpost or run `rebase`. From production, it offers testing;
+from testing, it offers production. The helper shows the target and asks for
+confirmation, with **No** selected by default. Testing may include unfinished
+changes that affect CAC access.
+
+Resolve any pending OS deployment first. After a successful rebase, save your work
+and reboot. The helper uses signed images and will not switch an unrecognized
+image origin. See [testing images](testing.md) for preparation, signature setup
+on older installations, and manual commands.

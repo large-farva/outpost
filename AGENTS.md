@@ -25,7 +25,7 @@ bash -n files/system/usr/bin/cac-check
 ```
 
 Run `python3 tests/helpers.py`, `python3 tests/customization.py`,
-`python3 tests/cac.py`, and `python3 tests/channels.py`. They use temporary files
+`python3 tests/cac.py`, `python3 tests/channels.py`, and `python3 tests/tui.py`. They use temporary files
 and command stubs; no host services or CACs are touched. See [contributor guide](CONTRIBUTING.md) for image and
 hardware checks.
 
