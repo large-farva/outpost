@@ -82,9 +82,29 @@ podman run --rm --network none --user 1000:1000 --security-opt label=disable \
   localhost/outpost:latest bash /tmp/test.sh
 ```
 
-This explicitly verifies RPM Okular and checks repeated NSS/Okular setup and
-Firefox startup without duplicate providers. It creates a temporary browser
-profile; no personal profile is used.
+This verifies RPM Firefox/Okular, the English glibc locale package, absence of
+Firefox/all-glibc language packs, and availability of `en_US.UTF-8`, `C`, `C.UTF-8`,
+and `POSIX`. It checks repeated NSS/Okular setup and Firefox startup without
+duplicate providers under US English. It creates a temporary browser profile;
+no personal profile is used.
+
+## English-only image
+
+The recipe installs `glibc-langpack-en` before removing `glibc-all-langpacks`,
+and removes `firefox-langpacks` while excluding it from the install transaction.
+Firefox uses its built-in US English interface. Other weak dependencies remain enabled.
+
+The build-only `files/scripts/cleanup.sh` removes non-English translation,
+HTML-help, man-page, and speech-dispatcher language directories. It retains
+English regional variants, default man sections, shared speech dictionaries,
+and shared locale/help data. Oxygen cleanup targets only the Fedora icons.
+General documentation, license notices, Adobe PDF mappings, RPM metadata,
+compiler tooling, and DNF remain untouched by this trim.
+
+Validate a new image in a VM: check English KDE/Firefox interfaces, English help
+and man pages, speech output, PDF rendering/signing, and CAC authentication.
+Measure the resulting filesystem and published image separately; deleting files
+from an inherited OCI layer does not necessarily reduce its download size.
 
 ## Before merging CAC changes
 

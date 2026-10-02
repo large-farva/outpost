@@ -25,6 +25,8 @@ modules:
       copr:
         - atim/starship
     install:
+      exclude:
+        - firefox-langpacks
       packages:
         - ca-certificates
         - curl
@@ -33,6 +35,7 @@ modules:
         - firefox
         - gcc
         - git
+        - glibc-langpack-en
         - gum
         - jq
         - nss-tools
@@ -56,6 +59,14 @@ modules:
         - plasma-discover
         - toolbox
         - vim-minimal
+
+  # glibc requires a locale provider; install English before removing the archive.
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        - firefox-langpacks
+        - glibc-all-langpacks
 
   - type: default-flatpaks
     configurations:

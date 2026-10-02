@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 022
 
-# Branding cleanup is restricted to image builds.
+# Filesystem cleanup is restricted to image builds.
 if [[ ( ${IMAGE_NAME:-} != outpost && ${IMAGE_NAME:-} != outpost-testing ) || ! -d ${CONFIG_DIRECTORY:-/nonexistent}/system ]]; then
     printf 'cleanup.sh must run in the Outpost image build.\n' >&2
     exit 1
@@ -34,6 +34,8 @@ paths=(
     /usr/share/pixmaps/fedora*
     /etc/favicon.png
     /usr/share/icons/Bluecurve
+    /usr/share/icons/oxygen/*/places/start-here-kde-fedora.png
+    /usr/share/icons/oxygen/scalable/apps/org.fedoraproject.AnacondaInstaller.svg
     /usr/share/icewm
     /usr/lib/swidtag/fedoraproject.org
 )
@@ -52,4 +54,18 @@ for path in /usr/share/wallpapers/*; do
         rm -- "$path"
     fi
 done
-printf 'Outpost branding cleanup complete.\n'
+# Keep shared data and default English manuals, not just directories named en.
+for root in /usr/share/locale /usr/share/doc/HTML /usr/share/man /usr/share/speech-dispatcher/locale; do
+    [[ -d "$root" && ! -L "$root" ]] || continue
+    for path in "$root"/*; do
+        [[ -d "$path" || -L "$path" ]] || continue
+        case "${path##*/}" in
+            en|en.*|en_[A-Z][A-Z]|en_[A-Z][A-Z].*|C|C.*|POSIX) continue ;;
+        esac
+        case "$path" in
+            /usr/share/locale/locale.alias|/usr/share/locale/l10n|/usr/share/doc/HTML/common|/usr/share/man/man*|/usr/share/speech-dispatcher/locale/base) continue ;;
+        esac
+        rm -rf -- "$path"
+    done
+done
+printf 'Outpost branding and English-only cleanup complete.\n'

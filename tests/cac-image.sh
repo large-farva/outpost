@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 [[ $EUID != 0 ]] || { printf 'Run the container as an unprivileged user.\n' >&2; exit 1; }
-rpm -q okular
+rpm -q okular firefox glibc-langpack-en
+for package in firefox-langpacks glibc-all-langpacks; do
+    if rpm -q "$package" >/dev/null 2>&1; then
+        printf 'Unexpected language package: %s\n' "$package" >&2
+        exit 1
+    fi
+done
+locales=$(locale -a)
+for required in C C.utf8 POSIX en_US.utf8; do
+    grep -Fxq "$required" <<< "$locales" || { printf 'Missing locale: %s\n' "$required" >&2; exit 1; }
+done
+export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 test_home=$(mktemp -d)
 trap 'rm -rf -- "$test_home"' EXIT
 export HOME="$test_home" XDG_CONFIG_HOME="$test_home/.config"
@@ -26,4 +37,4 @@ for attempt in 1 2; do
     test -s "$HOME/firefox.png"
     printf 'PASS: Firefox start %s, one system CAC provider\n' "$attempt"
 done
-printf 'PASS: RPM Okular installed; repeated NSS and Okular setup; hardware authentication not tested\n'
+printf 'PASS: English locales, RPM Firefox/Okular, and repeated CAC setup; hardware authentication not tested\n'

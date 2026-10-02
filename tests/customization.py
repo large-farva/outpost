@@ -46,9 +46,86 @@ def main():
         outside.mkdir()
         (outside / 'keep').write_text('keep')
         (fixture / 'usr/share/backgrounds/f-link').symlink_to(outside, target_is_directory=True)
+        locale_roots = ('locale', 'doc/HTML', 'man', 'speech-dispatcher/locale')
+        kept = [
+            'usr/share/locale/locale.alias',
+            'usr/share/locale/l10n/resource',
+            'usr/share/doc/HTML/common/style.css',
+            'usr/share/doc/example/README',
+            'usr/share/doc/example/fr/guide.txt',
+            'usr/share/licenses/example/LICENSE',
+            'usr/share/man/man1/example.1',
+            'usr/share/man/man3type/example.3type',
+            'usr/share/speech-dispatcher/locale/base/messages',
+            'usr/share/adobe/resources/mapping/Japan1',
+            'usr/share/adobe/resources/mapping/Korea1',
+            'usr/share/rpm/rpmdb.sqlite',
+            'usr/share/icons/oxygen/32x32/places/folder.png',
+            'usr/share/icons/oxygen/32x32/apps/start-here-kde-fedora.png',
+            'usr/share/icons/oxygen/32x32/apps/org.fedoraproject.AnacondaInstaller.svg',
+            'usr/share/icons/oxygen/scalable/apps/unrelated.svg',
+        ]
+        icons_removed = [
+            f'usr/share/icons/oxygen/{size}/places/start-here-kde-fedora.png'
+            for size in ('16x16', '32x32', 'scalable')
+        ] + ['usr/share/icons/oxygen/scalable/apps/org.fedoraproject.AnacondaInstaller.svg']
+        removed = icons_removed.copy()
+        for root in locale_roots:
+            kept.append(f'usr/share/{root}/README')
+            for language in ('en', 'en_US', 'en_GB', 'en.UTF-8', 'en_US.UTF-8', 'C', 'C.utf8', 'POSIX'):
+                kept.append(f'usr/share/{root}/{language}/resource')
+            for language in ('fr', 'de_DE', 'zh_CN'):
+                relative = f'usr/share/{root}/{language}'
+                path = fixture / relative
+                path.mkdir(parents=True)
+                (path / 'resource').write_text('remove')
+                removed.append(relative)
+        for relative in kept + icons_removed:
+            path = fixture / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('asset')
+        for root in locale_roots:
+            for language, target in (('es', outside), ('ja', tmp / 'missing')):
+                relative = f'usr/share/{root}/{language}'
+                (fixture / relative).symlink_to(target, target_is_directory=True)
+                removed.append(relative)
         for image_name in ('outpost', 'outpost-testing'):
             env['IMAGE_NAME'] = image_name
-            subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
+            for _ in range(2):
+                subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
+                for relative in kept:
+                    assert (fixture / relative).read_text() == 'asset', relative
+                for relative in removed:
+                    path = fixture / relative
+                    assert not path.exists() and not path.is_symlink(), relative
+                assert (outside / 'keep').read_text() == 'keep'
+            # Exercise locale.alias as both a regular shared file and a symlink.
+            alias = fixture / 'usr/share/locale/locale.alias'
+            if image_name == 'outpost':
+                alias.rename(outside / 'locale.alias')
+                alias.symlink_to(outside / 'locale.alias')
+            else:
+                assert alias.is_symlink()
+
+        # A symlink at the cleanup root must not expose its target to pruning.
+        root_targets = []
+        for index, root in enumerate(locale_roots):
+            path = fixture / 'usr/share' / root
+            target = tmp / f'locale-root-{index}'
+            path.rename(target)
+            path.symlink_to(target, target_is_directory=True)
+            (target / 'fr').mkdir()
+            (target / 'fr/resource').write_text('keep')
+            root_targets.append((path, target))
+        for image_name in ('outpost', 'outpost-testing'):
+            env['IMAGE_NAME'] = image_name
+            for _ in range(2):
+                subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
+                for path, target in root_targets:
+                    assert path.is_symlink(), path
+                    assert (target / 'fr/resource').read_text() == 'keep', target
+                for relative in kept:
+                    assert (fixture / relative).read_text() == 'asset', relative
         assert (wallpapers / 'Default').is_dir()
         assert not (wallpapers / 'Broken').is_symlink()
         assert not (wallpapers / 'Fedora').exists()
@@ -82,7 +159,8 @@ def main():
                                 env=env | {'TEST_BASHRC': str(bashrc)}, text=True,
                                 check=True, capture_output=True)
         assert result.stdout == r'[\u@\h:\l \W]\$ ', result.stdout
-        print('PASS: cleanup guard, missing assets, idempotence, symlink safety, Bash defaults, and Starship startup')
+        print('PASS: cleanup guard, missing assets, locale and icon pruning, preserved resources, '
+              'idempotence, symlink safety, Bash defaults, and Starship startup')
 
 
 if __name__ == '__main__':
