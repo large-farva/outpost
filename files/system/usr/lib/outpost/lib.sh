@@ -15,7 +15,6 @@ dim() { styled '38;5;244' "$*"; printf '\n'; }
 ok() { if ((OUTPOST_COLOR)); then styled '1;38;5;42' '✓'; else printf 'OK'; fi; }
 warn() { if ((OUTPOST_COLOR)); then styled '1;38;5;214' '!'; else printf 'WARN'; fi; }
 bad() { if ((OUTPOST_COLOR)); then styled '1;38;5;196' '✗'; else printf 'ERROR'; fi; }
-log_info() { printf 'INFO: %s\n' "$*"; }
 log_warn() { printf 'WARN: %s\n' "$*" >&2; }
 log_error() { printf 'ERROR: %s\n' "$*" >&2; }
 line() { printf '%s ' "$1"; shift; printf '%s\n' "$*"; }
@@ -25,15 +24,12 @@ hdr() {
             --border-foreground 68 --foreground 68 --bold "$1"
     else printf '\n%s\n\n' "$1"; fi
 }
-section() { printf '\n'; styled '1' "$1"; printf '\n'; }
-accent() { styled '1;38;5;68' "$*"; printf '\n'; }
+section() { printf '\n'; styled '1' "$*"; printf '\n'; }
 box() {
     if ((OUTPOST_COLOR)) && have gum; then
         gum style --border rounded --padding '0 1' --border-foreground 244
     else cat; fi
 }
-# A spinner would hide package-manager progress and authentication prompts.
-spin() { local title="$1"; shift; section "$title"; "$@"; }
 confirm() {
     interactive && [[ -t 1 ]] || { log_warn 'Confirmation requires a terminal.'; return 1; }
     if have gum; then

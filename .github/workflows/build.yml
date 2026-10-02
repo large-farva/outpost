@@ -57,6 +57,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Select image channel
         id: channel
@@ -69,7 +71,9 @@ jobs:
       - name: Build Image
         uses: blue-build/github-action@3cd0c2835e691b87a7eb19261a6aee77a56169e2 # v1.11
         with:
-          recipe: ${{ steps.channel.outputs.recipe }}
+          recipe: recipe.yml
+          # A second checkout would discard the selected image name.
+          skip_checkout: true
           cli_version: v0.9.37
           registry: ghcr.io
           registry_namespace: large-farva

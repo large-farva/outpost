@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Run inside a disposable Outpost container without a reader or network access.
 set -euo pipefail
 [[ $EUID != 0 ]] || { printf 'Run the container as an unprivileged user.\n' >&2; exit 1; }
+rpm -q okular
 test_home=$(mktemp -d)
 trap 'rm -rf -- "$test_home"' EXIT
 export HOME="$test_home" XDG_CONFIG_HOME="$test_home/.config"
@@ -26,4 +26,4 @@ for attempt in 1 2; do
     test -s "$HOME/firefox.png"
     printf 'PASS: Firefox start %s, one system CAC provider\n' "$attempt"
 done
-printf 'PASS: repeated NSS and Okular setup; hardware authentication not tested\n'
+printf 'PASS: RPM Okular installed; repeated NSS and Okular setup; hardware authentication not tested\n'

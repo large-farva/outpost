@@ -27,10 +27,15 @@ build. Fedora packages and BlueBuild modules still follow upstream repositories.
 
 ## Image channels
 
-Both recipes use `recipes/common.yml`. Keep base-image versions aligned in
-`recipe.yml` and `testing.yml`. The channel build script sets the rebase target
-and signature policy after the signing module runs. Both channels use
-`SIGNING_SECRET` and the repository's `cosign.pub`.
+Both channels use `recipes/recipe.yml`, which contains all modules; there are no
+separate common or testing recipes. CI's `.github/scripts/select-channel.sh`
+changes only the top-level `name` in the working-tree recipe to `outpost` or
+`outpost-testing`. BlueBuild always uses `recipe.yml`, and the branch/event
+publishing boundaries above remain unchanged.
+
+Image metadata, signing, and tag publishing are unchanged. The channel build
+script sets the rebase target and signature policy after the signing module runs.
+Both channels use `SIGNING_SECRET` and the repository's `cosign.pub`.
 
 The pinned BlueBuild CLI gives non-main branches commit tags. The workflow verifies
 the testing signature, runs the offline container smoke test, copies the same manifest to `latest`, and checks that the
@@ -57,6 +62,13 @@ python3 tests/tui.py
 bluebuild build recipes/recipe.yml --build-driver podman --run-driver podman --no-sign
 ```
 
+Local builds default to the committed production name `outpost` regardless of
+branch. For a local testing-channel build, run
+`EVENT_NAME=push REF=refs/heads/testing bash .github/scripts/select-channel.sh`
+before the build command above. This only prepares the recipe; it does not publish.
+Use `localhost/outpost-testing:latest` for the smoke test below, and restore
+`name: outpost` in the recipe before committing.
+
 The Python tests use temporary files and command stubs. They do not update the
 host, restart its services, or use a CAC. Build scripts belong inside an image
 build; do not run them directly on the host.
@@ -70,12 +82,16 @@ podman run --rm --network none --user 1000:1000 --security-opt label=disable \
   localhost/outpost:latest bash /tmp/test.sh
 ```
 
-This checks repeated NSS/Okular setup and Firefox startup without duplicate
-providers. It creates a temporary browser profile; no personal profile is used.
+This explicitly verifies RPM Okular and checks repeated NSS/Okular setup and
+Firefox startup without duplicate providers. It creates a temporary browser
+profile; no personal profile is used.
 
 ## Before merging CAC changes
 
 - Boot the image in a VM. Check both desktop launchers and menu cancellation.
+- Run `rpm -q okular` and `flatpak list --app --columns=application,installation`.
+  Confirm RPM Okular is installed, no Okular Flatpak is installed, and PDFs open
+  in RPM Okular.
 - Check updates, pending-deployment reporting, and rollback.
 - Run CAC checks with no reader, an empty reader, and an inserted card.
 - Test Firefox authentication, then remove/reinsert the card and run recovery.
@@ -87,9 +103,13 @@ Record the image digest, package versions, reader model, and results in the PR.
 
 ## Validation status
 
+The following results are historical, from before recipe consolidation; they do
+not validate the consolidated `recipes/recipe.yml` or the new RPM Okular check.
+No new image validation is recorded here.
+
 ShellCheck, Bash syntax, Actionlint, helper regression tests, and certificate
-checksums have passed locally. The testing recipe built with BlueBuild 0.9.37 and
-rootless Podman without publishing or signing the local image:
+checksums passed locally. The former `recipes/testing.yml` built with BlueBuild
+0.9.37 and rootless Podman without publishing or signing the local image:
 
 `1285f06d861fdaff94efcb9aea82512d056a20e852ab04e0c6b10dbc56997c24`
 

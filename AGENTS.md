@@ -4,8 +4,8 @@ Outpost is a Fedora Kinoite image built with BlueBuild and pinned to Fedora 43.
 
 ## Repository layout
 
-- `recipes/recipe.yml` and `recipes/testing.yml` define the production and testing
-  images. Both use the packages, services, and build steps in `recipes/common.yml`.
+- `recipes/recipe.yml` defines both production and testing images, including all
+  packages, services, and build steps. BlueBuild always uses this recipe.
 - `files/system/` mirrors the installed filesystem. Commands live in `usr/bin/`,
   shared Bash helpers in `usr/lib/outpost/lib.sh`, and desktop assets in `usr/share/`.
 - `files/scripts/` contains image-build scripts for DoD trust and branding cleanup.
@@ -32,6 +32,11 @@ hardware checks.
 GitHub Actions builds pull requests, eligible pushes, weekly schedules, and manual
 runs after lint and tests pass. `main` publishes Outpost. Pushes and manual runs
 on `testing` publish Outpost Testing. Pull requests and other branches do not publish images.
+CI's `.github/scripts/select-channel.sh` changes only the top-level `name` in the
+working-tree `recipes/recipe.yml` to `outpost` or `outpost-testing`. Local builds
+use the committed `outpost` name regardless of branch; see the contributor guide
+for local testing-channel preparation. Image metadata, signing, and tag publishing
+remain unchanged.
 
 Test installed commands in an Outpost VM. Build scripts modify system paths and
 must not be used as local development launchers.
@@ -52,8 +57,12 @@ Discuss feature removals and changes to shipped customizations before making the
 
 Run lint and syntax checks for shell changes, then test the affected behavior in
 a built image. CAC changes need `cac-check`, reader detection, and Firefox RPM
-authentication tests with hardware. Okular changes also need a signed PDF test.
-Record the tested image digest and any hardware limitations in the pull request.
+authentication tests with hardware. The offline smoke test explicitly verifies
+RPM Okular. In a booted VM, run `rpm -q okular` and
+`flatpak list --app --columns=application,installation`, confirm no Okular Flatpak
+is installed, and verify PDFs open in RPM Okular. Okular changes also need a
+signed PDF test. Record the tested image digest and any hardware limitations in
+the pull request.
 
 Use a conventional commit prefix: `feat:`, `fix:`, `refactor:`, `chore:`, or `docs:`.
 Keep commits focused. Pull requests should describe the behavior change, link

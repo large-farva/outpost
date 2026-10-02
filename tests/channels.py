@@ -12,26 +12,38 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     selector = ROOT / '.github/scripts/select-channel.sh'
+    workflow = (ROOT / '.github/workflows/build.yml').read_text()
+    assert '\n          recipe: recipe.yml\n' in workflow
+    assert '\n          skip_checkout: true\n' in workflow
     cases = (
-        ('push', 'refs/heads/main', '', 'recipe.yml', True),
-        ('schedule', 'refs/heads/main', '', 'recipe.yml', True),
-        ('workflow_dispatch', 'refs/heads/main', '', 'recipe.yml', True),
-        ('push', 'refs/heads/testing', '', 'testing.yml', True),
-        ('workflow_dispatch', 'refs/heads/testing', '', 'testing.yml', True),
-        ('schedule', 'refs/heads/testing', '', 'testing.yml', False),
-        ('push', 'refs/heads/test/cac-desktop', '', 'recipe.yml', False),
-        ('workflow_dispatch', 'refs/heads/test/cac-desktop', '', 'recipe.yml', False),
-        ('push', 'refs/tags/testing', '', 'recipe.yml', False),
-        ('pull_request', 'refs/pull/1/merge', 'testing', 'testing.yml', False),
-        ('pull_request', 'refs/pull/1/merge', 'main', 'recipe.yml', False),
-        ('pull_request', 'refs/heads/main', '', 'recipe.yml', False),
-        ('pull_request_target', 'refs/heads/testing', '', 'testing.yml', False),
+        ('push', 'refs/heads/main', '', 'outpost', True),
+        ('schedule', 'refs/heads/main', '', 'outpost', True),
+        ('workflow_dispatch', 'refs/heads/main', '', 'outpost', True),
+        ('push', 'refs/heads/testing', '', 'outpost-testing', True),
+        ('workflow_dispatch', 'refs/heads/testing', '', 'outpost-testing', True),
+        ('schedule', 'refs/heads/testing', '', 'outpost-testing', False),
+        ('push', 'refs/heads/test/cac-desktop', '', 'outpost', False),
+        ('workflow_dispatch', 'refs/heads/test/cac-desktop', '', 'outpost', False),
+        ('push', 'refs/tags/testing', '', 'outpost', False),
+        ('pull_request', 'refs/pull/1/merge', 'testing', 'outpost-testing', False),
+        ('pull_request', 'refs/pull/1/merge', 'main', 'outpost', False),
+        ('pull_request', 'refs/heads/main', '', 'outpost', False),
+        ('pull_request_target', 'refs/heads/testing', '', 'outpost-testing', False),
     )
-    for event, ref, base, recipe, publish in cases:
-        result = subprocess.run(['bash', str(selector)], check=True, capture_output=True, text=True,
-                                env=os.environ | {'EVENT_NAME': event, 'REF': ref, 'BASE_REF': base})
-        values = dict(line.split('=', 1) for line in result.stdout.splitlines())
-        assert values == {'recipe': recipe, 'publish': str(publish).lower()}, (event, ref, values)
+    original = (ROOT / 'recipes/recipe.yml').read_text()
+    assert original.count('\nname: outpost\n') == 1
+    with tempfile.TemporaryDirectory(prefix='outpost-recipe-') as directory:
+        tmp = Path(directory)
+        recipe = tmp / 'recipes/recipe.yml'
+        recipe.parent.mkdir()
+        recipe.write_text(original)
+        for event, ref, base, image, publish in cases:
+            result = subprocess.run(['bash', str(selector)], cwd=tmp, check=True,
+                                    capture_output=True, text=True,
+                                    env=os.environ | {'EVENT_NAME': event, 'REF': ref, 'BASE_REF': base})
+            values = dict(line.split('=', 1) for line in result.stdout.splitlines())
+            assert values == {'publish': str(publish).lower()}, (event, ref, values)
+            assert recipe.read_text() == original.replace('\nname: outpost\n', f'\nname: {image}\n')
 
     with tempfile.TemporaryDirectory(prefix='outpost-channels-') as directory:
         tmp = Path(directory)
