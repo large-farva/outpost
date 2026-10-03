@@ -3,11 +3,11 @@
 Choose **Rollback** in `outpost`, or run `outpost-rollback`. The menu lists saved
 OS deployments, including pinned deployments. Select one, review its version and
 image origin, and confirm to use it on the next boot. **No** is selected by default.
-The current deployment stays available, and the helper does not reboot for you.
+Your current deployment stays available, and the helper does not reboot for you.
 If no older deployment is saved, there is nothing to select.
 
-A pending deployment blocks the selector. Finish that update by rebooting, or
-explicitly cancel it using the commands below. Rollback never discards it for you.
+If a deployment is pending, you cannot select a rollback yet. Finish that update
+by rebooting, or cancel it using the commands below. Rollback never discards it for you.
 
 ## Manual rollback
 
@@ -32,9 +32,9 @@ sudo ostree admin pin booted
 ```
 
 Rollback changes the OS deployment. It does not restore your home directory,
-Flatpaks, Homebrew packages, or Distrobox containers. Keep backups of personal files. Local `/etc`
-changes may survive image updates; compare a troublesome configuration with its
-image default under `/usr/etc` before changing it.
+Flatpaks, Homebrew packages, or Distrobox containers. Keep backups of personal files.
+Local `/etc` changes may survive image updates. If a configuration causes problems,
+compare it with the image default under `/usr/etc` before changing it.
 
 Run `outpost-rollback --help` for these instructions without changing the system.
 See the [rpm-ostree administrator handbook](https://github.com/coreos/rpm-ostree/blob/main/docs/administrator-handbook.md).

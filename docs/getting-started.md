@@ -1,7 +1,7 @@
 # Get started with Outpost
 
 These instructions are for an existing Fedora Kinoite or compatible Kinoite-based
-installation. They switch the installed OS image; they are not a disk installer.
+installation. They switch the installed OS image rather than install to a new disk.
 Back up important files and save your work before starting.
 
 ## Install the image
@@ -18,7 +18,7 @@ Wait for the command to finish successfully, then reboot:
 systemctl reboot
 ```
 
-This first deployment supplies Outpost's signing configuration. After logging in,
+This first deployment includes Outpost's signing configuration. After logging in,
 switch to the signed image:
 
 ```bash
@@ -29,9 +29,9 @@ systemctl reboot
 Again, reboot only after the rebase succeeds. Future updates should use the signed
 image. The project's public verification key is [cosign.pub](../cosign.pub).
 
-If either command fails, keep the error output and resolve that failure before
-moving on. If the new deployment will not start, use the previous deployment from
-the boot menu; see [recovery](recovery.md).
+If either command fails, keep the error output and fix the problem before
+moving on. If the new deployment won't start, use the previous deployment from
+the boot menu. See [recovery](recovery.md) for help.
 
 ## Check the installation
 
@@ -55,8 +55,8 @@ personal settings or locally changed files under `/etc`.
 3. When asked, choose the authentication certificate and enter the PIN in the
    application's prompt.
 
-Use RPM Firefox for this workflow; Flatpak browsers are not covered by Outpost's
-CAC setup. If the site does not see the card, run `cac-check` or choose **Fix CAC
+Use RPM Firefox for this workflow. Outpost's CAC setup doesn't cover Flatpak
+browsers. If the site does not see the card, run `cac-check` or choose **Fix CAC
 connection** in Outpost. The [CAC guide](cac.md) explains the checks and recovery
 steps.
 

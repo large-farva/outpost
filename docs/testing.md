@@ -1,6 +1,6 @@
 # Try the testing image
 
-Testing is for checking changes before they reach normal installations. Use a VM
+The testing image lets you check changes before they reach production. Use a VM
 first, then test with a physical CAC if needed. Keep a working deployment available
 on any machine used for testing.
 
@@ -25,7 +25,7 @@ sudo ostree admin pin booted
 
 If an update is pending, finish it or follow the [recovery guide](recovery.md) to
 remove that pending deployment before switching channels. Pinning keeps the OS
-deployment available; it does not back up your home directory or applications.
+deployment available, but it doesn't back up your home directory or applications.
 
 ## Check signed access
 
@@ -85,7 +85,7 @@ SETUP
 
 If a testing entry already exists but uses a different key or policy, inspect it
 before changing it. Keep the backup path printed by setup. If a later signed
-rebase fails, retain the error and ask for help rather than disabling verification.
+rebase fails, save the error and ask for help rather than disabling verification.
 
 ## Switch to testing
 
@@ -104,7 +104,7 @@ systemctl reboot
 ```
 
 After logging in, run `rpm-ostree status` and confirm the booted deployment points
-to `outpost-testing`. Future `update` runs will follow that image. The `rebase` helper will then offer production as the return destination.
+to `outpost-testing`. Future `update` runs will follow that image. The `rebase` helper will then offer to switch back to production.
 
 Run `cac-check`, try the CAC websites you use, and test PDF signing if you need it.
 Check card removal/reinsertion and recovery as well. Keep the image digest and a

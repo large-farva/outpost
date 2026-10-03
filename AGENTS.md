@@ -25,8 +25,9 @@ bash -n files/system/usr/bin/cac-check
 ```
 
 Run `python3 tests/helpers.py`, `python3 tests/customization.py`,
-`python3 tests/cac.py`, `python3 tests/channels.py`, and `python3 tests/tui.py`. They use temporary files
-and command stubs; no host services or CACs are touched. See [contributor guide](CONTRIBUTING.md) for image and
+`python3 tests/cac.py`, `python3 tests/channels.py`, and `python3 tests/tui.py`.
+These tests use temporary files and command stubs, so they won't touch host
+services or CACs. See the [contributor guide](CONTRIBUTING.md) for image and
 hardware checks.
 
 GitHub Actions builds pull requests, eligible pushes, weekly schedules, and manual
@@ -34,23 +35,23 @@ runs after lint and tests pass. `main` publishes Outpost. Pushes and manual runs
 on `testing` publish Outpost Testing. Pull requests and other branches do not publish images.
 CI's `.github/scripts/select-channel.sh` changes only the top-level `name` in the
 working-tree `recipes/recipe.yml` to `outpost` or `outpost-testing`. Local builds
-use the committed `outpost` name regardless of branch; see the contributor guide
+use the committed `outpost` name regardless of branch. See the contributor guide
 for local testing-channel preparation. Image metadata, signing, and tag publishing
 remain unchanged.
 
-Test installed commands in an Outpost VM. Build scripts modify system paths and
-must not be used as local development launchers.
+Test installed commands in an Outpost VM. Don't run the image-build scripts on
+your host as development shortcuts: they modify system paths.
 
 ## Code style
 
 Follow `.editorconfig`: four spaces, UTF-8, LF endings, a final newline, and no
 trailing whitespace. Preserve the surrounding YAML structure. Use hyphenated
 command names such as `cac-check` and snake_case Bash functions. Reuse `lib.sh`
-and retain ShellCheck directives. ShellCheck is the configured linter; there is
+and retain ShellCheck directives. ShellCheck is the configured linter. There is
 no configured formatter.
 
-Comments should explain a constraint, workaround, or non-obvious decision.
-Avoid comments that repeat the code or refer to a development conversation.
+Use comments to explain constraints, workarounds, or decisions that aren't obvious
+from the code. Don't repeat the code or refer back to a development conversation.
 Discuss feature removals and changes to shipped customizations before making them.
 
 ## Validation and pull requests
@@ -65,11 +66,12 @@ signed PDF test. Record the tested image digest and any hardware limitations in
 the pull request.
 
 Use a conventional commit prefix: `feat:`, `fix:`, `refactor:`, `chore:`, or `docs:`.
-Keep commits focused. Pull requests should describe the behavior change, link
-relevant issues, and report validation. Include screenshots for desktop changes.
+Keep commits focused. In a pull request, explain what changes for the user, link
+relevant issues, and say what you tested. Include screenshots for desktop changes.
 
 ## Keys and certificates
 
-Never commit signing private keys. CI uses `SIGNING_SECRET`; `cosign.pub` is public.
+Never commit signing private keys. CI uses `SIGNING_SECRET` for the private key.
+The verification key in `cosign.pub` is public.
 When updating DoD certificates, keep the official archive name, update both bundle
 copies and their checksums, and verify integrity.

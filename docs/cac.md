@@ -1,8 +1,8 @@
 # When a CAC stops working
 
-Run `cac-check` as your desktop user, without sudo. It separates reader detection,
-card insertion, OpenSC token access, trust, and application configuration.
-Warnings include a next step. No helper asks for a PIN.
+Run `cac-check` as your desktop user, without sudo. It checks reader detection,
+card insertion, OpenSC token access, trust, and application configuration separately.
+Each warning includes a next step. No helper asks for a PIN.
 
 ## Try recovery
 
@@ -18,7 +18,7 @@ for sign-in. If the PIN is rejected repeatedly, stop and contact card support.
 
 - **No reader:** reconnect it, try another USB port, and run `reader-list`.
 - **Reader found, no card:** check insertion and try the card again. `scan` monitors
-  insertion and removal events; press Ctrl+C to stop it.
+  insertion and removal events. Then press Ctrl+C to stop it.
 - **Card found, no token:** save a report. The reader can detect a card even when
   OpenSC cannot use it.
 - **Firefox cannot see the card:** use RPM Firefox, then open `about:policies`.
@@ -29,7 +29,7 @@ for sign-in. If the PIN is rejected repeatedly, stop and contact card support.
   the clock, certificate expiry, and the certificate chosen for sign-in. A local
   reader check cannot diagnose a site's account or certificate requirements.
 
-`cac-log` shows the reader-service journal; `cac-certs` shows card certificate
+`cac-log` shows the reader-service journal. `cac-certs` shows card certificate
 information. These commands can expose identifying details. Do not paste their
 full output into a public issue without reviewing it.
 
@@ -46,8 +46,8 @@ The checks do not attempt login, validate the card's certificates, or test a PIN
 
 ## What the checks mean
 
-A reader is the USB device; a token is the card as exposed by the smart-card
-software. Detecting the reader does not prove that the card is inserted or usable.
+A reader is the USB device and a token is how the smart-card software sees the card.
+Detecting the reader does not prove that the card is inserted or usable.
 The checks also inspect the reader service, clock synchronization, DoD trust
 anchors, Firefox's policy file, and the shared certificate database used for
 Okular setup.
@@ -56,17 +56,17 @@ A service that starts on demand can be idle while its socket is active. That alo
 is not a failure. If a probe times out, the check reports it and continues with
 other diagnostics rather than waiting indefinitely.
 
-Firefox policy-file checks do not establish that the running browser loaded the
-policy. Use `about:policies` after restarting Firefox to check its active policy
+Checking Firefox's policy file does not confirm that the running browser loaded
+the policy. Use `about:policies` after restarting Firefox to check its active policy
 and errors. Never delete a Firefox profile or certificate database as a first
-troubleshooting step; it can contain unrelated certificates and settings.
+troubleshooting step. It can contain unrelated certificates and settings.
 
 ## Certificate setup
 
 `cac-nss-setup` checks the shared database under `~/.pki/nssdb` and registers a
 provider when missing. It preserves existing certificates. It does not reset a
 card PIN or repair an expired certificate. For Okular, use `cac-pdf-setup` to also
-select the database in the application; see [Sign a PDF](pdf-signing.md).
+select the database in the application. See [Sign a PDF](pdf-signing.md).
 
 Firefox uses Mozilla's [SecurityDevices policy](https://firefox-admin-docs.mozilla.org/reference/policies/securitydevices/)
 to request the system provider at startup. Adding a provider repeatedly by hand

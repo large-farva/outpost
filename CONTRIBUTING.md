@@ -1,9 +1,9 @@
 # Contributing to Outpost
 
-Use a branch and open a pull request for changes to the image. The testing branch
-is `testing`. Successful pushes and manual runs publish the signed
+Make your changes on a branch, then open a pull request. Successful pushes and
+manual runs on `testing` publish the signed
 `ghcr.io/large-farva/outpost-testing:latest` image. `main` publishes
-`ghcr.io/large-farva/outpost:latest` and retains its weekly build schedule.
+`ghcr.io/large-farva/outpost:latest`, with a scheduled build each week.
 Pull requests and other branches build without publishing.
 
 Use `main` for production and `testing` to collect changes awaiting validation.
@@ -18,8 +18,8 @@ only selected changes, prepare a separate PR from `main` and review its dependen
 Branch names alone do not configure publishing or require reviews.
 
 Keep documentation, build-tool updates, and CAC behavior changes in separate
-commits where possible. Test each proposed change before promoting it to `main`;
-a passing build alone does not establish that a CAC change is safe.
+commits where possible. Test changes before merging them into `main`. A successful
+build can't tell us whether a CAC works with a reader and website.
 
 GitHub Actions are pinned to commits, and Dependabot proposes updates weekly.
 Update the pinned BlueBuild CLI version through a PR with a successful image
@@ -27,19 +27,19 @@ build. Fedora packages and BlueBuild modules still follow upstream repositories.
 
 ## Image channels
 
-Both channels use `recipes/recipe.yml`, which contains all modules; there are no
-separate common or testing recipes. CI's `.github/scripts/select-channel.sh`
-changes only the top-level `name` in the working-tree recipe to `outpost` or
-`outpost-testing`. BlueBuild always uses `recipe.yml`, and the branch/event
-publishing boundaries above remain unchanged.
+Both channels use `recipes/recipe.yml`, so packages and build steps only need to
+be maintained in one place. CI's `.github/scripts/select-channel.sh` changes only
+the top-level `name` in the working-tree recipe to `outpost` or `outpost-testing`.
+Publishing follows the branch and event rules above.
 
-Image metadata, signing, and tag publishing are unchanged. The channel build
-script sets the rebase target and signature policy after the signing module runs.
-Both channels use `SIGNING_SECRET` and the repository's `cosign.pub`.
+The channel build script sets the rebase target and signature policy after the
+signing module runs. Both channels use `SIGNING_SECRET` and the repository's
+`cosign.pub`.
 
-The pinned BlueBuild CLI gives non-main branches commit tags. The workflow verifies
-the testing signature, runs the offline container smoke test, copies the same manifest to `latest`, and checks that the
-digest is unchanged. It never retags testing into the production repository.
+The pinned BlueBuild CLI gives non-main branches commit tags. Before publishing
+`latest`, the workflow verifies the testing image's signature and runs the offline
+container smoke test. It then copies the same manifest to `latest` and checks that
+the digest hasn't changed. Testing images stay in their own repository.
 
 After the first publication, check the `outpost-testing` package's visibility and
 repository access in GitHub settings. Public installation instructions require
@@ -65,13 +65,13 @@ bluebuild build recipes/recipe.yml --build-driver podman --run-driver podman --n
 Local builds default to the committed production name `outpost` regardless of
 branch. For a local testing-channel build, run
 `EVENT_NAME=push REF=refs/heads/testing bash .github/scripts/select-channel.sh`
-before the build command above. This only prepares the recipe; it does not publish.
+before the build command above. This only prepares the recipe. It does not publish.
 Use `localhost/outpost-testing:latest` for the smoke test below, and restore
 `name: outpost` in the recipe before committing.
 
 The Python tests use temporary files and command stubs. They do not update the
 host, restart its services, or use a CAC. Build scripts belong inside an image
-build; do not run them directly on the host.
+build. Do not run them directly on the host.
 
 After building, run the offline container smoke test:
 
@@ -82,12 +82,12 @@ podman run --rm --network none --user 1000:1000 --security-opt label=disable \
   localhost/outpost:latest bash /tmp/test.sh
 ```
 
-This verifies RPM Firefox/Okular, the English glibc locale package, absence of
-Firefox/all-glibc language packs, and availability of `en_US.UTF-8`, `C`, `C.UTF-8`,
-and `POSIX`. It also verifies that Noto CJK Sans is installed and the CJK Serif
-and Mono packages are absent. It checks repeated NSS/Okular setup and Firefox
-startup without duplicate providers under US English. It creates a temporary
-browser profile; no personal profile is used.
+The smoke test checks that RPM Firefox/Okular and the English glibc locale package
+are installed, the Firefox/all-glibc language packs are absent, and `en_US.UTF-8`,
+`C`, `C.UTF-8`, and `POSIX` are available. It also checks that Noto CJK Sans is
+installed without the CJK Serif and Mono packages. Finally, it repeats NSS/Okular
+setup and starts Firefox under US English to catch duplicate providers. It uses
+a temporary browser profile, not your own.
 
 ## English-only image
 
@@ -100,44 +100,23 @@ HTML-help, man-page, and speech-dispatcher language directories. It retains
 English regional variants, default man sections, shared speech dictionaries,
 and shared locale/help data. Oxygen cleanup targets only the Fedora icons.
 General documentation, license notices, Adobe PDF mappings, RPM metadata,
-compiler tooling, and DNF remain untouched by this trim.
+compiler tooling, and DNF remain untouched by this trim. There's still a couple Fedora
+packages that are not removed by this trim because it's not really the highest priority.
 
 Noto CJK Sans is explicitly installed as the Chinese/Japanese/Korean fallback.
 The CJK Serif and Mono font packages are excluded from installation and removed
-with automatic dependency cleanup disabled; their dependent `default-fonts-cjk-serif`
+with automatic dependency cleanup disabled. Their dependent `default-fonts-cjk-serif`
 and `default-fonts-cjk-mono` metapackages are also removed. Regular English fonts,
 symbol fonts, and emoji fonts are not targeted. CJK text can fall back to Sans,
-but serif styling and monospace alignment may change. Check mixed-language PDFs
-and web pages in the built image.
+but serif styling and monospace alignment may change.
 
-Validate a new image in a VM: check English KDE/Firefox interfaces, English help
-and man pages, speech output, PDF rendering/signing, and CAC authentication.
-Measure the resulting filesystem and published image separately; deleting files
-from an inherited OCI layer does not necessarily reduce its download size.
-
-## Plasma splash validation
-
-The post-login splash is separate from SDDM and Plymouth. Outpost selects
-`org.outpost.desktop` in both its look-and-feel defaults and the KDE system
-profile's `ksplashrc`. The build copies Plasma's spinner into the Outpost splash;
-the logo remains Outpost's SVG.
-
-Existing per-user settings and `~/.config/kdedefaults` can override system defaults.
-To select only the Outpost splash without resetting the desktop theme, run as
-your desktop user (without sudo):
-
-```bash
-kwriteconfig6 --file ksplashrc --group KSplash --key Engine KSplashQML
-kwriteconfig6 --file ksplashrc --group KSplash --key Theme org.outpost.desktop
-ksplashqml --test --window org.outpost.desktop
-```
-
-After building, preview it and log out/in in a VM. Confirm the Outpost logo and
-spinner appear without missing-image errors; include a screenshot with the PR.
+Validate a new image in a VM or bare metal:
+- PDF rendering/signing, and CAC authentication.
+- Measure the resulting filesystem and published image separately
 
 ## Before merging CAC changes
 
-- Boot the image in a VM. Check both desktop launchers and menu cancellation.
+- Boot the image in a VM or on bare metal. Check both desktop launchers and menu cancellation.
 - Run `rpm -q okular` and `flatpak list --app --columns=application,installation`.
   Confirm RPM Okular is installed, no Okular Flatpak is installed, and PDFs open
   in RPM Okular.
@@ -154,8 +133,8 @@ Record the image digest, package versions, reader model, and results in the PR.
 
 ### Historical container checks
 
-These results predate recipe consolidation; they do not validate the consolidated
-`recipes/recipe.yml` or the newer image smoke-test assertions.
+These results are from when I tried useing multiple recipes (it didn't work out). They're kept here for
+reference, not as test results for the current recipe or newer smoke checks.
 
 ShellCheck, Bash syntax, Actionlint, helper regression tests, and certificate
 checksums passed locally. The former `recipes/testing.yml` built with BlueBuild
@@ -165,8 +144,9 @@ checksums passed locally. The former `recipes/testing.yml` built with BlueBuild
 
 Container checks confirmed testing-channel metadata, both signature-policy entries,
 and the shared public-key path. Repeated NSS/Okular setup and two Firefox starts
-passed with one system CAC provider. Publishing tests use command stubs; actual
-registry publication and signature verification still need a GitHub run.
+passed with one system CAC provider. At that point, publishing had only been tested
+with command stubs. Registry publication and signature verification still needed
+a GitHub run.
 
 At that time, physical-card authentication, JKO access, PDF signing, and booted-VM
 recovery were untested. The build reported dracut xattr warnings, so boot validation
@@ -174,14 +154,11 @@ was still required.
 
 ### User-reported hardware test (2026-10-03)
 
-JKO CAC authentication in Firefox succeeded after running **Fix CAC connection**
-in Outpost. The initial attempt encountered an issue after CAC selection and PIN
-entry; the exact error and cause have not been identified. This confirms a
-successful authentication and recovery outcome for the reported test, not reliable
-first-attempt login or a diagnosed fix for the initial failure.
+JKO login in Firefox worked after running **Fix CAC connection** in `outpost-testing` after the TUI overhaul. The
+first attempt ran into a problem after CAC selection and PIN entry. I forgot to save the Firefox error code. Clean-start and repeated logins test fine.
 
-The tested image digest, package versions, and reader model were not supplied with
-this report. PDF signing, clean-start/repeated authentication, and booted-VM
-recovery remain unverified by this report. If the login issue recurs, record the
-exact browser error and save a `cac-report` before recovery; review it for personal
-information before sharing.
+CAC PDF signing in Okular worked as expected.
+
+If the login problem comes back, note the exact Firefox error and save a
+`cac-report` before running recovery. Check the report for personal information
+before sharing it.

@@ -8,9 +8,9 @@
 
 # Outpost
 
-Outpost is a Fedora Kinoite desktop image with DoD certificates, CAC middleware,
-and tools for troubleshooting smart-card connections. It uses KDE Plasma and is
-built with BlueBuild on Fedora 43.
+Outpost is a Fedora Kinoite desktop image with CAC support built in. It includes
+DoD certificates, smart-card software, and tools to help when your card won't
+connect. It runs KDE Plasma and is built with BlueBuild on Fedora 43.
 
 ## Install
 
@@ -28,8 +28,9 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:lates
 systemctl reboot
 ```
 
-The first step bootstraps the signing configuration. Subsequent updates use the
-signed image. The public verification key is [cosign.pub](cosign.pub).
+The first reboot puts the signing configuration in place. After you switch to
+the signed image, updates use that configuration to verify the image. The public
+verification key is [cosign.pub](cosign.pub).
 
 The [user guide](docs/README.md) covers setup, applications, CAC troubleshooting,
 PDF signing, and recovery.
@@ -49,8 +50,9 @@ Open **Outpost** from the application menu or run `outpost` in a terminal.
 | `cac-pdf-setup` | Sets up RPM Okular for CAC signing |
 | `outpost-rollback` | Shows how to return to the previous OS deployment |
 
-Run these as your desktop user. Updates show native progress and never reboot
-automatically. Reboot when an OS update is pending.
+Run these commands as your normal desktop user. You can follow update progress
+in the terminal, and nothing reboots automatically. Reboot when an OS update is
+pending.
 
 ## Using a CAC
 
@@ -61,15 +63,16 @@ reinsert it. See [CAC troubleshooting](docs/cac.md) if it still fails.
 
 For PDF signing, close Okular and run `cac-pdf-setup`. Reopen the PDF, choose
 **Tools > Digitally Sign**, select the signing certificate, and enter the PIN in
-Okular. Save a signed copy and inspect its **Signatures** panel. Physical-card
-signing still needs verification on the testing branch.
+Okular. Save a signed copy and inspect its **Signatures** panel.
 
 ## Testing and help
 
 The `testing` branch publishes a separate signed `outpost-testing` image.
-The production image follows `main`. See [contributor guide](CONTRIBUTING.md) for test commands and
-checks required before merging CAC changes.
+The production image follows `main`. If you'd like to contribute, the
+[contributor guide](CONTRIBUTING.md) covers testing and the checks to run before
+merging CAC changes.
 
-[Report a problem](https://github.com/large-farva/outpost/issues) with the steps
-that failed and a reviewed `cac-report`. Reports stay on your computer until you
-choose to share them. [Recovery instructions](docs/recovery.md) cover rollback.
+If something goes wrong, [report a problem](https://github.com/large-farva/outpost/issues)
+with the steps that failed and a `cac-report`. Check the report for personal
+information before sharing it. Reports aren't uploaded automatically. For help
+rolling back an update, see the [recovery instructions](docs/recovery.md).
