@@ -69,7 +69,7 @@ jobs:
         run: bash .github/scripts/select-channel.sh >> "$GITHUB_OUTPUT"
 
       - name: Build Image
-        uses: blue-build/github-action@3cd0c2835e691b87a7eb19261a6aee77a56169e2 # v1.11
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.11
         with:
           recipe: recipe.yml
           # A second checkout would discard the selected image name.
