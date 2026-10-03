@@ -3,111 +3,76 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg">
+  <img src="https://github.com/large-farva/outpost/actions/workflows/build.yml/badge.svg" alt="Build status" />
 </p>
 
 # Outpost
 
-Outpost is a custom **Fedora Kinoite** immutable desktop image built with **BlueBuild**.
+Outpost is a Fedora Kinoite desktop image with CAC support built in. It includes
+DoD certificates, smart-card software, and tools to help when your card won't
+connect. It runs KDE Plasma and is built with BlueBuild on Fedora 43.
 
-It is based on the **official upstream Fedora Kinoite image** and provides a **CAC-ready Fedora workstation** with curated defaults and **no post-install configuration required**.
+## Install
 
-Outpost is designed for environments where **Common Access Card (CAC)** authentication and DoD PKI trust are required.
+From Fedora Kinoite or a compatible image, run:
 
-## Features
-
-### DoD CAC support
-- `opensc`
-- `pcsc-lite`, `pcsc-lite-ccid`
-- `pcsc-tools`
-- `p11-kit`
-- `pcscd.socket` enabled for on-demand activation
-
-Outpost does **not** ship CACKey, CoolKey, or proprietary vendor middleware.  
-**OpenSC** is the supported and tested provider.
-
----
-
-### DoD trust anchors
-- Official **DoD PKCS#7 certificate bundle** is **vendored in the repository**
-- ZIP filename is unchanged from the official distribution
-- Certificates are extracted, converted to PEM, and installed into the system trust store at build time
-
----
-
-### Firefox
-- Firefox is installed as an **RPM**, not a Flatpak
-- Uses system NSS, PKCS#11, and CA trust integration
-- CAC works without per-user manual setup in normal cases
----
-
-### Curated Flatpak baseline
-- Kontainer
-- OnlyOffice
-- Signal
-- XCA
-
-## Installation
-
-⚠️ You must rebase from **Fedora Kinoite** or a Kinoite-based image.  
-
-### 1. Bootstrap
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
-sudo systemctl reboot
+systemctl reboot
 ```
 
-### 2. Rebase to the signed image
+After rebooting, switch to the signed image:
+
 ```bash
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:latest
-sudo systemctl reboot
+systemctl reboot
 ```
 
-## Verification
+The first reboot puts the signing configuration in place. After you switch to
+the signed image, updates use that configuration to verify the image. The public
+verification key is [cosign.pub](cosign.pub).
 
-Outpost images are signed using **Sigstore Cosign**.
+The [user guide](docs/README.md) covers setup, applications, CAC troubleshooting,
+PDF signing, and recovery.
 
-Verify with the included public key:
+## Everyday use
 
-```bash
-cosign verify --key cosign.pub ghcr.io/large-farva/outpost:latest
-```
+Open **Outpost** from the application menu or run `outpost` in a terminal.
 
-## CAC Support
+| Command | What it does |
+| --- | --- |
+| `update` | Updates the OS, Flatpaks, Homebrew, and reports failures and pending reboots |
+| `outpost --status` | Shows system and deployment status |
+| `cac-help` | Opens the CAC tools menu |
+| `cac-check` | Checks the reader, card detection, services, and certificate configuration |
+| `cac-recover` | Walks through restarting the card service and reconnecting the CAC |
+| `cac-report` | Saves a local diagnostic report for troubleshooting |
+| `cac-pdf-setup` | Sets up RPM Okular for CAC signing |
+| `outpost-rollback` | Shows how to return to the previous OS deployment |
 
-Outpost includes all middleware and trust components required for CAC authentication.
+Run these commands as your normal desktop user. You can follow update progress
+in the terminal, and nothing reboots automatically. Reboot when an OS update is
+pending.
 
-Supported:
-- Firefox (RPM)
-- System-wide PKCS#11 and CA trust integration
+## Using a CAC
 
-Not supported:
-- Flatpak browsers
-- Proprietary middleware
+Use the included **RPM Firefox** for CAC websites. If a site stops seeing your
+card, choose **Fix CAC connection** in Outpost. The helper asks you to close
+Firefox and Okular, restarts the reader service, and checks the card after you
+reinsert it. See [CAC troubleshooting](docs/cac.md) if it still fails.
 
-## Documentation
+For PDF signing, close Okular and run `cac-pdf-setup`. Reopen the PDF, choose
+**Tools > Digitally Sign**, select the signing certificate, and enter the PIN in
+Okular. Save a signed copy and inspect its **Signatures** panel.
 
-Detailed documentation is available in the [Wiki](https://github.com/large-farva/outpost/wiki).
+## Testing and help
 
-This includes:
-- CAC architecture and behavior
-- Diagnostics and troubleshooting
-- Firefox-specific behavior
-- Trust store handling
-- Network and captive portal considerations
+The `testing` branch publishes a separate signed `outpost-testing` image.
+The production image follows `main`. If you'd like to contribute, the
+[contributor guide](CONTRIBUTING.md) covers testing and the checks to run before
+merging CAC changes.
 
-Please review the wiki before opening an issue.
-
-## Roadmap
-
-### Near-term
-- Documentation polish
-- Diagnostics refinement
-
-### Longer-term
-- Okular support for CAC based PDF signing
-- NVIDIA-compatibile image variant
-
-## Issues
-
-When reporting issues, include relevant diagnostics from the wiki where applicable.
+If something goes wrong, [report a problem](https://github.com/large-farva/outpost/issues)
+with the steps that failed and a `cac-report`. Check the report for personal
+information before sharing it. Reports aren't uploaded automatically. For help
+rolling back an update, see the [recovery instructions](docs/recovery.md).

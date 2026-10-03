@@ -25,6 +25,7 @@ dim "Reading certificates from inserted smart card."
 printf '\n'
 
 output="$(pkcs15-tool --list-certificates 2>&1)" || {
+  printf '%s\n' "$output" >&2
   line "$(bad)" "Failed to read card (is a CAC inserted?)"
   exit 1
 }

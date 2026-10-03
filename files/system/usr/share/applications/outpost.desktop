@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Outpost
+Comment=System status, updates, and CAC tools
+Icon=outpost-logo
+Categories=System;
+Terminal=true
+Exec=/usr/bin/outpost

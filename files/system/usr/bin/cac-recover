@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# shellcheck source=lib.sh
+source /usr/lib/outpost/lib.sh
+case "${1:-}" in
+    -h|--help)
+        printf '%s\n' 'Usage: cac-recover' 'Guided reader-service restart and NSS setup. Run as the desktop user, without sudo.'
+        exit 0 ;;
+    '') ;;
+    *) log_error 'Unknown option. Use cac-recover --help.'; exit 2 ;;
+esac
+[[ $EUID != 0 ]] || { log_error 'Run cac-recover as the desktop user, without sudo.'; exit 1; }
+interactive && [[ -t 1 ]] || { log_error 'Recovery requires a terminal. Use cac-check for unattended checks.'; exit 1; }
+trap 'printf "\nRecovery canceled. Completed steps remain applied.\n"; exit 130' INT
+trap 'exit 143' TERM
+for command in pgrep sudo systemctl cac-nss-setup cac-check; do
+    have "$command" || { log_error "Missing command: $command"; exit 1; }
+done
+hdr 'Fix CAC connection'
+printf '%s\n' 'Save your work, fully quit Firefox and Okular, and remove the card.' \
+    'Restarting the reader service interrupts smart-card sessions for all users.' \
+    'No certificates will be deleted. This helper never asks for your PIN.'
+confirm 'Continue with the reader-service restart?' || exit 130
+if pgrep -u "$UID" -x 'firefox|firefox-bin|okular' >/dev/null; then
+    log_error 'Firefox or Okular is still running. Quit it and run recovery again.'
+    exit 1
+else
+    rc=$?
+    ((rc == 1)) || { log_error 'Could not check running applications.'; exit 1; }
+fi
+sudo systemctl restart pcscd.socket pcscd.service
+cac-nss-setup
+printf '\nInsert the CAC firmly into the reader.\n'
+confirm 'Run connection checks now?' || exit 130
+rc=0
+cac-check || rc=$?
+printf '\n%s\n' 'Open RPM Firefox again and retry the site, choosing the authentication certificate.' \
+    'If it still fails, check about:policies for errors and save a report with cac-report.' \
+    'Repeated PIN failures need card support; do not keep guessing the PIN.'
+exit "$rc"

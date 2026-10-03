@@ -26,6 +26,11 @@
         "Value": false,
         "Status": "locked"
       }
+    },
+    "SecurityDevices": {
+      "Add": {
+        "p11-kit-proxy": "p11-kit-proxy.so"
+      }
     }
   }
 }

@@ -35,6 +35,7 @@ fi
 printf '\n'
 line "$(ok)" "Starting scan..."
 
+[[ "${1:-}" == -- ]] && shift
 pcsc_scan "$@" &
 pid=$!
 
@@ -46,7 +47,9 @@ cleanup() {
   fi
 }
 
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 while kill -0 "$pid" 2>/dev/null; do
   read -r -t 1 _ && break

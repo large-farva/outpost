@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}" in
+    -h|--help)
+        printf '%s\n' 'Usage: cac-report' 'Saves private, local diagnostic results under XDG_STATE_HOME/outpost (default ~/.local/state/outpost).' \
+            'Omits certificate identities, reader serials, profile paths, and raw logs. Review before sharing.'
+        exit 0 ;;
+    '') ;;
+    *) printf 'Unknown option. Use cac-report --help.\n' >&2; exit 2 ;;
+esac
+[[ $EUID != 0 ]] || { printf 'Run cac-report without sudo to check your own configuration.\n' >&2; exit 1; }
+command -v cac-check >/dev/null || { printf "cac-check is missing.\n" >&2; exit 1; }
+umask 077
+directory="${XDG_STATE_HOME:-$HOME/.local/state}/outpost"
+mkdir -p "$directory"
+report=$(mktemp "$directory/cac-report-XXXXXXXX.txt")
+rc=0
+# Only allowlisted diagnostic summaries belong in a shareable report.
+date -u +'Report created: %Y-%m-%d %H:%M:%S UTC' > "$report"
+cac-check --report >> "$report" 2>/dev/null || rc=$?
+printf '\nDiagnostic exit status: %s\n' "$rc" >> "$report"
+printf 'Report saved: %s\nReview it before sharing. Nothing was uploaded.\n' "$report"
+exit "$rc"

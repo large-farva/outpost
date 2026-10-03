@@ -49,20 +49,17 @@ fi
 
 printf '\n'
 
-output="$(
-  {
-    journalctl "${journal_args[@]}" -u pcscd.service -u pcscd.socket -t firefox-module 2>/dev/null || true
-    journalctl "${journal_args[@]}" --grep='opensc|p11.kit|pkcs11|smart.card' 2>/dev/null || true
-  } | grep -v '^-- ' | sort -u
-)"
+service_output=$(journalctl "${journal_args[@]}" --quiet -u pcscd.service -u pcscd.socket -t firefox-module) || {
+    log_warn "Could not read all service logs"
+}
+library_output=$(journalctl "${journal_args[@]}" --quiet --grep='opensc|p11.kit|pkcs11|smart.card') || {
+    log_warn "Could not read all CAC library logs"
+}
+output=$(printf '%s\n' "$service_output" "$library_output" | sort -u)
+
 
 if [[ -n "$output" ]]; then
-  hostname="$(hostnamectl hostname 2>/dev/null || hostname)"
-  while IFS= read -r entry; do
-    ts="${entry%% "$hostname" *}"
-    msg="${entry#* "$hostname" }"
-    printf '%s %s\n' "$(dim "$ts")" "$msg"
-  done <<< "$output"
+  printf '%s\n' "$output"
   printf '\n'
   count="$(wc -l <<< "$output")"
   line "$(ok)" "$count log entries"

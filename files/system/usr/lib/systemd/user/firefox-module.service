@@ -1,6 +1,5 @@
 [Unit]
-Description=Outpost: register OpenSC module for Firefox
-ConditionPathExists=!%h/.config/cac/firefox-cac.done
+Description=Outpost: register OpenSC for NSS applications
 
 [Service]
 Type=oneshot

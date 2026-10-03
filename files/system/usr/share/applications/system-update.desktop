@@ -1,5 +1,6 @@
 [Desktop Entry]
 Type=Application
+Name=Update Outpost
 Comment=Update Outpost, Flatpaks, and Homebrew
 Icon=outpost-update
 Categories=ConsoleOnly;System;

@@ -24,9 +24,13 @@ hdr "CAC readers"
 dim "Listing detected smart card readers."
 printf '\n'
 
-output="$(opensc-tool -l 2>/dev/null || true)"
+output="$(opensc-tool -l 2>&1)" || {
+    printf '%s\n' "$output" >&2
+    exit 1
+}
 
-if grep -qi "no smart card readers" <<< "$output"; then
+if ! grep -Eq '^[[:space:]]*[0-9]+[[:space:]]' <<< "$output"; then
+  printf '%s\n' "$output"
   line "$(warn)" "No smart card readers detected"
   exit 1
 fi
