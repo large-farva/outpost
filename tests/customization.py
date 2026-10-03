@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Check branding cleanup in a disposable filesystem and stub Starship startup."""
 import os
-from pathlib import Path
 import subprocess
 import tempfile
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -20,12 +20,12 @@ def main():
         env = dict(os.environ)
         env.pop('IMAGE_NAME', None)
         env.pop('CONFIG_DIRECTORY', None)
-        result = subprocess.run(['bash', str(script)], env=env, capture_output=True)
+        result = subprocess.run(['bash', str(script)], check=False, env=env, capture_output=True)
         assert result.returncode == 1 and b'image build' in result.stderr
         payload = tmp / 'files/system'
         payload.mkdir(parents=True)
         env.update(IMAGE_NAME='outpost', CONFIG_DIRECTORY=str(payload.parent))
-        result = subprocess.run(['bash', str(script)], env=env, capture_output=True)
+        result = subprocess.run(['bash', str(script)], check=False, env=env, capture_output=True)
         assert result.returncode == 1 and b'Missing Outpost asset' in result.stderr
         for relative in (
             'usr/share/plasma/look-and-feel/org.outpost.desktop/metadata.json',

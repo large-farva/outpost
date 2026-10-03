@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 [[ $EUID != 0 ]] || { printf 'Run the container as an unprivileged user.\n' >&2; exit 1; }
-rpm -q okular firefox glibc-langpack-en
-for package in firefox-langpacks glibc-all-langpacks; do
+rpm -q okular firefox glibc-langpack-en google-noto-sans-cjk-vf-fonts
+for package in firefox-langpacks glibc-all-langpacks \
+    google-noto-sans-mono-cjk-vf-fonts google-noto-serif-cjk-vf-fonts; do
     if rpm -q "$package" >/dev/null 2>&1; then
-        printf 'Unexpected language package: %s\n' "$package" >&2
+        printf 'Unexpected image package: %s\n' "$package" >&2
         exit 1
     fi
 done
@@ -37,4 +38,4 @@ for attempt in 1 2; do
     test -s "$HOME/firefox.png"
     printf 'PASS: Firefox start %s, one system CAC provider\n' "$attempt"
 done
-printf 'PASS: English locales, RPM Firefox/Okular, and repeated CAC setup; hardware authentication not tested\n'
+printf 'PASS: English locales, CJK Sans fallback, RPM Firefox/Okular, and repeated CAC setup; hardware authentication not tested\n'

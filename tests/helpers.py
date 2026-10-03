@@ -2,10 +2,10 @@
 """Run helpers against disposable command stubs; never update the host or use a CAC."""
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,7 +46,7 @@ def main():
             path.chmod(0o755)
 
         def run(name, code=0, **overrides):
-            result = subprocess.run([str(bin_dir / name)], env=env | overrides,
+            result = subprocess.run([str(bin_dir / name)], check=False, env=env | overrides,
                                     text=True, capture_output=True, timeout=10)
             assert result.returncode == code, (name, result.returncode, result.stdout, result.stderr)
             assert '\x1b[' not in result.stdout, result.stdout

@@ -3,13 +3,13 @@
 import errno
 import json
 import os
-from pathlib import Path
 import pty
 import select
 import shutil
 import subprocess
 import tempfile
 import time
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix='outpost-tui-') as directory:
@@ -95,7 +95,7 @@ esac''')
         count.write_text('0\n')
         calls.write_text('')
         if not terminal:
-            result = subprocess.run([str(bin_dir / name)], env=env | overrides, capture_output=True, text=True, timeout=10)
+            result = subprocess.run([str(bin_dir / name)], check=False, env=env | overrides, capture_output=True, text=True, timeout=10)
             assert result.returncode == code, result
             output = result.stdout + result.stderr
             assert '\x1b[' not in output

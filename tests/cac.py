@@ -2,13 +2,13 @@
 """Exercise CAC diagnosis, report privacy, and recovery with disposable stubs."""
 import json
 import os
-from pathlib import Path
 import pty
 import select
 import shutil
 import subprocess
 import tempfile
 import time
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -57,7 +57,7 @@ def main():
             path.chmod(0o755)
 
         def run(name, *args, code=0, **overrides):
-            result = subprocess.run([str(bin_dir / name), *args], env=env | overrides,
+            result = subprocess.run([str(bin_dir / name), *args], check=False, env=env | overrides,
                                     capture_output=True, text=True, timeout=10)
             assert result.returncode == code, (name, result.returncode, result.stdout, result.stderr)
             assert '\x1b[' not in result.stdout

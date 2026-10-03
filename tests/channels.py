@@ -2,10 +2,10 @@
 """Check publishing boundaries and channel metadata without modifying the host."""
 import json
 import os
-from pathlib import Path
+import shutil
 import subprocess
 import tempfile
-import shutil
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -81,11 +81,11 @@ def main():
         before = policy.read_bytes()
         for env in ({'IMAGE_NAME': 'unrelated', 'CONFIG_DIRECTORY': str(payload.parent)},
                     {'IMAGE_NAME': 'outpost', 'CONFIG_DIRECTORY': str(tmp / 'absent')}):
-            result = subprocess.run(['bash', str(script)], env=os.environ | env, capture_output=True)
+            result = subprocess.run(['bash', str(script)], check=False, env=os.environ | env, capture_output=True)
             assert result.returncode != 0
             assert policy.read_bytes() == before
         (etc / 'pki/containers/outpost.pub').unlink()
-        result = subprocess.run(['bash', str(script)], env=os.environ | {
+        result = subprocess.run(['bash', str(script)], check=False, env=os.environ | {
             'IMAGE_NAME': 'outpost', 'CONFIG_DIRECTORY': str(payload.parent)}, capture_output=True)
         assert result.returncode != 0 and policy.read_bytes() == before
     with tempfile.TemporaryDirectory(prefix='outpost-tag-') as directory:
@@ -119,7 +119,7 @@ if [[ "$3" == inspect ]]; then printf '{"digest":"%s"}\\n' "$DIGEST"; fi''')
         for overrides in ({'GITHUB_REF': 'refs/heads/main'}, {'GITHUB_EVENT_NAME': 'pull_request'},
                           {'GITHUB_REPOSITORY': 'someone/fork'}, {'VERIFY_RC': '1'}, {'RUN_RC': '1'}):
             calls.write_text('')
-            result = subprocess.run(['/bin/bash', str(script)], env=env | overrides)
+            result = subprocess.run(['/bin/bash', str(script)], check=False, env=env | overrides)
             assert result.returncode != 0
             assert 'create ' not in calls.read_text()
     print('PASS: channel selection, signed tag publication, signature policy, metadata, and build guards')

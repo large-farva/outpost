@@ -84,9 +84,10 @@ podman run --rm --network none --user 1000:1000 --security-opt label=disable \
 
 This verifies RPM Firefox/Okular, the English glibc locale package, absence of
 Firefox/all-glibc language packs, and availability of `en_US.UTF-8`, `C`, `C.UTF-8`,
-and `POSIX`. It checks repeated NSS/Okular setup and Firefox startup without
-duplicate providers under US English. It creates a temporary browser profile;
-no personal profile is used.
+and `POSIX`. It also verifies that Noto CJK Sans is installed and the CJK Serif
+and Mono packages are absent. It checks repeated NSS/Okular setup and Firefox
+startup without duplicate providers under US English. It creates a temporary
+browser profile; no personal profile is used.
 
 ## English-only image
 
@@ -100,6 +101,14 @@ English regional variants, default man sections, shared speech dictionaries,
 and shared locale/help data. Oxygen cleanup targets only the Fedora icons.
 General documentation, license notices, Adobe PDF mappings, RPM metadata,
 compiler tooling, and DNF remain untouched by this trim.
+
+Noto CJK Sans is explicitly installed as the Chinese/Japanese/Korean fallback.
+The CJK Serif and Mono font packages are excluded from installation and removed
+with automatic dependency cleanup disabled; their dependent `default-fonts-cjk-serif`
+and `default-fonts-cjk-mono` metapackages are also removed. Regular English fonts,
+symbol fonts, and emoji fonts are not targeted. CJK text can fall back to Sans,
+but serif styling and monospace alignment may change. Check mixed-language PDFs
+and web pages in the built image.
 
 Validate a new image in a VM: check English KDE/Firefox interfaces, English help
 and man pages, speech output, PDF rendering/signing, and CAC authentication.
