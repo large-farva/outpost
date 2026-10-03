@@ -115,6 +115,26 @@ and man pages, speech output, PDF rendering/signing, and CAC authentication.
 Measure the resulting filesystem and published image separately; deleting files
 from an inherited OCI layer does not necessarily reduce its download size.
 
+## Plasma splash validation
+
+The post-login splash is separate from SDDM and Plymouth. Outpost selects
+`org.outpost.desktop` in both its look-and-feel defaults and the KDE system
+profile's `ksplashrc`. The build copies Plasma's spinner into the Outpost splash;
+the logo remains Outpost's SVG.
+
+Existing per-user settings and `~/.config/kdedefaults` can override system defaults.
+To select only the Outpost splash without resetting the desktop theme, run as
+your desktop user (without sudo):
+
+```bash
+kwriteconfig6 --file ksplashrc --group KSplash --key Engine KSplashQML
+kwriteconfig6 --file ksplashrc --group KSplash --key Theme org.outpost.desktop
+ksplashqml --test --window org.outpost.desktop
+```
+
+After building, preview it and log out/in in a VM. Confirm the Outpost logo and
+spinner appear without missing-image errors; include a screenshot with the PR.
+
 ## Before merging CAC changes
 
 - Boot the image in a VM. Check both desktop launchers and menu cancellation.
@@ -132,9 +152,10 @@ Record the image digest, package versions, reader model, and results in the PR.
 
 ## Validation status
 
-The following results are historical, from before recipe consolidation; they do
-not validate the consolidated `recipes/recipe.yml` or the new RPM Okular check.
-No new image validation is recorded here.
+### Historical container checks
+
+These results predate recipe consolidation; they do not validate the consolidated
+`recipes/recipe.yml` or the newer image smoke-test assertions.
 
 ShellCheck, Bash syntax, Actionlint, helper regression tests, and certificate
 checksums passed locally. The former `recipes/testing.yml` built with BlueBuild
@@ -147,5 +168,20 @@ and the shared public-key path. Repeated NSS/Okular setup and two Firefox starts
 passed with one system CAC provider. Publishing tests use command stubs; actual
 registry publication and signature verification still need a GitHub run.
 
-Physical-card authentication, JKO access, PDF signing, and booted-VM recovery remain
-untested. The build reported dracut xattr warnings, so boot validation is required.
+At that time, physical-card authentication, JKO access, PDF signing, and booted-VM
+recovery were untested. The build reported dracut xattr warnings, so boot validation
+was still required.
+
+### User-reported hardware test (2026-10-03)
+
+JKO CAC authentication in Firefox succeeded after running **Fix CAC connection**
+in Outpost. The initial attempt encountered an issue after CAC selection and PIN
+entry; the exact error and cause have not been identified. This confirms a
+successful authentication and recovery outcome for the reported test, not reliable
+first-attempt login or a diagnosed fix for the initial failure.
+
+The tested image digest, package versions, and reader model were not supplied with
+this report. PDF signing, clean-start/repeated authentication, and booted-VM
+recovery remain unverified by this report. If the login issue recurs, record the
+exact browser error and save a `cac-report` before recovery; review it for personal
+information before sharing.

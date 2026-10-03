@@ -20,5 +20,6 @@ cursorTheme=breeze_cursors
 library=org.kde.breeze
 theme=Breeze
 
-[KSplash]
-Theme=org.kde.Breeze
+[ksplashrc][KSplash]
+Engine=KSplashQML
+Theme=org.outpost.desktop

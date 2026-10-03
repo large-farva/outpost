@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Check branding cleanup in a disposable filesystem and stub Starship startup."""
+import configparser
+import json
 import os
 import subprocess
 import tempfile
@@ -9,6 +11,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    theme = ROOT / 'files/system/usr/share/plasma/look-and-feel/org.outpost.desktop'
+    theme_id = json.loads((theme / 'metadata.json').read_text())['KPlugin']['Id']
+    defaults = configparser.ConfigParser()
+    defaults.read(theme / 'contents/defaults')
+    profile = configparser.ConfigParser()
+    profile.read(ROOT / 'files/system/usr/share/kde-settings/kde-profile/default/xdg/ksplashrc')
+    for section in (defaults['ksplashrc][KSplash'], profile['KSplash']):
+        assert section['Theme'] == theme_id
+        assert section['Engine'] == 'KSplashQML'
+    assert (theme / 'contents/splash/images/logo.svg').stat().st_size > 0
+
     with tempfile.TemporaryDirectory(prefix='outpost-branding-') as directory:
         tmp = Path(directory)
         fixture = tmp / 'image'
@@ -29,6 +42,9 @@ def main():
         assert result.returncode == 1 and b'Missing Outpost asset' in result.stderr
         for relative in (
             'usr/share/plasma/look-and-feel/org.outpost.desktop/metadata.json',
+            'usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash/Splash.qml',
+            'usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash/images/logo.svg',
+            'usr/share/plasma/look-and-feel/org.kde.breeze.desktop/contents/splash/images/busywidget.svgz',
             'usr/share/wallpapers/Outpost/contents/images/1920x1080.png',
             'usr/share/sddm/themes/outpost/Main.qml',
             'usr/share/plymouth/themes/spinner/watermark.png',
@@ -93,6 +109,9 @@ def main():
             env['IMAGE_NAME'] = image_name
             for _ in range(2):
                 subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
+                splash = fixture / 'usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash'
+                for image in ('logo.svg', 'busywidget.svgz'):
+                    assert (splash / 'images' / image).read_text() == 'asset'
                 for relative in kept:
                     assert (fixture / relative).read_text() == 'asset', relative
                 for relative in removed:

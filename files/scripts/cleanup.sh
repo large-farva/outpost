@@ -11,11 +11,18 @@ fi
 # Missing replacements would leave the desktop without its theme or wallpaper.
 for asset in \
     /usr/share/plasma/look-and-feel/org.outpost.desktop/metadata.json \
+    /usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash/Splash.qml \
+    /usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash/images/logo.svg \
     /usr/share/wallpapers/Outpost/contents/images/1920x1080.png \
     /usr/share/sddm/themes/outpost/Main.qml \
     /usr/share/plymouth/themes/spinner/watermark.png; do
     [[ -s "$asset" ]] || { printf 'Missing Outpost asset: %s\n' "$asset" >&2; exit 1; }
 done
+
+# Reuse Plasma's spinner while keeping the Outpost splash self-contained.
+install -m 0644 \
+    /usr/share/plasma/look-and-feel/org.kde.breeze.desktop/contents/splash/images/busywidget.svgz \
+    /usr/share/plasma/look-and-feel/org.outpost.desktop/contents/splash/images/busywidget.svgz
 
 shopt -s nullglob
 
