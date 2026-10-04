@@ -2,200 +2,259 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 add_newline = true
+continuation_prompt = "[▸▹ ](dimmed white)"
+scan_timeout = 20
+
+[fill]
+symbol = ' '
 
 [line_break]
 disabled = false
 
-[username]
-style_user = 'orange bold'
-style_root = 'red bold'
-format = '[$user]($style)'
+[character]
+format = "$symbol"
+success_symbol = '[](bold bright-yellow) '
+error_symbol = '[󱡝](bold bright-red) '
+
+[sudo]
+format = "[$symbol]($style)"
+style = "bold italic bright-purple"
+symbol = "⋈┈"
 disabled = false
-show_always = true
+
+[username]
+style_user = 'bright-yellow bold'
+style_root = 'red bold'
+format = '[⭘ $user]($style)'
+disabled = false
+show_always = false
+
+[directory]
+truncation_length = 2
+truncation_symbol = ".../"
+read_only = " 󰌾"
+use_os_path_sep = true
+style = 'italic blue bold'
+format = '[ $path ]($style)[ $read_only ]($read_only_style)'
+repo_root_style = 'bold orange'
+repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)'
+
+[jobs]
+format = '[$symbol$number]($style)'
+style = "white"
+symbol = "[▶](blue italic)"
+
+[localip]
+ssh_only = true
+format = " ◯[$localipv4](bold magenta)"
+disabled = false
 
 [hostname]
-ssh_only = false
+ssh_only = true
 ssh_symbol = " "
-format = '[$ssh_symbol](bold gray) at [$hostname](bold blue) '
+format = ' [$ssh_symbol](bold gray)at [$hostname](bold blue) in'
 disabled = false
 
-[character]
-success_symbol = '[➜](bold green) '
-error_symbol = '[✗](bold red) '
+[git_branch]
+format = " [ $symbol $branch($remote_branch) ]($style)"
+symbol = "[ ](bold italic bright-blue)"
+style = "italic bright-blue"
+
+[git_status]
+format = '([$all_status$ahead_behind]($style))'
+style = 'bold italic bright-blue'
+conflicted = '=${count} '
+ahead = '⇡${count} '
+behind = '⇣${count} '
+diverged = '⇕⇡${ahead_count}⇣${behind_count} '
+untracked = '?${count} '
+stashed = '\${count} '
+modified = '~${count} '
+staged = '+${count} '
+renamed = '»${count} '
+deleted = '✗${count} '
 
 [aws]
 symbol = "  "
 
 [buf]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [c]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [cmake]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [conda]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [crystal]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [dart]
 symbol = " "
-
-[directory]
-read_only = " 󰌾"
-format = 'in [$path](bold yellow) '
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [docker_context]
 symbol = " "
+format = " [$symbol${context}]($style)"
+style = "bold bright-blue"
 
 [elixir]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [elm]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [fennel]
 symbol = " "
-
-[fossil_branch]
-symbol = " "
-
-[git_branch]
-symbol = " "
-
-[git_commit]
-tag_symbol = '  '
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [golang]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
+style = "bold bright cyan"
 
 [guix_shell]
 symbol = " "
 
 [haskell]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [haxe]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [hg_branch]
 symbol = " "
 
 [java]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [julia]
 symbol = " "
+format = " [$symbol${context}]($style)"
+version_format = "${raw}"
 
 [kotlin]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [lua]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [memory_usage]
 symbol = "󰍛 "
 
 [meson]
 symbol = "󰔷 "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [nim]
 symbol = "󰆥 "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [nix_shell]
 symbol = " "
 
 [nodejs]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [ocaml]
 symbol = " "
-
-[os.symbols]
-Alpaquita = " "
-Alpine = " "
-AlmaLinux = " "
-Amazon = " "
-Android = " "
-Arch = " "
-Artix = " "
-CachyOS = " "
-CentOS = " "
-Debian = " "
-DragonFly = " "
-Emscripten = " "
-EndeavourOS = " "
-Fedora = " "
-FreeBSD = " "
-Garuda = "󰛓 "
-Gentoo = " "
-HardenedBSD = "󰞌 "
-Illumos = "󰈸 "
-Kali = " "
-Linux = " "
-Mabox = " "
-Macos = " "
-Manjaro = " "
-Mariner = " "
-MidnightBSD = " "
-Mint = " "
-NetBSD = " "
-NixOS = " "
-Nobara = " "
-OpenBSD = "󰈺 "
-openSUSE = " "
-OracleLinux = "󰌷 "
-Pop = " "
-Raspbian = " "
-Redhat = " "
-RedHatEnterprise = " "
-RockyLinux = " "
-Redox = "󰀘 "
-Solus = "󰠳 "
-SUSE = " "
-Ubuntu = " "
-Unknown = " "
-Void = " "
-Windows = "󰍲 "
-
-[package]
-symbol = "󰏗 "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [perl]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [php]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [pijul_channel]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [python]
-symbol = " "
+format = " [${symbol}${version}]($style)"
+symbol = "[ ](bold bright-yellow) "
+version_format = "${raw}"
+style = "bold bright-yellow"
 
 [rlang]
 symbol = "󰟔 "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [ruby]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [rust]
 symbol = "󱘗 "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [scala]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [swift]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [zig]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
 
 [gradle]
 symbol = " "
+format = " [$symbol${version}]($style)"
+version_format = "${raw}"
+
+[package]
+format = " [pkg](italic dimmed) [$symbol$version]($style)"
+symbol = "󰏗 "
+style = "dimmed yellow italic bold"
 
 [custom.update]
 when = "/usr/bin/rpm-ostree status --json | /usr/bin/jq -e \".deployments[0].booted == false\" > /dev/null;"

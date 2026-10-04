@@ -77,15 +77,15 @@ jobs:
           cli_version: v0.9.37
           registry: ghcr.io
           registry_namespace: large-farva
-          # Only main/testing pushes and manual runs may publish; schedules publish main only.
-          push: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) }}
-          cosign_private_key: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && secrets.SIGNING_SECRET || '' }}
-          registry_token: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && github.token || '' }}
+          # Only main/testing/personal pushes and manual runs may publish; schedules publish main only.
+          push: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/personal') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) }}
+          cosign_private_key: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/personal') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && secrets.SIGNING_SECRET || '' }}
+          registry_token: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/personal') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.ref == 'refs/heads/main')) && github.token || '' }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: false
 
-      - name: Publish signed testing latest tag
-        if: ${{ github.repository == 'large-farva/outpost' && github.ref == 'refs/heads/testing' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+      - name: Publish signed channel latest tag
+        if: ${{ steps.channel.outputs.publish == 'true' && github.repository == 'large-farva/outpost' && (github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/personal') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/publish-testing-tag.sh

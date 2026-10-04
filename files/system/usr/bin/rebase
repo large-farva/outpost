@@ -4,7 +4,7 @@ set -euo pipefail
 source /usr/lib/outpost/lib.sh
 case "${1:-}" in
     -h|--help)
-        printf 'Usage: rebase [--help] [--version]\nSwitch between Outpost production and testing, with confirmation. Reboot manually afterward.\n'
+        printf 'Usage: rebase [--help] [--version]\nSwitch between Outpost production and testing, or return from personal to production, with confirmation. Reboot manually afterward.\n'
         exit 0 ;;
     --version) printf '2.0\n'; exit 0 ;;
     '') ;;
@@ -24,9 +24,12 @@ image=${image%%@*}
 image=${image%%:*}
 case "$image" in
     ghcr.io/large-farva/outpost) target=ghcr.io/large-farva/outpost-testing; channel=testing ;;
-    ghcr.io/large-farva/outpost-testing) target=ghcr.io/large-farva/outpost; channel=production ;;
-    *) log_error 'The booted image is not an Outpost production or testing image.'; exit 1 ;;
+    ghcr.io/large-farva/outpost-testing|ghcr.io/large-farva/outpost-personal) target=ghcr.io/large-farva/outpost; channel=production ;;
+    *) log_error 'The booted image is not a recognized Outpost channel.'; exit 1 ;;
 esac
+if [[ "$image" == ghcr.io/large-farva/outpost-personal ]]; then
+    log_warn 'Production does not include the personal image packages.'
+fi
 hdr 'Switch Outpost channel'
 printf 'Current: %s\nTarget:  %s:latest\n\n' "$image" "$target"
 if [[ "$channel" == testing ]]; then

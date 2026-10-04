@@ -68,7 +68,8 @@ signing can use different certificates on the same card.
 The `testing` branch publishes `ghcr.io/large-farva/outpost-testing:latest` after
 its build checks pass. This is separate from the production image at
 `ghcr.io/large-farva/outpost:latest`. Work branches and pull requests do not publish
-installable images.
+installable images. The separate `personal` branch is an exception and publishes
+`outpost-personal` for personal tools. See the [personal image guide](personal.md).
 
 Testing images can contain changes that have not passed physical CAC or VM tests.
 Start in a VM and keep a known-good deployment before trying one on your working

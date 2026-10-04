@@ -10,7 +10,7 @@ on any machine used for testing.
 | Testing | `ghcr.io/large-farva/outpost-testing:latest` |
 
 Wait for a successful [testing build](https://github.com/large-farva/outpost/actions?query=branch%3Atesting),
-including **Publish signed testing latest tag**, before switching. A failed build
+including **Publish signed channel latest tag**, before switching. A failed build
 can leave `latest` pointing to an older image. The successful run's summary shows
 the published digest.
 

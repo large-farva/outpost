@@ -4,7 +4,12 @@ Make your changes on a branch, then open a pull request. Successful pushes and
 manual runs on `testing` publish the signed
 `ghcr.io/large-farva/outpost-testing:latest` image. `main` publishes
 `ghcr.io/large-farva/outpost:latest`, with a scheduled build each week.
+Pushes and manual runs on `personal` publish `ghcr.io/large-farva/outpost-personal:latest`.
 Pull requests and other branches build without publishing.
+
+Personal additions stay on `personal`. Bring production updates into that branch
+by merging `main` into it, never by merging `personal` back. See the
+[personal image guide](docs/personal.md) for setup.
 
 Use `main` for production and `testing` to collect changes awaiting validation.
 The current CAC and desktop work is also kept on `test/cac-desktop`. Create focused
@@ -27,19 +32,20 @@ build. Fedora packages and BlueBuild modules still follow upstream repositories.
 
 ## Image channels
 
-Both channels use `recipes/recipe.yml`, so packages and build steps only need to
-be maintained in one place. CI's `.github/scripts/select-channel.sh` changes only
-the top-level `name` in the working-tree recipe to `outpost` or `outpost-testing`.
-Publishing follows the branch and event rules above.
+Each branch uses `recipes/recipe.yml`. Personal packages are added directly to
+that recipe on `personal`, without a second recipe. CI's
+`.github/scripts/select-channel.sh` changes only the top-level `name` to `outpost`,
+`outpost-testing`, or `outpost-personal`. Publishing follows the branch and event
+rules above.
 
 The channel build script sets the rebase target and signature policy after the
-signing module runs. Both channels use `SIGNING_SECRET` and the repository's
+signing module runs. All channels use `SIGNING_SECRET` and the repository's
 `cosign.pub`.
 
 The pinned BlueBuild CLI gives non-main branches commit tags. Before publishing
-`latest`, the workflow verifies the testing image's signature and runs the offline
+`latest`, the workflow verifies the testing or personal image's signature and runs the offline
 container smoke test. It then copies the same manifest to `latest` and checks that
-the digest hasn't changed. Testing images stay in their own repository.
+the digest hasn't changed. Testing and personal images each stay in their own repository.
 
 After the first publication, check the `outpost-testing` package's visibility and
 repository access in GitHub settings. Public installation instructions require

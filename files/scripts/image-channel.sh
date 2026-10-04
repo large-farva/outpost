@@ -5,6 +5,7 @@ set -euo pipefail
 case "${IMAGE_NAME:-}" in
     outpost) channel=production ;;
     outpost-testing) channel=testing ;;
+    outpost-personal) channel=personal ;;
     *) printf 'Unknown Outpost image name.\n' >&2; exit 1 ;;
 esac
 
@@ -21,15 +22,16 @@ jq --arg name "$IMAGE_NAME" --arg channel "$channel" \
     "$metadata" > "$updated"
 install -m 0644 "$updated" "$metadata"
 
-# Both channels use the same public key; each signature must match its repository.
+# All channels use the same public key; each signature must match its repository.
 policy=/etc/containers/policy.json
 jq --arg key "$key" '
     {type: "sigstoreSigned", keyPath: $key, signedIdentity: {type: "matchRepository"}} as $rule |
     .transports.docker["ghcr.io/large-farva/outpost"] = [$rule] |
-    .transports.docker["ghcr.io/large-farva/outpost-testing"] = [$rule]
+    .transports.docker["ghcr.io/large-farva/outpost-testing"] = [$rule] |
+    .transports.docker["ghcr.io/large-farva/outpost-personal"] = [$rule]
 ' "$policy" > "$updated"
 install -m 0644 "$updated" "$policy"
-for image in outpost outpost-testing; do
+for image in outpost outpost-testing outpost-personal; do
     # Match the signing module's filenames so each scope is defined once.
     cat > "/etc/containers/registries.d/large-farva-$image.yaml" <<REGISTRIES
 docker:

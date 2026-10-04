@@ -131,7 +131,8 @@ esac''')
                     process.wait()
         return output, calls.read_text()
 
-    for channel, target in [('outpost', 'outpost-testing'), ('outpost-testing', 'outpost')]:
+    for channel, target in [('outpost', 'outpost-testing'), ('outpost-testing', 'outpost'),
+                            ('outpost-personal', 'outpost')]:
         _, log = run('rebase', data=deployments(channel))
         assert f'rebase ostree-image-signed:docker://ghcr.io/large-farva/{target}:latest' in log
     for kwargs in ({'CONFIRM_RC': '1'}, {'CHANGE': '1'}, {'data': deployments('other')}):

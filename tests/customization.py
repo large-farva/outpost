@@ -105,7 +105,7 @@ def main():
                 relative = f'usr/share/{root}/{language}'
                 (fixture / relative).symlink_to(target, target_is_directory=True)
                 removed.append(relative)
-        for image_name in ('outpost', 'outpost-testing'):
+        for image_name in ('outpost', 'outpost-testing', 'outpost-personal'):
             env['IMAGE_NAME'] = image_name
             for _ in range(2):
                 subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)
@@ -136,7 +136,7 @@ def main():
             (target / 'fr').mkdir()
             (target / 'fr/resource').write_text('keep')
             root_targets.append((path, target))
-        for image_name in ('outpost', 'outpost-testing'):
+        for image_name in ('outpost', 'outpost-testing', 'outpost-personal'):
             env['IMAGE_NAME'] = image_name
             for _ in range(2):
                 subprocess.run(['bash', str(script)], env=env, check=True, capture_output=True)

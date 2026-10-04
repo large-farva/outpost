@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[[ ${GITHUB_REPOSITORY:-} == large-farva/outpost && ${GITHUB_REF:-} == refs/heads/testing ]] || exit 1
+[[ ${GITHUB_REPOSITORY:-} == large-farva/outpost ]] || exit 1
+case "${GITHUB_REF:-}" in
+    refs/heads/testing|refs/heads/personal) image=ghcr.io/large-farva/outpost-${GITHUB_REF##*/} ;;
+    *) exit 1 ;;
+esac
 case "${GITHUB_EVENT_NAME:-}" in push|workflow_dispatch) ;; *) exit 1 ;; esac
 [[ ${GITHUB_SHA:-} =~ ^[0-9a-f]{40}$ ]] || exit 1
-image=ghcr.io/large-farva/outpost-testing
+
 # BlueBuild gives non-default branches commit tags instead of latest.
 source="$image:${GITHUB_SHA:0:7}-43"
 printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
@@ -17,4 +21,4 @@ docker buildx imagetools create --prefer-index=false --tag "$image:latest" "$ima
 latest=$(docker buildx imagetools inspect "$image:latest" --format '{{json .Manifest}}')
 [[ $(jq -er .digest <<< "$latest") == "$digest" ]]
 cosign verify --key cosign.pub "$image:latest" >/dev/null
-printf 'Testing image: %s:latest\n\nDigest: %s\n' "$image" "$digest" >> "$GITHUB_STEP_SUMMARY"
+printf 'Channel image: %s:latest\n\nDigest: %s\n' "$image" "$digest" >> "$GITHUB_STEP_SUMMARY"

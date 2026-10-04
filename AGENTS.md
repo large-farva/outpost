@@ -4,7 +4,7 @@ Outpost is a Fedora Kinoite image built with BlueBuild and pinned to Fedora 43.
 
 ## Repository layout
 
-- `recipes/recipe.yml` defines both production and testing images, including all
+- `recipes/recipe.yml` defines the image on each branch, including all
   packages, services, and build steps. BlueBuild always uses this recipe.
 - `files/system/` mirrors the installed filesystem. Commands live in `usr/bin/`,
   shared Bash helpers in `usr/lib/outpost/lib.sh`, and desktop assets in `usr/share/`.
@@ -32,9 +32,13 @@ hardware checks.
 
 GitHub Actions builds pull requests, eligible pushes, weekly schedules, and manual
 runs after lint and tests pass. `main` publishes Outpost. Pushes and manual runs
-on `testing` publish Outpost Testing. Pull requests and other branches do not publish images.
+on `testing` publish Outpost Testing. Pushes and manual runs on `personal` publish
+Outpost Personal. Pull requests and other branches do not publish images.
+Keep personal additions on `personal`. Merge updates from `main` into `personal`,
+not the other way around.
 CI's `.github/scripts/select-channel.sh` changes only the top-level `name` in the
-working-tree `recipes/recipe.yml` to `outpost` or `outpost-testing`. Local builds
+working-tree `recipes/recipe.yml` to `outpost`, `outpost-testing`, or
+`outpost-personal`. Local builds
 use the committed `outpost` name regardless of branch. See the contributor guide
 for local testing-channel preparation. Image metadata, signing, and tag publishing
 remain unchanged.

@@ -12,6 +12,10 @@ Outpost is a Fedora Kinoite desktop image with CAC support built in. It includes
 DoD certificates, smart-card software, and tools to help when your card won't
 connect. It runs KDE Plasma and is built with BlueBuild on Fedora 43.
 
+This is the **personal** branch, with Docker Engine, Compose, and Buildx added.
+It publishes separately from production. See [Personal image](docs/personal.md)
+for setup and the pending NVIDIA work. Do not merge this branch into `main` or `testing`.
+
 ## Install
 
 From Fedora Kinoite or a compatible image, run:

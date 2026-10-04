@@ -2,6 +2,13 @@
 set -euo pipefail
 [[ $EUID != 0 ]] || { printf 'Run the container as an unprivileged user.\n' >&2; exit 1; }
 rpm -q okular firefox glibc-langpack-en google-noto-sans-cjk-vf-fonts
+if [[ $(jq -r '."image-channel"' /usr/share/outpost/image-info.json) == personal ]]; then
+    rpm -q moby-engine docker-cli docker-compose docker-buildx podman
+    docker --version
+    docker compose version
+    docker buildx version
+    systemctl is-enabled docker.socket
+fi
 for package in firefox-langpacks glibc-all-langpacks \
     google-noto-sans-mono-cjk-vf-fonts google-noto-serif-cjk-vf-fonts; do
     if rpm -q "$package" >/dev/null 2>&1; then

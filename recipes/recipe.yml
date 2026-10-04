@@ -9,135 +9,147 @@ base-image: quay.io/fedora/fedora-kinoite
 image-version: 43
 blue-build-tag: none
 platforms:
-  - linux/amd64
+    - linux/amd64
 
 modules:
-  - type: containerfile
-    snippets:
-      - |
-        LABEL org.opencontainers.image.title="Outpost"
-        LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
-        LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
-        LABEL org.opencontainers.image.licenses="Apache-2.0"
+    - type: containerfile
+      snippets:
+          - |
+              LABEL org.opencontainers.image.title="Outpost"
+              LABEL org.opencontainers.image.description="Fedora Kinoite based image with built-in DoD CAC support."
+              LABEL org.opencontainers.image.source="https://github.com/large-farva/outpost"
+              LABEL org.opencontainers.image.licenses="Apache-2.0"
 
-  - type: dnf
-    repos:
-      copr:
-        - atim/starship
-    install:
-      exclude:
-        - firefox-langpacks
-        - google-noto-sans-mono-cjk-vf-fonts
-        - google-noto-serif-cjk-vf-fonts
-      packages:
-        - ca-certificates
-        - curl
-        - distrobox
-        - fastfetch
-        - firefox
-        - gcc
-        - git
-        - glibc-langpack-en
-        - google-noto-sans-cjk-vf-fonts
-        - gum
-        - jq
-        - nss-tools
-        - okular
-        - opensc
-        - openssl
-        - p11-kit
-        - p11-kit-trust
-        - pcsc-lite
-        - pcsc-lite-ccid
-        - pcsc-tools
-        - poppler
-        - poppler-utils
-        - starship
-        - unzip
-    remove:
-      packages:
-        - fedora-bookmarks
-        - kcharselect
-        - khelpcenter
-        - plasma-discover
-        - toolbox
-        - vim-minimal
+    - type: akmods
+      base: main
+      install: []
+      nvidia-driver: nvidia-open
 
-  # glibc requires a locale provider; install English before removing the archive.
-  - type: dnf
-    remove:
-      auto-remove: false
-      packages:
-        - firefox-langpacks
-        - glibc-all-langpacks
-        - google-noto-sans-mono-cjk-vf-fonts
-        - google-noto-serif-cjk-vf-fonts
+    - type: dnf
+      repos:
+          copr:
+              - atim/starship
+      install:
+          exclude:
+              - firefox-langpacks
+              - google-noto-sans-mono-cjk-vf-fonts
+              - google-noto-serif-cjk-vf-fonts
+          packages:
+              - ca-certificates
+              - curl
+              - distrobox
+              - docker-buildx
+              - docker-cli
+              - docker-compose
+              - fastfetch
+              - firefox
+              - gcc
+              - git
+              - glibc-langpack-en
+              - google-noto-sans-cjk-vf-fonts
+              - gum
+              - jq
+              - micro
+              - moby-engine
+              - nss-tools
+              - okular
+              - opensc
+              - openssl
+              - p11-kit
+              - p11-kit-trust
+              - pcsc-lite
+              - pcsc-lite-ccid
+              - pcsc-tools
+              - poppler
+              - poppler-utils
+              - starship
+              - unzip
+      remove:
+          packages:
+              - fedora-bookmarks
+              - kcharselect
+              - khelpcenter
+              - plasma-discover
+              - nano
+              - toolbox
+              - vim-minimal
 
-  - type: default-flatpaks
-    configurations:
-      - notify: true
-        scope: system
-        install:
-          - com.github.tchx84.Flatseal
-          - de.hohnstaedt.xca
-          - io.github.DenysMb.Kontainer
-          - io.github.flattool.Warehouse
-          - io.github.kolunmi.Bazaar
-          - org.kde.kate
-          - org.onlyoffice.desktopeditors
-          - org.signal.Signal
-        remove:
-          - org.kde.okular
-        remove-remotes:
-          - fedora
-          - fedora-testing
+    # glibc requires a locale provider; install English before removing the archive.
+    - type: dnf
+      remove:
+          auto-remove: false
+          packages:
+              - firefox-langpacks
+              - glibc-all-langpacks
+              - google-noto-sans-mono-cjk-vf-fonts
+              - google-noto-serif-cjk-vf-fonts
 
-  - type: fonts
-    fonts:
-      nerd-fonts:
-        - NerdFontsSymbolsOnly
+    - type: default-flatpaks
+      configurations:
+          - notify: true
+            scope: system
+            install:
+                - com.github.tchx84.Flatseal
+                - de.hohnstaedt.xca
+                - io.github.DenysMb.Kontainer
+                - io.github.flattool.Warehouse
+                - io.github.kolunmi.Bazaar
+                - org.kde.kate
+                - org.onlyoffice.desktopeditors
+                - org.signal.Signal
+            remove:
+                - org.kde.okular
+            remove-remotes:
+                - fedora
+                - fedora-testing
 
-  - type: files
-    files:
-      - source: system
-        destination: /
+    - type: fonts
+      fonts:
+          nerd-fonts:
+              - NerdFontsSymbolsOnly
 
-  - type: systemd
-    system:
-      enabled:
-        - pcscd.socket
-    user:
-      enabled:
-        - firefox-module.service
+    - type: files
+      files:
+          - source: system
+            destination: /
 
-  - type: script
-    scripts:
-      - dod-trust.sh
-      - cleanup.sh
+    - type: systemd
+      system:
+          enabled:
+              - docker.socket
+              - pcscd.socket
+      user:
+          enabled:
+              - firefox-module.service
 
-  - type: os-release
-    properties:
-      NAME: Outpost
-      ID: outpost
-      ID_LIKE: fedora
-      VERSION_CODENAME: Watchtower
-      PRETTY_NAME: Outpost 43
-      LOGO: outpost-logo
-      DEFAULT_HOSTNAME: outpost
-      VARIANT: Kinoite
-      VARIANT_ID: outpost
-      IMAGE_ID: outpost
-      IMAGE_VERSION: latest-43
+    - type: script
+      scripts:
+          - dod-trust.sh
+          - cleanup.sh
 
-      HOME_URL: https://github.com/large-farva/outpost
-      DOCUMENTATION_URL: https://github.com/large-farva/outpost
-      SUPPORT_URL: https://github.com/large-farva/outpost/issues
-      BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
+    - type: os-release
+      properties:
+          NAME: Outpost
+          ID: outpost
+          ID_LIKE: fedora
+          VERSION_CODENAME: Watchtower
+          PRETTY_NAME: Outpost 43
+          LOGO: outpost-logo
+          DEFAULT_HOSTNAME: outpost
+          VARIANT: Kinoite
+          VARIANT_ID: outpost
+          IMAGE_ID: outpost
+          IMAGE_VERSION: latest-43
 
-  - type: initramfs
+          HOME_URL: https://github.com/large-farva/outpost
+          DOCUMENTATION_URL: https://github.com/large-farva/outpost
+          SUPPORT_URL: https://github.com/large-farva/outpost/issues
+          BUG_REPORT_URL: https://github.com/large-farva/outpost/issues
 
-  - type: signing
+    - type: initramfs
 
-  - type: script
-    scripts:
-      - image-channel.sh
+    - type: signing
+
+    - type: script
+      scripts:
+          - image-channel.sh
