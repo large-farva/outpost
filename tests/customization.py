@@ -11,6 +11,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    editor_hook = ROOT / "files/system/etc/profile.d/outpost-editor.sh"
+    editor_env = {key: value for key, value in os.environ.items() if key not in ("EDITOR", "VISUAL")}
+    for shell in ("sh", "bash"):
+        for overrides, expected in (
+            ({}, ["/usr/bin/micro", "/usr/bin/micro"]),
+            ({"EDITOR": "", "VISUAL": ""}, ["/usr/bin/micro", "/usr/bin/micro"]),
+            ({"EDITOR": "custom-editor"}, ["custom-editor", "custom-editor"]),
+            ({"VISUAL": "custom-visual"}, ["/usr/bin/micro", "custom-visual"]),
+            ({"EDITOR": "custom-editor", "VISUAL": "custom-visual"}, ["custom-editor", "custom-visual"]),
+        ):
+            result = subprocess.run([shell, "-c", ". \"$EDITOR_HOOK\"; . \"$EDITOR_HOOK\"; printenv EDITOR VISUAL"],
+                                    env=editor_env | overrides | {"EDITOR_HOOK": str(editor_hook)},
+                                    check=True, capture_output=True, text=True)
+            assert result.stdout.splitlines() == expected, (shell, overrides, result.stdout)
+
     theme = ROOT / 'files/system/usr/share/plasma/look-and-feel/org.outpost.desktop'
     theme_id = json.loads((theme / 'metadata.json').read_text())['KPlugin']['Id']
     defaults = configparser.ConfigParser()

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 have() { command -v "$1" >/dev/null 2>&1; }
 interactive() { [[ -t 0 && -t 2 ]]; }
-# Command substitution redirects stdout, so terminal detection happens first.
+
 OUTPOST_COLOR=0
 if [[ -t 1 && ${TERM:-dumb} != dumb && ! ${NO_COLOR+x} ]]; then
     OUTPOST_COLOR=1
@@ -43,7 +43,7 @@ confirm() {
         [[ "$answer" == [yY] || "$answer" == [yY][eE][sS] ]]
     fi
 }
-# Menu output is captured; stderr still points to the terminal.
+
 choose() {
     interactive || return 1
     if have gum; then
@@ -85,7 +85,6 @@ deployment_status() {
     ' <<< "$status"
 }
 
-# Clear the viewport, leaving scrollback available for command output.
 menu_screen() {
     if interactive && [[ -t 1 && ${TERM:-dumb} != dumb ]]; then
         printf '\033[H\033[2J'
@@ -120,7 +119,6 @@ distrobox_list() {
     done <<< "$distrobox_output"
 }
 
-# Both channel switching and rollback require an unchanged deployment list.
 deployment_snapshot() {
     local status
     status=$(rpm-ostree status --json) || return 1

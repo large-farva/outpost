@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# System Bash defaults; user settings belong in ~/.bashrc.
+# System Bash defaults.
+# User settings belong in ~/.bashrc.
 
 if [[ -z ${BASHRCSOURCED:-} ]]; then
     BASHRCSOURCED=Y
@@ -12,7 +13,6 @@ if [[ -z ${BASHRCSOURCED:-} ]]; then
                     if [[ -e /etc/sysconfig/bash-prompt-xterm ]]; then
                         PROMPT_COMMAND=(/etc/sysconfig/bash-prompt-xterm)
                     else
-                        # Prompt variables must expand when the prompt is drawn.
                         # shellcheck disable=SC2016
                         PROMPT_COMMAND=('printf "\033]0;%s@%s:%s\007" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"')
                     fi
@@ -21,7 +21,6 @@ if [[ -z ${BASHRCSOURCED:-} ]]; then
                     if [[ -e /etc/sysconfig/bash-prompt-screen ]]; then
                         PROMPT_COMMAND=(/etc/sysconfig/bash-prompt-screen)
                     else
-                        # Prompt variables must expand when the prompt is drawn.
                         # shellcheck disable=SC2016
                         PROMPT_COMMAND=('printf "\033k%s@%s:%s\033\\" "${USER}" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"')
                     fi
@@ -39,7 +38,6 @@ if [[ -z ${BASHRCSOURCED:-} ]]; then
     fi
 
     if ! shopt -q login_shell; then
-        # Profile scripts call pathmunge while they are sourced.
         # shellcheck disable=SC2329
         pathmunge() {
             case ":${PATH}:" in

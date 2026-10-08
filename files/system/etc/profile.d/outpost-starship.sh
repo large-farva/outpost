@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Starship runs once per interactive Bash shell.
 if [ -n "${BASH_VERSION:-}" ]; then
     case "$-" in
         *i*)

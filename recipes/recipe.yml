@@ -71,10 +71,10 @@ modules:
               - khelpcenter
               - plasma-discover
               - nano
+              - nano-default-editor
               - toolbox
               - vim-minimal
 
-    # glibc requires a locale provider; install English before removing the archive.
     - type: dnf
       remove:
           auto-remove: false
@@ -103,10 +103,21 @@ modules:
                 - fedora
                 - fedora-testing
 
+    #    - type: chezmoi
+    #      repository: "https://github.com/large-farva/dotfiles"
+    #      branch: main
+    #      all-users: true
+    #      run-every: 1h
+    #      wait-after-boot: 5m
+    #      disable-init: false
+    #      disable-update: false
+    #      file-conflict-policy: replace
+
     - type: fonts
       fonts:
           nerd-fonts:
               - NerdFontsSymbolsOnly
+              - CousineNerdFont
 
     - type: files
       files:
