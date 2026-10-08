@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     selector = ROOT / '.github/scripts/select-channel.sh'
     workflow = (ROOT / '.github/workflows/build.yml').read_text()
-    assert '\n          recipe: recipe.yml\n' in workflow
-    assert '\n          skip_checkout: true\n' in workflow
+    assert re.search(r'^ +recipe: recipe\.yml$', workflow, re.MULTILINE)
+    assert re.search(r'^ +skip_checkout: true$', workflow, re.MULTILINE)
     cases = (
         ('push', 'refs/heads/main', '', 'outpost', True),
         ('schedule', 'refs/heads/main', '', 'outpost', True),
@@ -48,8 +48,8 @@ def main():
     guards = dict(re.findall(r'^\s+(push|cosign_private_key|registry_token|if): \$\{\{ (.+) \}\}$',
                              workflow, re.MULTILINE))
     assert set(guards) == {'push', 'cosign_private_key', 'registry_token', 'if'}
-    assert '\npermissions:\n  contents: read\n' in workflow
-    assert '\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n' in workflow
+    assert re.search(r'^permissions:\n +contents: read$', workflow, re.MULTILINE)
+    assert re.search(r'^( +)permissions:\n\1( +)contents: read\n\1\2packages: write\n\1\2id-token: write$', workflow, re.MULTILINE)
     assert 'pull_request_target:' not in workflow
     for event, ref, base, image, publish in cases:
         for repository in ('large-farva/outpost', 'someone/fork'):
@@ -186,7 +186,7 @@ exit "${VERIFY_RC:-0}"''')
                 assert set(re.findall(r'ghcr\.io/large-farva/[^:@\s]+', log)) == {image}
                 assert 'TEST_SECRET' not in log
                 assert summary.read_text() == f'Channel image: {image}:latest\n\nDigest: {digest}\n'
-            # Guard failures must precede login or any registry operation.
+
             for overrides in ({'GITHUB_REF': 'refs/heads/main'},
                               {'GITHUB_REF': 'refs/tags/' + channel},
                               {'GITHUB_REF': 'refs/heads/' + channel + '-extra'},
