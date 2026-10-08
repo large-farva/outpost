@@ -117,7 +117,7 @@ modules:
       fonts:
           nerd-fonts:
               - NerdFontsSymbolsOnly
-              - CousineNerdFont
+              - Cousine
 
     - type: files
       files:
