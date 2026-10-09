@@ -41,8 +41,10 @@ modules:
               - docker-buildx
               - docker-cli
               - docker-compose
+              - eza
               - fastfetch
               - firefox
+              - fzf
               - gcc
               - git
               - glibc-langpack-en
@@ -62,8 +64,10 @@ modules:
               - pcsc-tools
               - poppler
               - poppler-utils
+              - ripgrep
               - starship
               - unzip
+              - zoxide
       remove:
           packages:
               - fedora-bookmarks
@@ -103,15 +107,15 @@ modules:
                 - fedora
                 - fedora-testing
 
-    #    - type: chezmoi
-    #      repository: "https://github.com/large-farva/dotfiles"
-    #      branch: main
-    #      all-users: true
-    #      run-every: 1h
-    #      wait-after-boot: 5m
-    #      disable-init: false
-    #      disable-update: false
-    #      file-conflict-policy: replace
+    - type: chezmoi
+      repository: "https://github.com/large-farva/dotfiles"
+      branch: main
+      all-users: true
+      run-every: 1d
+      wait-after-boot: 5m
+      disable-init: false
+      disable-update: false
+      file-conflict-policy: replace
 
     - type: fonts
       fonts:
