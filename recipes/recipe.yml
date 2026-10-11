@@ -74,8 +74,6 @@ modules:
               - kcharselect
               - khelpcenter
               - plasma-discover
-              - nano
-              - nano-default-editor
               - toolbox
               - vim-minimal
 
@@ -95,11 +93,13 @@ modules:
             install:
                 - com.github.tchx84.Flatseal
                 - de.hohnstaedt.xca
+                - dev.zed.Zed
                 - io.github.DenysMb.Kontainer
                 - io.github.flattool.Warehouse
                 - io.github.kolunmi.Bazaar
                 - org.kde.kate
                 - org.onlyoffice.desktopeditors
+                - com.protonvpn.www
                 - org.signal.Signal
             remove:
                 - org.kde.okular
