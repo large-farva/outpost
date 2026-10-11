@@ -115,7 +115,7 @@ modules:
       wait-after-boot: 5m
       disable-init: false
       disable-update: false
-      file-conflict-policy: replace
+      file-conflict-policy: skip
 
     - type: fonts
       fonts:
