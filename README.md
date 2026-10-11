@@ -25,13 +25,13 @@ It publishes separately from production and won't be merged into `main` or `test
 ## Install Reference
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/large-farva/outpost-personal:latest
 systemctl reboot
 ```
 
 And then:
 
 ```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/large-farva/outpost-personal:latest
 systemctl reboot
 ```
