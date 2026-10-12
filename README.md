@@ -12,14 +12,19 @@ This is the **personal** branch for my own use with my personal dotfiles, packag
 It publishes separately from production and won't be merged into `main` or `testing`.
 
 ### Packages
+- bat
+- btop
 - docker-buildx
 - docker-cli
 - docker-compose
+- duf
 - eza
+- fd-find
 - fzf
 - micro
 - moby-engine
 - ripgrep
+- tealdeer
 - zoxide
 
 ## Install Reference
