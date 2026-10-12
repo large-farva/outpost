@@ -35,14 +35,18 @@ modules:
               - google-noto-sans-mono-cjk-vf-fonts
               - google-noto-serif-cjk-vf-fonts
           packages:
+              - bat
+              - btop
               - ca-certificates
               - curl
               - distrobox
               - docker-buildx
               - docker-cli
               - docker-compose
+              - duf
               - eza
               - fastfetch
+              - fd-find
               - firefox
               - fzf
               - gcc
@@ -66,6 +70,7 @@ modules:
               - poppler-utils
               - ripgrep
               - starship
+              - tealdeer
               - unzip
               - zoxide
       remove:
