@@ -68,7 +68,9 @@ modules:
               - pcsc-tools
               - poppler
               - poppler-utils
+              - uv
               - ripgrep
+              - ruff
               - starship
               - tealdeer
               - unzip

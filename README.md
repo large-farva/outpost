@@ -23,7 +23,9 @@ It publishes separately from production and won't be merged into `main` or `test
 - fzf
 - micro
 - moby-engine
+- uv
 - ripgrep
+- ruff
 - tealdeer
 - zoxide
 
