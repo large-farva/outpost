@@ -28,7 +28,8 @@ modules:
     - type: dnf
       repos:
           nonfree: negativo17
-          copr: atim/starship
+          copr:
+              - atim/starship
       install:
           exclude:
               - firefox-langpacks
