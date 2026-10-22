@@ -36,5 +36,5 @@ rc=0
 cac-check || rc=$?
 printf '\n%s\n' 'Open RPM Firefox again and retry the site, choosing the authentication certificate.' \
     'If it still fails, check about:policies for errors and save a report with cac-report.' \
-    'Repeated PIN failures need card support; do not keep guessing the PIN.'
+    'Repeated PIN failures need card support. Do not keep guessing the PIN.'
 exit "$rc"

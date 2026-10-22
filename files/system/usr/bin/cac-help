@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 case "${1:-}" in
-    -h|--help) printf 'Usage: cac-help [--help] [--version]\nInteractive CAC tools; standalone commands also work without a terminal.\n'; exit 0 ;;
-    --version) printf '2.0\n'; exit 0 ;;
+    -h|--help) printf 'Usage: cac-help [--help]\nInteractive CAC tools; standalone commands also work without a terminal.\n'; exit 0 ;;
+    '') ;;
+    *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
 # shellcheck source=lib.sh
 source /usr/lib/outpost/lib.sh

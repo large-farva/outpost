@@ -3,7 +3,7 @@ set -euo pipefail
 case "${1:-}" in
     -h|--help)
         cat <<'HELP'
-Usage: cac-pdf-setup [--help] [--version]
+Usage: cac-pdf-setup [--help]
 Configure RPM Okular to use your CAC provider in ~/.pki/nssdb.
 Run as your desktop user, without sudo. Close Okular before setup.
 
@@ -13,11 +13,10 @@ Signing a PDF:
   3. Select your CAC signing certificate (not its encryption certificate).
   4. Enter your PIN in Okular and save a new signed copy.
   5. Open the Signatures panel to inspect the signature and certificate.
-A missing card or canceled PIN prevents signing; setup does not test your PIN.
+A missing card or canceled PIN prevents signing and setup does not test your PIN.
 Use cac-check for diagnostics. No PINs or private keys are handled by this helper.
 HELP
         exit 0 ;;
-    --version) printf '1.0\n'; exit 0 ;;
     '') ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
@@ -44,7 +43,7 @@ if [[ "$existing" == "$db" && "$use_default" == false ]]; then
     printf 'Okular already uses %s\nRun cac-pdf-setup --help for signing instructions.\n' "$db"
     exit 0
 fi
-mkdir -p "$(dirname "$config")"
+mkdir -p -- "${config%/*}"
 if [[ -f "$config" ]]; then
     backup=$(mktemp "$config.outpost-backup.XXXXXX")
     cp -p -- "$config" "$backup"

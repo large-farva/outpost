@@ -6,12 +6,11 @@ source /usr/lib/outpost/lib.sh
 report=false
 case "${1:-}" in
     -h|--help)
-        printf '%s\n' 'Usage: cac-check [--report] [--help] [--version]' \
+        printf '%s\n' 'Usage: cac-check [--report] [--help]' \
             'Checks services, middleware, trust, Firefox policy, NSS, Okular, and card detection.' \
             '--report omits raw errors and identifying device data. Use cac-report to save it.' \
             'No PIN is requested. A successful check does not prove website authentication.'
         exit 0 ;;
-    --version) printf '3.0\n'; exit 0 ;;
     --report) report=true; OUTPOST_COLOR=0 ;;
     '') ;;
     *) log_error 'Unknown option. Use cac-check --help.'; exit 2 ;;
@@ -23,7 +22,7 @@ passes=0 warnings=0 failures=0
 check_ok() { ((++passes)); line "$(ok)" "$*"; }
 check_warn() { ((++warnings)); line "$(warn)" "$*"; }
 check_fail() { ((++failures)); line "$(bad)" "$*"; }
-# Capture first: grep -q on a live pipe can give a successful probe SIGPIPE.
+
 probe() {
     local rc
     if ! have "$1"; then

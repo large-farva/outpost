@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.1"
-
-usage() {
-  cat <<'EOF'
-Usage: cac-log [--help] [--version] [--since TIME]
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+Usage: cac-log [--help] [--since TIME]
 
 Shows smartcard and CAC-related journal entries.
 
@@ -25,11 +24,10 @@ Example:
 Sources: pcscd, firefox-module, opensc, p11-kit
 
 EOF
-}
-
-case "${1:-}" in
-  -h|--help) usage; exit 0 ;;
-  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+    exit 0
+    ;;
+  ''|--since) ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
 
 # shellcheck source=lib.sh

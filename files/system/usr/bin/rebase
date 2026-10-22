@@ -4,9 +4,8 @@ set -euo pipefail
 source /usr/lib/outpost/lib.sh
 case "${1:-}" in
     -h|--help)
-        printf 'Usage: rebase [--help] [--version]\nSwitch between Outpost production and testing, with confirmation. Reboot manually afterward.\n'
+        printf 'Usage: rebase [--help]\nSwitch between Outpost production and testing, with confirmation. Reboot manually afterward.\n'
         exit 0 ;;
-    --version) printf '2.0\n'; exit 0 ;;
     '') ;;
     *) log_error "Unknown argument: $1"; exit 2 ;;
 esac

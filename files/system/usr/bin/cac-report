@@ -15,7 +15,7 @@ directory="${XDG_STATE_HOME:-$HOME/.local/state}/outpost"
 mkdir -p "$directory"
 report=$(mktemp "$directory/cac-report-XXXXXXXX.txt")
 rc=0
-# Only allowlisted diagnostic summaries belong in a shareable report.
+
 date -u +'Report created: %Y-%m-%d %H:%M:%S UTC' > "$report"
 cac-check --report >> "$report" 2>/dev/null || rc=$?
 printf '\nDiagnostic exit status: %s\n' "$rc" >> "$report"

@@ -1,21 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.3"
-
-usage() {
-  cat <<'EOF'
-Usage: scan [--help] [--version] [-- pcsc_scan args...]
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+Usage: scan [--help] [-- pcsc_scan args...]
 
 Runs pcsc_scan interactively to monitor smart card reader events.
 Press Enter to stop the scan.
 
 EOF
-}
-
-case "${1:-}" in
-  -h|--help) usage; exit 0 ;;
-  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+    exit 0
+    ;;
+  ''|--) ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
 
 # shellcheck source=lib.sh

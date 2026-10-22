@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.2"
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+Usage: outpost [--status] [--help]
 
-usage() {
-  cat <<'EOF'
-Usage: outpost [--status] [--help] [--version]
-
-Opens the Outpost menu in a terminal; otherwise prints system status.
+Opens the Outpost menu in a terminal.
 Use --status to print status without opening the menu.
 
 EOF
-}
-
-case "${1:-}" in
-  -h|--help) usage; exit 0 ;;
-  --version) printf '%s\n' "$VERSION"; exit 0 ;;
+    exit 0 ;;
+  ''|--status) ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
 
 # shellcheck source=lib.sh
@@ -72,11 +69,8 @@ if ! systemctl is-enabled pcscd.socket >/dev/null 2>&1; then
   cac_issues+=("pcscd")
 fi
 
-opensc_found=false
-for p in /usr/lib64/pkcs11/opensc-pkcs11.so /usr/lib64/opensc-pkcs11.so; do
-  [[ -f "$p" ]] && opensc_found=true && break
-done
-$opensc_found || cac_issues+=("OpenSC")
+[[ -f /usr/lib64/pkcs11/opensc-pkcs11.so || -f /usr/lib64/opensc-pkcs11.so ]] ||
+  cac_issues+=("OpenSC")
 
 [[ -f /etc/pki/ca-trust/source/anchors/dod-trust-bundle.pem ]] || cac_issues+=("trust anchor")
 

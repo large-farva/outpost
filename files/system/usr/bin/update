@@ -3,15 +3,14 @@ set -euo pipefail
 case "${1:-}" in
     -h|--help)
         cat <<'HELP'
-Usage: update [--help] [--version]
-Update the OS, system and user Flatpaks, optional Homebrew, and Distrobox in sequence.
-If containers exist, asks before updating all of them; skips them without a terminal.
+Usage: update [--help]
+Update the OS, Flatpaks, optional Homebrew, and Distrobox containers in sequence.
+If containers exist, asks before updating all of them.
 Shows native progress and a final summary. Failures do not skip other stages.
-Run as your desktop user; sudo invocation preserves the original user context.
+Run as your desktop user. Sudo invocation preserves the original user context.
 Reboot manually if a pending OS deployment is reported.
 HELP
         exit 0 ;;
-    --version) printf '2.0\n'; exit 0 ;;
     '') ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac

@@ -3,7 +3,6 @@ set -euo pipefail
 umask 077
 case "${1:-}" in
     -h|--help) printf 'Usage: cac-nss-setup\nRegister OpenSC in your NSS database without replacing existing certificates.\n'; exit 0 ;;
-    --version) printf '1.0\n'; exit 0 ;;
     '') ;;
     *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
@@ -13,7 +12,6 @@ for cmd in certutil modutil flock; do
 done
 nss_dir="$HOME/.pki/nssdb"
 mkdir -p "$nss_dir"
-# The login service and manual setup can run at the same time.
 exec 9>"$nss_dir/.outpost-setup.lock"
 flock 9
 if [[ ! -f "$nss_dir/cert9.db" ]]; then

@@ -27,7 +27,6 @@ HELP
 source /usr/lib/outpost/lib.sh
 case "${1:-}" in
     -h|--help) help; exit 0 ;;
-    --version) printf '2.0\n'; exit 0 ;;
     '') ;;
     *) log_error "Unknown argument: $1"; exit 2 ;;
 esac

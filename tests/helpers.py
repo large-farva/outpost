@@ -45,6 +45,17 @@ def main():
             path.write_text(source)
             path.chmod(0o755)
 
+        for name in ("brew-setup", "cac-certs", "cac-check", "cac-help", "cac-log",
+                     "cac-nss-setup", "cac-pdf-setup", "nss-modules", "outpost",
+                     "outpost-rollback", "reader-list", "rebase", "scan", "trust-dod", "update"):
+            install(name)
+            for flag, expected in (("--help", 0), ("--version", 2), ("--not-an-option", 2)):
+                result = subprocess.run(["/bin/bash", str(bin_dir / name), flag], env=env,
+                                        text=True, capture_output=True, timeout=10)
+                assert result.returncode == expected, (name, flag, result.stdout, result.stderr)
+                assert "--version" not in result.stdout, (name, result.stdout)
+        assert not calls.exists()
+
         def run(name, code=0, **overrides):
             result = subprocess.run([str(bin_dir / name)], check=False, env=env | overrides,
                                     text=True, capture_output=True, timeout=10)

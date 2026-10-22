@@ -31,10 +31,13 @@ with tempfile.TemporaryDirectory(prefix='outpost-tui-') as directory:
         path.write_text('#!/bin/bash\nset -eu\n' + body + '\n')
         path.chmod(0o755)
 
+    modules = (tmp / "opensc-primary.so", tmp / "opensc-fallback.so")
     for name in ('outpost', 'update', 'rebase', 'outpost-rollback', 'cac-help'):
         source = (ROOT / 'files/system/usr/bin' / name).read_text()
         source = source.replace('/usr/lib/outpost/lib.sh', str(ROOT / 'files/system/usr/lib/outpost/lib.sh'))
         source = source.replace('/var/home/linuxbrew/.linuxbrew/bin/brew', str(tmp / 'absent'))
+        source = source.replace("/usr/lib64/pkcs11/opensc-pkcs11.so", str(modules[0]))
+        source = source.replace("/usr/lib64/opensc-pkcs11.so", str(modules[1]))
         path = bin_dir / name
         path.write_text(source)
         path.chmod(0o755)
@@ -176,4 +179,11 @@ esac''')
     assert 'distrobox upgrade' not in log
     output, _ = run('outpost', terminal=False)
     assert '1 container(s)' in output and 'dev' in output
+    for present in ((), (0,), (1,), (0, 1)):
+        for index, module in enumerate(modules):
+            module.unlink(missing_ok=True)
+            if index in present:
+                module.touch()
+        output, _ = run("outpost", terminal=False)
+        assert ("OpenSC" in output) == (not present), (present, output)
     print('PASS: TUI redraw, neutral prompts, channel switching, rollback selection, Distrobox updates and user context')
