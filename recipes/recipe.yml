@@ -72,6 +72,7 @@ modules:
               - ripgrep
               - ruff
               - starship
+              - steam
               - tealdeer
               - unzip
               - zoxide
