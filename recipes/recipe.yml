@@ -79,13 +79,10 @@ modules:
         scope: system
         install:
           - com.github.tchx84.Flatseal
-          - de.hohnstaedt.xca
           - io.github.DenysMb.Kontainer
           - io.github.flattool.Warehouse
           - io.github.kolunmi.Bazaar
           - org.kde.kate
-          - org.onlyoffice.desktopeditors
-          - org.signal.Signal
         remove:
           - org.kde.okular
         remove-remotes:
