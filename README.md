@@ -8,7 +8,7 @@
 
 # Outpost
 
-This is the **personal** branch for my own use with my personal dotfiles, packages, and NVIDIA support added. Also, a playground for trying BlueBuild features.
+This is the **personal** branch for my own use with my personal dotfiles, packages, and NVIDIA support added.
 It publishes separately from production and won't be merged into `main` or `testing`.
 
 ### Packages
